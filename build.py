@@ -42,6 +42,9 @@ if __name__ == "__main__":
     elif args.native_exe is not None:
         target_platforms['native'] = True
 
+    if True not in target_platforms.values():
+        target_platforms['native'] = True
+
     # build native
     if target_platforms['native']:
         os.makedirs(native_build_dir, exist_ok=True)

@@ -5,9 +5,9 @@
 
 namespace rtc
 {
+class Mat3;
 class Rotation
 {
-
 public:
     Rotation(/* args */) {}
     ~Rotation() {}
@@ -16,11 +16,15 @@ public:
     {
 
     }
+
+    V3 apply(const V3& vector);
+    V3 apply(const V3& vector);
+
 private:
-    using M3 = std::array<V3, 3>;
-    Rotation(const M3& R);
-    M3 rodrigues() const;
-    
+
+    Rotation(const Mat3& R);
+    Mat3 rodrigues() const;
+
 
     UnitVector3 axis_;
     float_t angle_;
