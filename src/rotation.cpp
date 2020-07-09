@@ -5,36 +5,6 @@
 
 namespace rtc
 {
-    class Mat3: public std::array<V3, 3>
-    {
-        using BaseType = std::array<V3, 3>;
-        using ThisType = Mat3;
-        public:
-            Mat3(): BaseType(){}
-            Mat3(const Mat3& rhs): BaseType(rhs){}
-            Mat3(std::initializer_list<V3> il)
-            {
-                if(il.size() != 3)
-                    throw std::runtime_error(std::string("Size Mismatch!\n") + __FILE__);
-                std::copy(il.begin(), il.end(), this->begin());
-            }
-
-            static ThisType Identity() { return ThisType{{1,0,0}, {0,1,0}, {0,0,1}}; }
-
-            float_t operator () (int i, int j) const
-            {
-                return at(i).at(j);
-            }
-
-            ThisType operator*= (float_t val) { for(auto & row: *this) row *= val; }
-            ThisType operator* (float_t val) const { return ThisType(*this) *= val; }
-            ThisType operator+= (float_t val) { for(auto & row: *this) row += val; }
-            ThisType operator+ (float_t val) const { return ThisType(*this) += val; }
-
-            ThisType operator+= (const ThisType& rhs) { for(int i = 0; i < size(); i++) at(i) += rhs.at(i); }
-            ThisType operator+ (const ThisType& rhs) const { return ThisType(*this) += rhs; }
-    };
-
     using M3 = Mat3;
 
     Rotation::Rotation(const M3& R)
@@ -101,5 +71,15 @@ namespace rtc
             V3{-ry, rx,   0}};
 
         return M3::Identity() * c + rrt * c1 + r_x * s;
+    }
+
+    Rotation Rotation::operator*(const ThisType& rhs) const
+    {
+        return Rotation(rodrigues().dot(rhs.rodrigues())); 
+    }
+
+    V3 Rotation::apply(const V3& vector)
+    {
+        return rodrigues().dot(vector);
     }
 } // namespace rtc
