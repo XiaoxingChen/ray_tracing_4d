@@ -11,22 +11,22 @@ namespace rtc{
 
 #define VECTOR_SCALAR_OPERATOR(op, op_eq) \
 ThisType& operator op_eq (float_t val) { for(int i = 0; i < Dim; i++) v_.at(i) op_eq val; return *this;} \
-ThisType operator op (float_t val) const { return (ThisType(*this) op_eq val);}  
+ThisType operator op (float_t val) const { return (ThisType(*this) op_eq val);}
 
 #define VECTOR_VECTOR_OPERATOR(op, op_eq) \
 ThisType& operator op_eq (const ThisType& val) { for(int i = 0; i < Dim; i++) v_.at(i) op_eq val.at(i); return *this;} \
-ThisType operator op (const ThisType& val) const { return (ThisType(*this) op_eq val);}  
+ThisType operator op (const ThisType& val) const { return (ThisType(*this) op_eq val);}
 
 #define SCALAR_VECTOR_OPERATOR(ThisType) \
 inline ThisType operator + (float_t lhs, const ThisType& rhs) { return rhs + lhs;}  \
 inline ThisType operator - (float_t lhs, const ThisType& rhs) { return -rhs + lhs;} \
-inline ThisType operator * (float_t lhs, const ThisType& rhs) { return rhs * lhs;} 
+inline ThisType operator * (float_t lhs, const ThisType& rhs) { return rhs * lhs;}
 
 
 template<uint Dim>
 class Vector
 {
-public: 
+public:
     using ThisType = Vector<Dim>;
     using ThisTypeIn = const Vector<Dim>&;
     Vector(){ for(auto & val: v_) val = 0;}
@@ -37,7 +37,7 @@ public:
             throw std::runtime_error(std::string("Size Mismatch!\n") + __FILE__);
         std::copy(il.begin(), il.end(), v_.begin());
     }
-    
+
     const float_t& at(int i) const {return v_.at(i);}
     float_t& at(int i) {return v_.at(i);}
 
@@ -54,9 +54,9 @@ public:
     ThisType operator -() const        { return ThisType(*this) *= -1;}
 
 
-    float_t dot(ThisTypeIn rhs) const 
-    { 
-        float_t sum(0); 
+    float_t dot(ThisTypeIn rhs) const
+    {
+        float_t sum(0);
         for(int i = 0; i < Dim; i++) sum += (this->at(i) * rhs.at(i));
         return sum;
     }
@@ -64,7 +64,7 @@ public:
     float_t norm() const { return sqrt(this->dot(*this)); }
     ThisType normalized() const { ThisType tmp(*this); tmp.normalize(); return tmp; }
     void normalize() { if(this->norm() > 1e-5) *this /= this->norm(); else this->v_.at(0) = 1; }
-    
+
 
 protected:
     std::array<float_t, Dim> v_;
@@ -107,7 +107,7 @@ class Vector3: public Vector<3>
         Vector3 cross(const Vector3& rhs)
         {
             return Vector3{
-                v_.at(1) * rhs.at(2) - v_.at(2) * rhs.at(1), 
+                v_.at(1) * rhs.at(2) - v_.at(2) * rhs.at(1),
                 -v_.at(0) * rhs.at(2) + v_.at(2) * rhs.at(0),
                 v_.at(0) * rhs.at(1) - v_.at(1) * rhs.at(0)};
         }
@@ -127,12 +127,12 @@ class UnitVector3 :public Vector3
 public:
     using ThisType = UnitVector3;
     using BaseType = Vector3;
-    
-    UnitVector3(std::initializer_list<float_t> il): BaseType(il) { this->normalize(); } 
-    UnitVector3(const BaseType& in):BaseType(in) { this->normalize(); } 
-    UnitVector3():BaseType(V3{1,0,0}) {} 
-    
-    
+
+    UnitVector3(std::initializer_list<float_t> il): BaseType(il) { this->normalize(); }
+    UnitVector3(const BaseType& in):BaseType(in) { this->normalize(); }
+    UnitVector3():BaseType(V3{1,0,0}) {}
+
+
 private:
     using Vector3::normalized;
     using Vector::normalized;

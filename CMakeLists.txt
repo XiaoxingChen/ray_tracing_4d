@@ -3,6 +3,12 @@ project(rtc_in_one_weekend)
 add_compile_options(-std=c++14)
 set(CMAKE_BUILD_TYPE Debug)
 
+if(CMAKE_SYSTEM_NAME MATCHES "^Android")
+    set(THREAD_LIB stdc++)
+elseif(CMAKE_SYSTEM_NAME MATCHES "^Linux")
+    set(THREAD_LIB pthread)
+endif()
+
 include_directories(inc)
 add_library(rtc src/io.cpp src/material.cpp src/rigid_body.cpp src/rotation.cpp)
 
@@ -16,4 +22,4 @@ add_executable(exercise_4 app/exercise_4.cpp)
 target_link_libraries(exercise_4 rtc)
 
 add_executable(exercise_5 app/exercise_5.cpp)
-target_link_libraries(exercise_5 rtc pthread)
+target_link_libraries(exercise_5 rtc ${THREAD_LIB})
