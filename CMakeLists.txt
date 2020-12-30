@@ -23,3 +23,7 @@ target_link_libraries(exercise_4 rtc)
 
 add_executable(exercise_5 app/exercise_5.cpp)
 target_link_libraries(exercise_5 rtc ${THREAD_LIB})
+
+if(BUILD_TEST)
+    add_subdirectory(tests)
+endif(BUILD_TEST)

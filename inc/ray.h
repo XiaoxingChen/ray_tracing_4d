@@ -14,7 +14,7 @@ class Ray
     V3in origin() const       { return origin_; }
     // V3& origin()       { return origin_; }
 
-    const UnitVector3& direction() const    { return direction_; } 
+    const UnitVector3& direction() const    { return direction_; }
     void setDirection(V3in direction)    { direction_ = direction; }
 
     V3 operator() (float_t t) const { return origin() + direction() * t; }
