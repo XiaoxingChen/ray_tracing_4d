@@ -54,6 +54,7 @@ class Mat3: public std::array<V3, 3>
                     }
                 }
             }
+            return result;
         }
 
 };
@@ -66,7 +67,7 @@ public:
     ThisType operator*(const ThisType& rhs) const;
 
     V3 apply(const V3& vector);
-    
+
     template <typename T>
     T apply(const T& vec_container) const
     {

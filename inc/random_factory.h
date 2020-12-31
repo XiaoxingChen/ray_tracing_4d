@@ -1,8 +1,9 @@
 #if !defined(__RANDOM_FACTORY_H__)
 #define __RANDOM_FACTORY_H__
-#include "vec3.h"
+// #include "vec3.h"
 #include <functional>
 #include <random>
+#include "linalg.h"
 namespace rtc
 {
 namespace random
@@ -17,12 +18,14 @@ inline float_t UnitFloat()
     return rand_generator();
 }
 
-inline Vector3 unitSphere() 
+inline Vec unitSphere(size_t dim=3)
 {
-    Vector3 p;
+    Vec p(dim);
     do
     {
-        p = 2.0 * Vector3{UnitFloat(), UnitFloat(), UnitFloat()} - Vector3{1,1,1};
+        for(size_t i = 0; i < dim; i++)
+            p(i) = 2. * UnitFloat() - 1.;
+        // p = 2.0 * Vector3{UnitFloat(), UnitFloat(), UnitFloat()} - Vector3{1,1,1};
     } while (p.norm() > 1);
     return p;
 }

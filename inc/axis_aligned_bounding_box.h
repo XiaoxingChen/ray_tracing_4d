@@ -10,11 +10,13 @@ namespace rtc
 class AxisAlignedBoundingBox
 {
   public:
-    AxisAlignedBoundingBox(Vector3 min_pt, Vector3 max_pt):
+    AxisAlignedBoundingBox(Vec min_pt, Vec max_pt):
+    min_(min_pt), max_(max_pt){}
+    AxisAlignedBoundingBox(const std::vector<FloatType>& min_pt, const std::vector<FloatType>& max_pt):
     min_(min_pt), max_(max_pt){}
 
-    const Vector3& min() const {return min_;}
-    const Vector3& max() const {return max_;}
+    const Vec& min() const {return min_;}
+    const Vec& max() const {return max_;}
 
     bool hit(const Ray& ray) const
     {
@@ -22,15 +24,15 @@ class AxisAlignedBoundingBox
         float_t t_max = INFINITY;
         for(int i = 0; i < 3; i++)
         {
-            t_min = std::max(t_min, (min_.at(i) - ray.origin().at(i)) / ray.direction().at(i));
-            t_max = std::min(t_max, (max_.at(i) - ray.origin().at(i)) / ray.direction().at(i));
+            t_min = std::max(t_min, (min_(i) - ray.origin()(i)) / ray.direction()(i));
+            t_max = std::min(t_max, (max_(i) - ray.origin()(i)) / ray.direction()(i));
         }
         return t_min < t_max;
     }
 
   private:
-    Vector3 min_;
-    Vector3 max_;
+    Vec min_;
+    Vec max_;
 };
 } // namespace rtc
 

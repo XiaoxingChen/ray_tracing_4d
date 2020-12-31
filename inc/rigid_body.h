@@ -12,19 +12,24 @@ namespace rtc
 class RigidBody
 {
     public:
-        struct HitRecord 
+        struct HitRecord
         {
-            HitRecord(float_t t_, const Vector3& p_, const Vector3& n_)
+            HitRecord(float_t t_, const std::vector<FloatType>& p_, const std::vector<FloatType>& n_)
+            :t(t_), p(p_), n(n_){}
+            HitRecord(float_t t_, const Vec& p_, const Vec& n_)
             :t(t_), p(p_), n(n_){}
             float_t t; //hit t
-            Vector3 p; //hit point
-            UnitVector3 n; //normal vector
+            Vec p; //hit point
+            UnitVec n; //normal vector
         };
         RigidBody(){}
-        
+
         enum Types
         {
+            // args:
+            // center: argv[0:dim], radius: argv[dim]
             SPHERE,
+
             CUBE,
             CYLLINDER,
             ELLIPSOID,
@@ -32,9 +37,9 @@ class RigidBody
         };
         using HitRecordPtr = std::shared_ptr<HitRecord>;
         virtual HitRecordPtr hit(const Ray& ray) const = 0;
-        virtual std::string str() const {};
+        virtual std::string str() const {return "";};
 
-        static std::shared_ptr<RigidBody> choose(Types type, const Vector3& center=V3(), const Vector3& size=V3{1,1,1});
+        static std::shared_ptr<RigidBody> choose(Types type, size_t dimension, const std::vector<FloatType>& args);
 };
 
 using RigidBodyPtr = std::shared_ptr<RigidBody>;
