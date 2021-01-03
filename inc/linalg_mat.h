@@ -176,6 +176,45 @@ public:
         return ret;
     }
 
+    Mat block(const std::vector<size_t>& i, const std::vector<size_t>& j) const
+    {
+        std::array<size_t, 2> j_in({0, shape(1)});
+        std::array<size_t, 2> i_in({0, shape(0)});
+
+        for(size_t idx = 0; idx < j.size(); idx++) j_in.at(idx) = j.at(idx);
+        for(size_t idx = 0; idx < i.size(); idx++) i_in.at(idx) = i.at(idx);
+
+        return block_(i_in, j_in);
+    }
+
+    Mat& setBlock(size_t i0, size_t j0, const Mat& mat)
+    {
+        for(size_t i = 0; i < mat.shape(0); i++)
+        {
+            for(size_t j = 0; j < mat.shape(1); j++)
+            {
+                (*this)(i,j) = mat(i + i0, j + j0);
+            }
+        }
+        return *this;
+    }
+
+protected:
+    Mat block_(
+        const std::array<size_t, 2>& row,
+        const std::array<size_t, 2>& col) const
+    {
+        Mat ret({row[1] - row[0], col[1] - col[0]});
+        for(size_t i = 0; i < ret.shape(0); i++)
+        {
+            for(size_t j = 0; j < ret.shape(1); j++)
+            {
+                ret(i,j) = (*this)(i + row[0], j + col[0]);
+            }
+        }
+        return ret;
+    }
+
 protected:
     Shape shape_;
     std::vector<FloatType> data_;
@@ -185,6 +224,51 @@ protected:
 inline Mat operator + (FloatType lhs, const Mat& rhs) { return rhs + lhs;}
 inline Mat operator - (FloatType lhs, const Mat& rhs) { return -rhs + lhs;}
 inline Mat operator * (FloatType lhs, const Mat& rhs) { return rhs * lhs;}
+
+inline Mat orthogonalComplement(const Mat& vs)
+{
+    if(vs.shape(0) == 2 && vs.shape(1) == 3)
+    {
+        Mat ret({1,3});
+        ret(0,0) = vs(0,1) * vs(1,2) - vs(0,2) * vs(1,1);
+        ret(0,1) = -vs(0,0) * vs(1,2) + vs(1,0) * vs(0,2);
+        ret(0,2) = vs(0,0) * vs(1,1) - vs(1,0) * vs(0,1);
+        return ret;
+    }
+    if(vs.shape(0) == 3 && vs.shape(1) == 2)
+    {
+        return orthogonalComplement(vs.T()).T();
+    }
+
+    if(vs.shape(0) == 1 && vs.shape(1) == 3)
+    {
+
+        Mat random_plane({2,3});
+        for(size_t i = 0; i < 3; i++)
+        {
+            random_plane(0, i) = vs(0, i);
+            random_plane(1, i) = vs(0, i) + i + 1;
+        }
+        Mat complement = orthogonalComplement(random_plane);
+        Mat ret({2,3});
+        for(size_t i = 0; i < 3; i++)
+        {
+            ret(0, i) = complement(0, i);
+            random_plane(1, i) = complement(0, i);
+        }
+        complement = orthogonalComplement(random_plane);
+        for(size_t i = 0; i < 3; i++)
+        {
+            ret(1, i) = complement(0, i);
+        }
+        return ret;
+    }
+
+    if(vs.shape(0) == 3 && vs.shape(1) == 1)
+    {
+        return orthogonalComplement(vs.T()).T();
+    }
+}
 
 } // namespace rtc
 

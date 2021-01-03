@@ -13,6 +13,33 @@ inline void testPixel()
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 }
 
+inline void testOrthogonalComplement()
+{
+    {
+        Mat in({2,3},{0,0,1, 0,1,0});
+
+        if(in.block({0,1},{0,3}).matmul(orthogonalComplement(in).T())(0,0) > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+        if(in.block({1,2},{0,3}).matmul(orthogonalComplement(in.T()))(0,0) > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
+    {
+        Mat in({1,3},{1,0,0});
+        Mat complement = orthogonalComplement(in);
+        Vec out1 = complement.block({0,1},{0,3});
+        Vec out2 = complement.block({1,2},{0,3});
+
+        if(static_cast<Vec>(in).dot(out1) > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+        if(static_cast<Vec>(in).dot(out2) > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
+}
+
 inline void testLinearAlgebra()
 {
     Mat m1({3,3},{1,1,1, 2,2,2, 3,3,3});
@@ -36,6 +63,7 @@ inline void testLinearAlgebra()
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
     testPixel();
+    testOrthogonalComplement();
 }
 
 #endif // _TEST_LINALG_H

@@ -13,7 +13,7 @@ endif()
 # add_library(rtc src/io.cpp src/material.cpp src/rigid_body.cpp src/rotation.cpp)
 
 include_directories(inc)
-add_library(rtc src/io.cpp src/material.cpp src/rigid_body.cpp)
+add_library(rtc src/material.cpp src/rigid_body.cpp src/rotation.cpp)
 
 
 add_subdirectory(app)

@@ -1,13 +1,13 @@
 #include "rotation.h"
-#include "vec3.h"
+// #include "vec3.h"
+#include "linalg.h"
 #include <cmath>
-#include <initializer_list>
 
 namespace rtc
 {
-    using M3 = Mat3;
-
-    Rotation::Rotation(const M3& R)
+    using M3 = Mat;
+#if 1
+    Rotation Rotation::fromMatrix(const Mat& R)
     {
         float_t rx = R(2, 1) - R(1, 2);
         float_t ry = R(0, 2) - R(2, 0);
@@ -18,24 +18,24 @@ namespace rtc
         c = (R(0, 0) + R(1, 1) + R(2, 2) - 1)*0.5;
         c = c > 1. ? 1. : c < -1. ? -1. : c;
         theta = acos(c);
-        V3 r{rx, ry, rz};
+        Vec r({rx, ry, rz});
 
         if( s < 1e-5 )
         {
             float_t t;
 
             if( c > 0 )
-                r = V3();
+                r = Vec(3);
             else
             {
                 t = (R(0, 0) + 1)*0.5;
-                r.at(0) = std::sqrt(std::max(t,(float_t)0));
+                r(0) = std::sqrt(std::max(t,(float_t)0));
                 t = (R(1, 1) + 1)*0.5;
-                r.at(1) = std::sqrt(std::max(t,(float_t)0))*(R(0, 1) < 0 ? -1. : 1.);
+                r(1) = std::sqrt(std::max(t,(float_t)0))*(R(0, 1) < 0 ? -1. : 1.);
                 t = (R(2, 2) + 1)*0.5;
-                r.at(2) = std::sqrt(std::max(t,(float_t)0))*(R(0, 2) < 0 ? -1. : 1.);
-                if( fabs(r.at(0)) < fabs(r.at(1)) && fabs(r.at(0)) < fabs(r.at(2)) && (R(1, 2) > 0) != (r.at(1)*r.at(2) > 0) )
-                    r.at(2) = -r.at(2);
+                r(2) = std::sqrt(std::max(t,(float_t)0))*(R(0, 2) < 0 ? -1. : 1.);
+                if( fabs(r(0)) < fabs(r(1)) && fabs(r(0)) < fabs(r(2)) && (R(1, 2) > 0) != (r(1)*r(2) > 0) )
+                    r(2) = -r(2);
                 theta /= r.norm();
                 r *= theta;
             }
@@ -46,40 +46,50 @@ namespace rtc
             vth *= theta;
             r *= vth;
         }
-        angle_ = r.norm();
-        axis_ = UnitVector3(r);
+        // angle_ = r.norm();
+        // axis_ = UnitVector3(r);
+        Mat plane = orthogonalComplement(r);
+        return Rotation(plane, r.norm());
+    }
+#endif
+    Mat Rotation::asMatrix() const
+    {
+        return rodrigues();
     }
 
     M3 Rotation::rodrigues() const
     {
+        Vec axis(orthogonalComplement(plane_));
+        axis.normalize();
         float_t c = cos(angle_);
         float_t s = sin(angle_);
         float_t c1 = 1. - c;
-        float_t itheta = angle_ ? 1./angle_ : 0.;
-        const float_t & rx = axis_.x() * itheta;
-        const float_t & ry = axis_.y() * itheta;
-        const float_t & rz = axis_.z() * itheta;
+        float_t itheta = angle_ ? (1./angle_) : 0.;
+        const float_t & rx = axis(0);
+        const float_t & ry = axis(1);
+        const float_t & rz = axis(2);
 
-        M3 rrt{
-            V3{rx*rx, rx*ry, rx*rz},
-            V3{rx*ry, ry*ry, ry*rz},
-            V3{rx*rz, ry*rz, rz*rz}};
+        M3 rrt({3,3},{
+            rx*rx, rx*ry, rx*rz,
+            rx*ry, ry*ry, ry*rz,
+            rx*rz, ry*rz, rz*rz});
 
-        M3 r_x{
-            V3{0,  -rz,  ry},
-            V3{rz,   0, -rx},
-            V3{-ry, rx,   0}};
+        M3 r_x({3,3},{
+            0,  -rz,  ry,
+            rz,   0, -rx,
+            -ry, rx,   0});
 
-        return M3::Identity() * c + rrt * c1 + r_x * s;
+        return M3::Identity(3) * c + rrt * c1 + r_x * s;
     }
 
     Rotation Rotation::operator*(const ThisType& rhs) const
     {
-        return Rotation(rodrigues().dot(rhs.rodrigues())); 
+        return fromMatrix(rodrigues().dot(rhs.rodrigues()));
     }
 
-    V3 Rotation::apply(const V3& vector)
+    Mat Rotation::apply(const Mat& vectors) const
     {
-        return rodrigues().dot(vector);
+        return rodrigues().matmul(vectors);
+        // return rodrigues();
     }
 } // namespace rtc

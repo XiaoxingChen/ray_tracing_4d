@@ -1,93 +1,60 @@
 #if !defined(_ROTATION_H_)
 #define _ROTATION_H_
-#include "vec3.h"
+#include "linalg.h"
 #include <math.h>
-
+#include <string>
 namespace rtc
 {
-class Mat3: public std::array<V3, 3>
-{
-    using BaseType = std::array<V3, 3>;
-    using ThisType = Mat3;
-    public:
-        Mat3(): BaseType(){}
-        Mat3(const Mat3& rhs): BaseType(rhs){}
-        Mat3(std::initializer_list<V3> il)
-        {
-            if(il.size() != 3)
-                throw std::runtime_error(std::string("Size Mismatch!\n") + __FILE__);
-            std::copy(il.begin(), il.end(), this->begin());
-        }
-
-        static ThisType Identity() { return ThisType{{1,0,0}, {0,1,0}, {0,0,1}}; }
-
-        float_t operator () (int i, int j) const { return at(i).at(j); }
-        float_t & operator () (int i, int j) { return at(i).at(j); }
-
-        ThisType operator*= (float_t val) { for(auto & row: *this) row *= val; return *this; }
-        ThisType operator* (float_t val) const { return ThisType(*this) *= val; }
-        ThisType operator+= (float_t val) { for(auto & row: *this) row += val; return *this; }
-        ThisType operator+ (float_t val) const { return ThisType(*this) += val; }
-
-        ThisType operator+= (const ThisType& rhs) { for(int i = 0; i < size(); i++) at(i) += rhs.at(i); return *this; }
-        ThisType operator+ (const ThisType& rhs) const { return ThisType(*this) += rhs; }
-
-        V3 dot(const V3& vec) const
-        {
-            V3 result{0,0,0};
-            for(auto & row : *this) result += row.dot(vec);
-            return result;
-        }
-
-        Mat3 dot(const Mat3& rhs) const
-        {
-            Mat3 result;
-            int size = this->size();
-            for(int i = 0; i < size; i++)
-            {
-                for(int j = 0; j < size; j++)
-                {
-                    result(i,j) = 0;
-                    for(int k = 0; k < size; k++)
-                    {
-                        result(i, j) += (*this)(i, k) * rhs(k, j);
-                    }
-                }
-            }
-            return result;
-        }
-
-};
 class Rotation
 {
 public:
-    Rotation(/* args */) {}
+    Rotation(FloatType angle)
+    :plane_(Mat::Identity(2)), angle_(angle){ }
+
+    Rotation(const Vec& axis, FloatType angle)
+    :plane_(orthogonalComplement(axis)), angle_(angle) { checkDimension(); }
+
+    Rotation(const Mat& plane, FloatType angle)
+    :plane_(plane), angle_(angle){ checkDimension(); }
+
+    Rotation()
+    :plane_(Mat({2, 3},{1,0,0, 0,1,0}).T()), angle_(0){}
+
     ~Rotation() {}
     using ThisType = Rotation;
     ThisType operator*(const ThisType& rhs) const;
 
-    V3 apply(const V3& vector);
+    Mat apply(const Mat& vector) const;
 
-    template <typename T>
-    T apply(const T& vec_container) const
+    static Rotation fromMatrix(const Mat& R);
+    Mat asMatrix() const;
+
+    std::string str() const
     {
-        T result(vec_container.begin(), vec_container.end());
-        Mat3 R = rodrigues();
-        for(int i = 0; i < result.size(); i++)
-        {
-            result.at(i) = R.dot(vec_container.at(i));
-        }
-        return result;
+        return std::string("plane: \n") + plane_.str() + "angle: " + std::to_string(angle_);
+    }
+
+    void checkDimension() const
+    {
+        if(plane_.shape(1) != 2)
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
+    size_t dim() const { return plane_.shape(0); }
+
+    static Rotation Identity(size_t dim)
+    {
+        Mat plane({dim, 2});
+        plane(0,0) = 1;
+        plane(1,1) = 1;
+        return Rotation(plane, 0.);
     }
 
 private:
+    Mat rodrigues() const;
 
-    Rotation(const Mat3& R);
-    Mat3 rodrigues() const;
-
-
-    UnitVector3 axis_;
-    float_t angle_;
+    Mat plane_;
+    FloatType angle_;
 };
 } // namespace rtc
 

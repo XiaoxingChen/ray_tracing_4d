@@ -74,7 +74,7 @@ using UnitVecIn = const UnitVec&;
 
 inline Mat::operator rtc::Vec() const
 {
-    if(shape(1) != 1) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    if(shape(1) != 1 && shape(0) != 1) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     return Vec(data_);
 }
 

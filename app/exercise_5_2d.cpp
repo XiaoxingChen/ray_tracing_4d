@@ -46,12 +46,9 @@ std::vector<Pixel> threadFunc(
     {
         auto & uv = *it;
         Pixel col;
-        auto r = cam.pixelRay({uv.at(0), uv.at(1)});
+        auto r = cam.pixelRay({uv.at(0)});
         for (int s = 0; s < sample_num; s++)
         {
-            // float uu = float(uv[0] + (random::UnitFloat() * 3 - 1));
-            // float vv = float(uv[1] + (random::UnitFloat() * 3 - 1));
-            // auto r = cam.pixelRay(uu, vv);
             col += color(manager, r, 0);
         }
         col *= (1./float(sample_num));
@@ -64,28 +61,29 @@ std::vector<Pixel> threadFunc(
 int main(int argc, char const *argv[])
 {
     size_t nx = 640;
-    size_t ny = 480;
+    size_t height_repeat = 50;
+    size_t dim = 2;
     size_t sample_num = 10;
-    OrientationFixedCamera cam(Vec(3), Rotation(Vec({0,0,1}), 0.2), Vec({500, 500, 0}), Vec({(FloatType)nx/2, (FloatType)ny/2, 0}));
+    OrientationFixedCamera cam(Vec(dim), Rotation(0.1), Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx/2.)));
     std::vector<Pixel> img;
 
     HitManager manager;
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, 3, {0, -.5, 5, 1}),
+        RigidBody::choose(RigidBody::SPHERE, 2, {0, 10, 1}),
         Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, 3, {1.5,-1,7, 1}),
+        RigidBody::choose(RigidBody::SPHERE, 2, {1.5,13, 1}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, 3, {-1.5,-1,7, 1}),
+        RigidBody::choose(RigidBody::SPHERE, 2, {-1.5,15, 1}),
         Material::choose(Material::METAL));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, 3, {0.,-100,30, 100}),
+    RigidBody::choose(RigidBody::SPHERE, 2, {-100, 30, 100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     bool multi_process = 1;
-    auto ppm_coord = PPMCoordinateSequence(nx, ny);
+    auto ppm_coord = PPMCoordinateSequence(nx, height_repeat);
     if(multi_process)
     {
         int thread_num = std::thread::hardware_concurrency() * 0.9;
@@ -116,6 +114,6 @@ int main(int argc, char const *argv[])
         img = threadFunc(cam, manager, sample_num, ppm_coord.begin(), ppm_coord.end());
     }
 
-    writeToPPM("exercise_5.ppm", nx, ny, img);
+    writeToPPM("exercise_5_2d.ppm", nx, height_repeat, img);
     return 0;
 }

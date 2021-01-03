@@ -5,6 +5,7 @@
 #include "test_ray.h"
 #include "test_random_factory.h"
 #include "test_material.h"
+#include "test_rotation.h"
 
 
 
@@ -18,6 +19,7 @@ int main(int argc, char const *argv[])
   testRigidBody();
   testRandomFactory();
   testMaterial();
+  testRotation();
   std::cout << "done" << std::endl;
   return 0;
 }
