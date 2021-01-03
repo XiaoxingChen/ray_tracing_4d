@@ -5,7 +5,7 @@
 #include <iostream>
 #include "base_type.h"
 #include <initializer_list>
-
+#if 0
 
 namespace rtc{
 
@@ -180,4 +180,5 @@ inline std::ostream& operator<<(std::ostream &os, const rtc::Pixel& rhs)
 {
     return cout3d(os, rhs);
 }
+#endif
 #endif

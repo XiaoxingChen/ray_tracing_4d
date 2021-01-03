@@ -19,17 +19,19 @@ Pixel color(const HitManager& manager, const Ray& ray, int depth)
         // std::cout << "hit!" << std::endl;
         if (depth < 50)
         {
-            
-            return p_record->attenuation * color(manager, p_record->scattered, depth + 1);
-            
+
+            return static_cast<Vec>(
+                p_record->attenuation * color(manager, p_record->scattered, depth + 1));
+
         }
         else {
             std::cout << ".";
-            return Pixel{1, 0, 0};
+            return Pixel({1, 0, 0});
         }
     }
-    float_t t = 0.5 * (ray.direction().y() + 1.);
-    return (1- t) * Pixel{1,1,1} + t * Pixel{0.5, 0.7, 1.};
+    FloatType t = 0.5 * (ray.direction()(1) + 1.);
+    return static_cast<Vec>(
+        (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.}));
 }
 
 std::vector<Pixel> threadFunc(
@@ -44,7 +46,7 @@ std::vector<Pixel> threadFunc(
     {
         auto & uv = *it;
         Pixel col;
-        auto r = cam.pixelRay(uv[0], uv[1]);
+        auto r = cam.pixelRay({uv.at(0), uv.at(1)});
         for (int s = 0; s < sample_num; s++)
         {
             // float uu = float(uv[0] + (random::UnitFloat() * 3 - 1));
@@ -52,8 +54,8 @@ std::vector<Pixel> threadFunc(
             // auto r = cam.pixelRay(uu, vv);
             col += color(manager, r, 0);
         }
-        col /= float(sample_num);
-        for(int i = 0; i < 3; i++) col.at(i) = sqrt(col.at(i));
+        col *= (1./float(sample_num));
+        for(int i = 0; i < 3; i++) col(i) = sqrt(col(i));
         ret.push_back(col);
     }
     return ret;
@@ -61,26 +63,26 @@ std::vector<Pixel> threadFunc(
 
 int main(int argc, char const *argv[])
 {
-    int nx = 640;
-    int ny = 480;
-    int sample_num = 100;
-    OrientationFixedCamera cam(Vector3(), Vector3{500, 500, 0}, Vector3{(float_t)nx/2, (float_t)ny/2, 0});
+    size_t nx = 640;
+    size_t ny = 480;
+    size_t sample_num = 10;
+    OrientationFixedCamera cam(Vec(3), Vec({500, 500, 0}), Vec({(FloatType)nx/2, (FloatType)ny/2, 0}));
     std::vector<Pixel> img;
 
     HitManager manager;
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, V3{0, -.5, 5}, V3::ones()),
-        Material::choose(Material::DIELECTRIC, Pixel{0.5, 0.5, 0.5}));
+        RigidBody::choose(RigidBody::SPHERE, 3, {0, -.5, 5, 1}),
+        Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, V3{1.5,-1,7}, V3::ones()),
-        Material::choose(Material::LAMBERTIAN, Pixel{0.6, 0.6, 0.4}));
+        RigidBody::choose(RigidBody::SPHERE, 3, {1.5,-1,7, 1}),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, V3{-1.5,-1,7}, V3::ones()),
+        RigidBody::choose(RigidBody::SPHERE, 3, {-1.5,-1,7, 1}),
         Material::choose(Material::METAL));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, V3{0.,-100,30}, V3::ones() * 100),
-        Material::choose(Material::LAMBERTIAN, Pixel{0.5, 0.5, 0.8}));
+        RigidBody::choose(RigidBody::SPHERE, 3, {0.,-100,30, 100}),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     bool multi_process = 1;
     auto ppm_coord = PPMCoordinateSequence(nx, ny);
@@ -111,7 +113,7 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        img = threadFunc(cam, manager, sample_num, ppm_coord.begin() + 153906, ppm_coord.end());
+        img = threadFunc(cam, manager, sample_num, ppm_coord.begin(), ppm_coord.end());
     }
 
     writeToPPM("exercise_5.ppm", nx, ny, img);

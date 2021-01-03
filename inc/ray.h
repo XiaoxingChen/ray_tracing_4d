@@ -10,13 +10,20 @@ class Ray
 {
     public:
     Ray(size_t dimension):origin_(dimension), direction_(dimension), t_min_(rtc::tMin()), t_max_(rtc::tMax()){}
+    Ray(const Vec& origin, const Vec& direction, FloatType t_min=rtc::tMin(), FloatType t_max=rtc::tMax()):
+    origin_(origin), direction_(direction), t_min_(t_min), t_max_(t_max) { checkDimension(); }
     Ray(const std::vector<FloatType>& origin, const std::vector<FloatType>& direction, FloatType t_min=rtc::tMin(), FloatType t_max=rtc::tMax()):
     origin_(origin), direction_(direction), t_min_(t_min), t_max_(t_max) { checkDimension(); }
 
-    void checkDimension() const
+    const Ray& checkDimension(size_t dim=0) const
     {
         if(origin_.size() != direction_.size())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+        if(dim != 0 && dim != origin_.size())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+        return *this;
     }
 
     const Vec& origin() const       { return origin_; }

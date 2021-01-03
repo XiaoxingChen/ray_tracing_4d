@@ -1,5 +1,8 @@
 #ifndef __BASE_TYPE_H__
 #define __BASE_TYPE_H__
+
+#include <vector>
+
 namespace rtc{
 using float_t = float;
 using FloatType = float_t;

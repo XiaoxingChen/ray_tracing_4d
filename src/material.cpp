@@ -1,4 +1,4 @@
-#include "vec3.h"
+// #include "vec3.h"
 #include "ray.h"
 #include "hittable.h"
 #include "random_factory.h"
@@ -10,11 +10,11 @@ const float Material::DEFUALT_FUZZ = -1;
 class Lambertian :public Material
 {
     public:
-        Lambertian(const Vector3& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 1. : fuzz){}
+        Lambertian(const Pixel& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 1. : fuzz){}
 
-        virtual Ray scatter(const Ray& ray_in, const Vector3& hit_p, const Vector3& hit_n) const
+        virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const
         {
-            Vector3 target = hit_p + hit_n + fuzz_ * random::unitSphere();
+            Vec target = hit_p + hit_n + fuzz_ * random::unitSphere();
             return Ray(hit_p, target - hit_p);
         }
 
@@ -25,11 +25,11 @@ class Lambertian :public Material
 class Metal :public Material
 {
     public:
-        Metal(const Vector3& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 0 : fuzz){}
+        Metal(const Vec& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 0 : fuzz){}
 
-        virtual Ray scatter(const Ray& ray_in, const Vector3& hit_p, const Vector3& hit_n) const
+        virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const
         {
-            Vector3 reflected = reflect(ray_in.direction(), hit_n);
+            Vec reflected = reflect(ray_in.direction(), hit_n);
             return Ray(hit_p, reflected + fuzz_ * random::unitSphere());
         }
     private:
@@ -39,12 +39,14 @@ class Metal :public Material
 class Dielectric :public Material
 {
     public:
-        Dielectric(float_t ri=1.5):Material(V3::ones()), ref_idx_(ri){}
+        Dielectric(float_t ri=1.5):Material(Pixel::white()), ref_idx_(ri){}
 
-        virtual Ray scatter(const Ray& ray_in, const Vector3& hit_p, const Vector3& hit_n) const
+        virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const
         {
-            Vector3 outward_normal;
-            Vector3 reflected = reflect(ray_in.direction(), hit_n);
+            ray_in.checkDimension(hit_p.size()).checkDimension(hit_n.size());
+
+            Vec outward_normal(hit_n.size());
+            Vec reflected = reflect(ray_in.direction(), hit_n);
             float_t ni_over_nt;
 
             float_t reflect_prob;

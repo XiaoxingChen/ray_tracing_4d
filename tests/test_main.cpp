@@ -4,6 +4,8 @@
 #include "test_linalg.h"
 #include "test_ray.h"
 #include "test_random_factory.h"
+#include "test_material.h"
+
 
 
 
@@ -15,6 +17,7 @@ int main(int argc, char const *argv[])
   testLinearAlgebra();
   testRigidBody();
   testRandomFactory();
+  testMaterial();
   std::cout << "done" << std::endl;
   return 0;
 }

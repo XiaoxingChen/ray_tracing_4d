@@ -6,7 +6,14 @@
 
 using namespace rtc;
 
-void testLinearAlgebra()
+inline void testPixel()
+{
+    Pixel color({1,1,1});
+    if(color.rU8() != 0xff)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+}
+
+inline void testLinearAlgebra()
 {
     Mat m1({3,3},{1,1,1, 2,2,2, 3,3,3});
     Vec v1({1,1,1});
@@ -27,6 +34,8 @@ void testLinearAlgebra()
 
     if((u1 - v1 * sqrt(1./3)).norm() > eps())
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    testPixel();
 }
 
 #endif // _TEST_LINALG_H

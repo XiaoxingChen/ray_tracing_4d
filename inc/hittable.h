@@ -27,14 +27,14 @@ class Hittable
         // Hittable():
         //     rigid_body_(RigidBody::choose(RigidBody::SPHERE)),
         //     material_(Material::choose(Material::METAL)){}
-        
+
         const RigidBody& rigidBody() const { return *rigid_body_; }
         const Material& material() const { return *material_; }
 
         struct HitRecord {
-            HitRecord(Vector3 attenuation_, const Ray& scattered_)
+            HitRecord(Vec attenuation_, const Ray& scattered_)
             :attenuation(attenuation_), scattered(scattered_){}
-            Vector3 attenuation;
+            Vec attenuation;
             Ray scattered;
         };
         using HitRecordPtr = std::shared_ptr<HitRecord>;
@@ -42,7 +42,7 @@ class Hittable
     protected:
         RigidBodyPtr rigid_body_;
         MaterialPtr material_;
-        
+
 };
 
 // using HittablePtr = std::shared_ptr<Hittable>;
@@ -59,15 +59,15 @@ class HitManager
             {
                 auto record = obj.rigidBody().hit(ray);
                 if (record == nullptr) continue;
-                if((nullptr == nearest_hit && nullptr == nearest_obj) 
+                if((nullptr == nearest_hit && nullptr == nearest_obj)
                     || record->t < nearest_hit->t)
                 {
                     nearest_hit = record;
                     nearest_obj = &obj;
                 }
-                    
+
             }
-            if(nullptr == nearest_obj) 
+            if(nullptr == nearest_obj)
             {
                 return nullptr;
             }
@@ -76,7 +76,7 @@ class HitManager
                 nearest_obj->material().scatter(ray, nearest_hit->p, nearest_hit->n));
             return ret;
         }
-        
+
         void addHittables(RigidBodyPtr&& p_rigid, MaterialPtr&& p_material)
         {
             hittables_.push_back(Hittable(std::forward<RigidBodyPtr>(p_rigid), std::forward<MaterialPtr>(p_material)));
