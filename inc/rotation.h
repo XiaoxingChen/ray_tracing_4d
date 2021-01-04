@@ -29,6 +29,8 @@ public:
     static Rotation fromMatrix(const Mat& R);
     Mat asMatrix() const;
 
+    Rotation inv() const { return Rotation(plane_, -angle_); }
+
     std::string str() const
     {
         return std::string("plane: \n") + plane_.str() + "angle: " + std::to_string(angle_);

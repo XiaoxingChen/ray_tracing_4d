@@ -17,7 +17,7 @@ Pixel color(const HitManager& manager, const Ray& ray, int depth)
     if (nullptr != p_record)
     {
         // std::cout << "hit!" << std::endl;
-        if (depth < 50)
+        if (depth < 10)
         {
 
             return static_cast<Vec>(
@@ -65,7 +65,7 @@ int main(int argc, char const *argv[])
 {
     size_t nx = 640;
     size_t ny = 480;
-    size_t sample_num = 10;
+    size_t sample_num = 2;
     OrientationFixedCamera cam(Vec(3), Rotation(Vec({0,0,1}), 0.2), Vec({500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2}));
     std::vector<Pixel> img;
 
@@ -83,6 +83,10 @@ int main(int argc, char const *argv[])
     manager.addHittables(
         RigidBody::choose(RigidBody::SPHERE, 3, {0.,-100,30, 100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
+
+    manager.addHittables(
+        RigidBody::choose(RigidBody::RECTANGLE, 3, {0.,-3, -15, 2,2,2, 1,0, 0,1, 0,0, 0}),
+        Material::choose(Material::METAL));
 
     bool multi_process = 1;
     auto ppm_coord = PPMCoordinateSequence(nx, ny);
