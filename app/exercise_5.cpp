@@ -66,7 +66,7 @@ int main(int argc, char const *argv[])
     size_t nx = 640;
     size_t ny = 480;
     size_t sample_num = 10;
-    OrientationFixedCamera cam(Vec(3), Rotation(Vec({0,0,1}), 0.2), Vec({500, 500, 0}), Vec({(FloatType)nx/2, (FloatType)ny/2, 0}));
+    OrientationFixedCamera cam(Vec(3), Rotation(Vec({0,0,1}), 0.2), Vec({500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2}));
     std::vector<Pixel> img;
 
     HitManager manager;

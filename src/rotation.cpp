@@ -57,7 +57,13 @@ namespace rtc
         return rodrigues();
     }
 
-    M3 Rotation::rodrigues() const
+    Mat Rotation::rodrigues() const
+    {
+        if(2 == dim()) return rodrigues2D();
+        return rodrigues3D();
+    }
+
+    Mat Rotation::rodrigues3D() const
     {
         Vec axis(orthogonalComplement(plane_));
         axis.normalize();
@@ -80,6 +86,13 @@ namespace rtc
             -ry, rx,   0});
 
         return M3::Identity(3) * c + rrt * c1 + r_x * s;
+    }
+
+    Mat Rotation::rodrigues2D() const
+    {
+        float_t c = cos(angle_);
+        float_t s = sin(angle_);
+        return Mat({2,2}, {c, s, -s, c});
     }
 
     Rotation Rotation::operator*(const ThisType& rhs) const

@@ -69,6 +69,8 @@ private:
 
         if(position_.size() != c_.size() + 1)
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+        return *this;
     }
     Vec position_;
     Rotation orientation_;

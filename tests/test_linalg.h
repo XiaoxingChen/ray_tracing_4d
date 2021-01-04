@@ -11,6 +11,20 @@ inline void testPixel()
     Pixel color({1,1,1});
     if(color.rU8() != 0xff)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    Pixel px2(color);
+    if(px2.rU8() != 0xff)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    std::vector<Pixel> img(10, px2);
+    if(img.back().rU8() != 0xff)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    std::vector<Pixel> img2(img);
+    img.insert(img.end(), img2.begin(), img2.begin() + 5);
+    if(img.back().rU8() != 0xff)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
 }
 
 inline void testOrthogonalComplement()

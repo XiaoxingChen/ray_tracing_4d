@@ -52,6 +52,8 @@ public:
 
 private:
     Mat rodrigues() const;
+    Mat rodrigues2D() const;
+    Mat rodrigues3D() const;
 
     Mat plane_;
     FloatType angle_;

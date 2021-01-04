@@ -14,7 +14,7 @@ class Lambertian :public Material
 
         virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const
         {
-            Vec target = hit_p + hit_n + fuzz_ * random::unitSphere();
+            Vec target = hit_p + hit_n + fuzz_ * random::unitSphere(hit_p.size());
             return Ray(hit_p, target - hit_p);
         }
 
@@ -30,7 +30,7 @@ class Metal :public Material
         virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const
         {
             Vec reflected = reflect(ray_in.direction(), hit_n);
-            return Ray(hit_p, reflected + fuzz_ * random::unitSphere());
+            return Ray(hit_p, reflected + fuzz_ * random::unitSphere(hit_p.size()));
         }
     private:
         float_t fuzz_;
