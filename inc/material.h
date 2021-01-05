@@ -36,7 +36,7 @@ private:
 };
 using MaterialPtr = std::shared_ptr<Material>;
 
-inline Vec reflect(VecIn in, VecIn norm)
+inline Vec reflect(VecIn in, const UnitVec& norm)
 { return in - norm * 2 * in.dot(norm); }
 
 inline std::shared_ptr<Vec> refract(const UnitVec& dir_in, const UnitVec& normal, float_t ni_over_nt)

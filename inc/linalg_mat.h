@@ -268,6 +268,8 @@ inline Mat orthogonalComplement(const Mat& vs)
     {
         return orthogonalComplement(vs.T()).T();
     }
+    throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    return Mat({1,1});
 }
 
 } // namespace rtc

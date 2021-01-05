@@ -72,17 +72,16 @@ namespace rtc
                     orientation_.inv().apply(ray.origin() - center_),
                     orientation_.inv().apply(ray.direction()));
                 auto t_min_max = AxisAlignedBoundingBox::hit(moved_ray, -radius_, radius_);
-                bool hit = t_min_max[0] < t_min_max[1];
+                bool hit = (t_min_max[0] < t_min_max[1]) && (0 < t_min_max[0]);
                 if(!hit) return nullptr;
 
                 auto p_record = std::make_shared<HitRecord>();
-                p_record->t = t_min_max[0];
-                p_record->p = ray(t_min_max[0]);
+                FloatType hit_t = t_min_max[0];
 
-                FloatType min_dist = center_(0);
+                FloatType min_dist = radius_(0);
                 size_t min_axis = 0;
-                Vec dist0(center_ + radius_ - p_record->p);
-                Vec dist1(center_ - radius_ - p_record->p);
+                Vec dist0(radius_ - moved_ray(hit_t));
+                Vec dist1(-radius_ - moved_ray(hit_t));
                 for(size_t a = 0; a < center_.size(); a++)
                 {
                     if(std::min(fabs(dist0(a)), fabs(dist1(a))) > min_dist) continue;
@@ -90,9 +89,12 @@ namespace rtc
                     min_dist = std::min(fabs(dist0(a)), fabs(dist1(a)));
                 }
                 Vec norm_vec(Vec::zeros(center_.size()));
-                norm_vec(min_axis) = -ray.direction()(min_axis);
-                // p_record->n = static_cast<Vec>(orientation_.apply(norm_vec));
-                p_record->n = norm_vec;
+                norm_vec(min_axis) = -moved_ray.direction()(min_axis);
+
+                p_record->n = static_cast<Vec>(orientation_.apply(norm_vec));
+                p_record->t = t_min_max[0];
+                p_record->p = ray(t_min_max[0]);
+                // p_record->n = norm_vec;
                 return p_record;
             }
 

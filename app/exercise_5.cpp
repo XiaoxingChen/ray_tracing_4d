@@ -10,26 +10,41 @@
 
 using namespace rtc;
 
-
-Pixel color(const HitManager& manager, const Ray& ray, int depth)
+Pixel color(const HitManager& manager, const Ray& ray, int depth, std::vector<Ray>& ray_record)
 {
     auto p_record = manager.hit(ray);
+    ray_record.push_back(ray);
     if (nullptr != p_record)
     {
         // std::cout << "hit!" << std::endl;
-        if (depth < 10)
+        if (depth < 20)
         {
 
             return static_cast<Vec>(
-                p_record->attenuation * color(manager, p_record->scattered, depth + 1));
+                p_record->attenuation * color(manager, p_record->scattered, depth + 1, ray_record));
 
         }
         else {
             std::cout << ".";
+            #if 0
+            for(auto & ray: ray_record)
+            {
+                std::cout <<"ori: "
+                << /*(void*)*(uint32_t*)&*/(ray.origin()(0)) << " "
+                << /*(void*)*(uint32_t*)&*/(ray.origin()(1)) << " "
+                << /*(void*)*(uint32_t*)&*/(ray.origin()(2)) << " "
+                << ", dir: "
+                << /*(void*)*(uint32_t*)&*/(ray.direction()(0)) << " "
+                << /*(void*)*(uint32_t*)&*/(ray.direction()(1)) << " "
+                << /*(void*)*(uint32_t*)&*/(ray.direction()(2)) << " "
+                << std::endl;
+            }
+            #endif
             return Pixel({1, 0, 0});
         }
     }
     FloatType t = 0.5 * (ray.direction()(1) + 1.);
+    // std::cout << "#" << std::flush;
     return static_cast<Vec>(
         (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.}));
 }
@@ -42,6 +57,7 @@ std::vector<Pixel> threadFunc(
     PixelCoordinates::const_iterator end)
 {
     std::vector<Pixel> ret;
+
     for(auto it = begin; it != end; it++)
     {
         auto & uv = *it;
@@ -49,15 +65,14 @@ std::vector<Pixel> threadFunc(
         auto r = cam.pixelRay({uv.at(0), uv.at(1)});
         for (int s = 0; s < sample_num; s++)
         {
-            // float uu = float(uv[0] + (random::UnitFloat() * 3 - 1));
-            // float vv = float(uv[1] + (random::UnitFloat() * 3 - 1));
-            // auto r = cam.pixelRay(uu, vv);
-            col += color(manager, r, 0);
+            std::vector<Ray> bad_rays;
+            col += color(manager, r, 0, bad_rays);
         }
         col *= (1./float(sample_num));
         for(int i = 0; i < 3; i++) col(i) = sqrt(col(i));
         ret.push_back(col);
     }
+
     return ret;
 }
 
@@ -65,8 +80,8 @@ int main(int argc, char const *argv[])
 {
     size_t nx = 640;
     size_t ny = 480;
-    size_t sample_num = 2;
-    OrientationFixedCamera cam(Vec(3), Rotation(Vec({0,0,1}), 0.2), Vec({500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2}));
+    size_t sample_num = 10;
+    OrientationFixedCamera cam(Vec(3), Rotation(Vec({0,0,1}), 0), Vec({500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2}));
     std::vector<Pixel> img;
 
     HitManager manager;
@@ -85,7 +100,7 @@ int main(int argc, char const *argv[])
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::RECTANGLE, 3, {0.,-3, -15, 2,2,2, 1,0, 0,1, 0,0, 0}),
+        RigidBody::choose(RigidBody::RECTANGLE, 3, {0.,0, 15, 2,2,2, 1,0, 0,1, 0,1, 0.9}),
         Material::choose(Material::METAL));
 
     bool multi_process = 1;
