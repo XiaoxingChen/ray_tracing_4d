@@ -8,8 +8,8 @@ using namespace rtc;
 
 inline void testRotation()
 {
-    Rotation r1(orthogonalComplement(Vec({0,0,1})), 0.4);
-    Rotation r2(orthogonalComplement(Vec({0,0,1})), 0.2);
+    Rotation r1 = Rotation::fromAxisAngle(Vec({0,0,1}), 0.4);
+    Rotation r2 = Rotation::fromAxisAngle(Vec({0,0,1}), 0.2);
     Vec v({1,0,0});
     auto result = (r1 * r2).apply(v);
     Vec expect({0.82533561, 0.56464247, 0.});

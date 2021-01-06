@@ -193,7 +193,7 @@ public:
         {
             for(size_t j = 0; j < mat.shape(1); j++)
             {
-                (*this)(i,j) = mat(i + i0, j + j0);
+                (*this)(i + i0, j + j0) = mat(i, j);
             }
         }
         return *this;

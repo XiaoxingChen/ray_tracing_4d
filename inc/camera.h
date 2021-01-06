@@ -26,7 +26,7 @@ class OrientationFixedCamera
 class Camera
 {
 public:
-    Camera(size_t dim=3):position_(dim), f_(Vec::ones(dim) * 500.), c_(Vec::ones(dim) * 300.)
+    Camera(size_t dim=3):position_(dim), orientation_(Rotation::Identity(dim)), f_(Vec::ones(dim) * 500.), c_(Vec::ones(dim) * 300.)
     {}
     Camera(VecIn position=Vec(3), const Rotation& r=Rotation::Identity(3), VecIn focus=Vec({500, 500}), VecIn c=Vec({320, 240}))
         :position_(position), orientation_(r), f_(focus), c_(c)

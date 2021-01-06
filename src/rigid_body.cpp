@@ -110,12 +110,14 @@ namespace rtc
             return std::make_shared<Sphere>(std::vector<FloatType>(args.begin(), args.begin() + dimension), args.at(dimension));
 
         if(type == RigidBody::RECTANGLE)
+        {
+            Mat plane({dimension,2}, std::vector<FloatType>(args.begin() + 2*dimension, args.begin() + 4*dimension));
             return std::make_shared<Rectangle>(
                 std::vector<FloatType>(args.begin(), args.begin() + dimension), //center
                 std::vector<FloatType>(args.begin() + dimension, args.begin() + 2*dimension), //radius
-                Rotation(Mat({dimension, 2},
-                    std::vector<FloatType>(args.begin() + 2*dimension, args.begin() + 4*dimension)), //rotation plane
-                    args.back())); //rotation angle
+                Rotation::fromPlaneAngle(plane.block({},{0,1}), plane.block({},{1,2}), args.back())); //rotation
+        }
+
 
         return std::make_shared<Sphere>();
     }

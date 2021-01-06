@@ -50,6 +50,7 @@ class UnitVec: public Vec
 public:
     UnitVec(size_t size): Vec(size) {data_.at(0) = 1;}
     UnitVec(const Vec& v): Vec(v) {this->normalize();}
+    UnitVec(const Mat& m): Vec(m) {this->normalize();}
     UnitVec(const std::vector<FloatType>& v): Vec(v) {this->normalize();}
 
     Mat& operator *= (FloatType scalar) = delete;
