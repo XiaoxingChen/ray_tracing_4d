@@ -7,56 +7,12 @@
 #include "material.h"
 #include "rigid_body.h"
 #include "hittable.h"
+#include "ray_tracer.h"
+#include "scenes.h"
+#include "utils.h"
 
 using namespace rtc;
 
-
-Pixel color(const HitManager& manager, const Ray& ray, int depth)
-{
-    auto p_record = manager.hit(ray);
-    if (nullptr != p_record)
-    {
-        // std::cout << "hit!" << std::endl;
-        if (depth < 50)
-        {
-
-            return static_cast<Vec>(
-                p_record->attenuation * color(manager, p_record->scattered, depth + 1));
-
-        }
-        else {
-            std::cout << ".";
-            return Pixel({1, 0, 0});
-        }
-    }
-    FloatType t = 0.5 * (ray.direction()(1) + 1.);
-    return static_cast<Vec>(
-        (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.}));
-}
-
-std::vector<Pixel> threadFunc(
-    const OrientationFixedCamera& cam,
-    const HitManager& manager,
-    int sample_num,
-    PixelCoordinates::const_iterator begin,
-    PixelCoordinates::const_iterator end)
-{
-    std::vector<Pixel> ret;
-    for(auto it = begin; it != end; it++)
-    {
-        auto & uv = *it;
-        Pixel col;
-        auto r = cam.pixelRay({uv.at(0)});
-        for (int s = 0; s < sample_num; s++)
-        {
-            col += color(manager, r, 0);
-        }
-        col *= (1./float(sample_num));
-        for(int i = 0; i < 3; i++) col(i) = sqrt(col(i));
-        ret.push_back(col);
-    }
-    return ret;
-}
 
 int main(int argc, char const *argv[])
 {
@@ -67,20 +23,8 @@ int main(int argc, char const *argv[])
     OrientationFixedCamera cam(Vec(dim), Rotation::fromAngle(0.1), Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx/2.)));
     std::vector<Pixel> img;
 
-    HitManager manager;
+    HitManager manager = rtc::scene::simple2D_001();
 
-    manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, 2, {6.5, 10, 1}),
-        Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})));
-    manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, 2, {1.5,13, 1}),
-        Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4})));
-    manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, 2, {4.5,15, 1}),
-        Material::choose(Material::METAL));
-    manager.addHittables(
-    RigidBody::choose(RigidBody::SPHERE, 2, {-100, 30, 100}),
-        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     bool multi_process = 1;
     auto ppm_coord = PPMCoordinateSequence(nx, 1);

@@ -19,14 +19,17 @@ int main(int argc, char const *argv[])
 {
     size_t nx = 640;
     size_t ny = 480;
-    size_t sample_num = 10;
-    OrientationFixedCamera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2}));
+    size_t nz = 2;
+    size_t sample_num = 5;
+    size_t dim = 4;
+    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2, (FloatType)nz/2}));
     std::vector<Pixel> img;
 
-    auto manager = rtc::scene::simple3D_001();
+    auto manager = rtc::scene::simple4D_001();
 
     bool multi_process = 1;
     auto ppm_coord = PPMCoordinateSequence(nx, ny);
+    for(auto & px : ppm_coord) px.push_back(0);
     if(multi_process)
     {
         int thread_num = std::thread::hardware_concurrency() * 0.9;
@@ -57,6 +60,6 @@ int main(int argc, char const *argv[])
         img = threadFunc(cam, manager, sample_num, ppm_coord.begin(), ppm_coord.end());
     }
 
-    writeToPPM("exercise_5.ppm", nx, ny, img);
+    writeToPPM("exercise_5_4d.ppm", nx, ny, img);
     return 0;
 }

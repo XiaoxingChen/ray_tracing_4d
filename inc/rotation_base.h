@@ -81,13 +81,13 @@ inline void matrixToAxisAngle3D(const Mat& R, UnitVec& axis, FloatType& angle)
 
 inline Mat reflection(UnitVecIn u)
 {
-    return Mat::Identity(u.size()) - u.matmul(u.T());
+    return Mat::Identity(u.size()) - 2 * u.matmul(u.T());
 }
 
 inline std::array<UnitVec, 2> planeAngleToBivector(UnitVecIn u, UnitVecIn v, FloatType angle)
 {
     UnitVec v_perpend(v - u.dot(v));
-    UnitVec v_new(cos(angle) * u + sin(angle) * v_perpend);
+    UnitVec v_new(cos(angle/2.) * u + sin(angle/2.) * v_perpend);
     return {u,v_new};
 }
 

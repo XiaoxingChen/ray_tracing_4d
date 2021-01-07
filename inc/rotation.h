@@ -10,8 +10,8 @@ namespace rtc
 {
 
 
-// using Rotation = FullDimensionalRotation;
-using Rotation = LowDimensionalRotation;
+using Rotation = FullDimensionalRotation;
+// using Rotation = LowDimensionalRotation;
 } // namespace rtc
 
 

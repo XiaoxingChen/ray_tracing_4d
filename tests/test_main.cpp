@@ -16,10 +16,10 @@ int main(int argc, char const *argv[])
   testAABB();
   testRay();
   testLinearAlgebra();
+  testRotation();
   testRigidBody();
   testRandomFactory();
   testMaterial();
-  testRotation();
   std::cout << "done" << std::endl;
   return 0;
 }

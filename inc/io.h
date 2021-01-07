@@ -11,7 +11,7 @@
 
 namespace rtc{
 
-using PixelCoordinates = std::vector<std::array<size_t, 2>>;
+using PixelCoordinates = std::vector<std::vector<size_t>>;
 
 template<template<typename ...> class Container>
 inline void writeToPPM(const std::string& filename, int w, int h, const Container<Pixel>& pixs)
@@ -37,7 +37,7 @@ inline PixelCoordinates PPMCoordinateSequence(size_t width, size_t height)
     {
         for(size_t i = 0; i < width; i++)
         {
-            ret.push_back(std::array<size_t, 2>{i, height - j - 1});
+            ret.push_back(std::vector<size_t>{i, height - j - 1});
         }
     }
     return ret;

@@ -3,6 +3,8 @@
 
 #include "linalg.h"
 #include "rotation_base.h"
+#include <iostream>
+
 
 namespace rtc
 {
