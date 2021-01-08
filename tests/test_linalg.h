@@ -54,6 +54,54 @@ inline void testOrthogonalComplement()
 
 }
 
+inline void testSolveLowerTriangle()
+{
+    Mat L({3,3}, {1,0,0, 2,3,0, 4,5,6});
+    Vec b({2,3,4});
+    Vec expect({2, -1./3, -7./18});
+    Vec x = solveLowerTriangle(L, b);
+    if((x - expect).norm() > eps())
+    {
+        std::cout << x.T().str() << std::endl;
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
+    Vec expect_u({-4./9, -1./9, 2./3});
+    Vec x_u = solveUpperTriangle(L.T(), b);
+    if((x_u - expect_u).norm() > eps())
+    {
+        std::cout << x_u.T().str() << std::endl;
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
+}
+
+inline void testQRcalcMatQ()
+{
+    // using namespace qr;
+    Mat mat_a({3,3}, {12, -51, 4, 6, 167, -68, -4, 24, -41});
+    Mat expect_q({3,3}, {6./7, -69./175, -58./175, 3./7, 158./175, 6./175, -2./7, 6./35, -33./35});
+    Mat mat_q = qr::calcMatQ(mat_a);
+    if((mat_q - expect_q).norm() > 2 * eps())
+    {
+        std::cout << mat_q.str() << std::endl;
+        std::cout << "norm: " << (mat_q - expect_q).norm() << std::endl;
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
+    Vec b({2,3,9});
+    Vec expect({-0.10244898, -0.08359184, -0.25844898});
+    Vec x(qr::solve(mat_a, b));
+
+    if((x - expect).norm() > eps())
+    {
+        std::cout << x.T().str() << std::endl;
+        // std::cout << "norm: " << (mat_q - expect_q).norm() << std::endl;
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+}
+
+
 inline void testLinearAlgebra()
 {
     Mat m1({3,3},{1,1,1, 2,2,2, 3,3,3});
@@ -78,6 +126,9 @@ inline void testLinearAlgebra()
 
     testPixel();
     testOrthogonalComplement();
+    testSolveLowerTriangle();
+    testQRcalcMatQ();
 }
+
 
 #endif // _TEST_LINALG_H
