@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
     size_t height_repeat = 300;
     size_t dim = 2;
     size_t sample_num = 100;
-    OrientationFixedCamera cam(Vec(dim), Rotation::fromAngle(0.1), Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx/2.)));
+    Camera cam(Vec(dim), Rotation::fromAngle(0.1), Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx/2.)));
     std::vector<Pixel> img;
 
     HitManager manager = rtc::scene::simple2D_001();

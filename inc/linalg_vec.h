@@ -42,6 +42,8 @@ public:
 
     static Mat ones(size_t n) { return Vec(n) + 1; }
 
+    operator const std::vector<FloatType>& () const { return data_; }
+
     operator Pixel() const;
 };
 

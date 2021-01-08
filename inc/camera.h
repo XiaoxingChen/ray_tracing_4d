@@ -5,23 +5,7 @@
 #include "rotation.h"
 
 namespace rtc{
-#if 0
-class OrientationFixedCamera
-{
-    public:
-        OrientationFixedCamera(VecIn position=V3(), VecIn focus=V3{500, 500, 0}, VecIn c=V3{320, 240, 0})
-        :position_(position), f_(focus), c_(c) {}
-        Ray pixelRay(int u, int v) const
-        {
-            auto dir = Vector3{(u - c_.x())/f_.x(),(v - c_.y())/f_.y(), 1.};
-            return Ray(position_, dir);
-        }
-    private:
-        Vector3 position_;
-        Vector3 f_;
-        Vector3 c_;
-};
-#endif
+
 
 class Camera
 {
@@ -36,15 +20,15 @@ public:
 
     Ray pixelRay(const std::vector<size_t>& pixel_coordinate) const
     {
-        if(position_.size() != pixel_coordinate.size() + 1)
+        if(position_.size() > pixel_coordinate.size() + 1)
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
         Vec dir(position_.size());
-        for(size_t i = 0; i < pixel_coordinate.size(); i++)
+        for(size_t i = 0; i < position_.size() - 1; i++)
         {
             dir(i) = (pixel_coordinate.at(i) - c_(i)) / f_(i);
         }
-        dir(pixel_coordinate.size()) = 1.;
+        dir(position_.size() - 1) = 1.;
         dir = orientation_.apply(dir);
         return Ray(position_, dir);
     }
@@ -78,6 +62,5 @@ private:
     Vec c_;
 };
 
-using OrientationFixedCamera = Camera;
 }//rtc
 #endif

@@ -121,4 +121,24 @@ namespace rtc
 
         return std::make_shared<Sphere>();
     }
+
+    RigidBodyPtr RigidBody::choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args)
+    {
+        if(position.size() != orientation.dim())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+            
+        if(type == RigidBody::SPHERE)
+            return std::make_shared<Sphere>(position, args.at(0));
+
+        if(type == RigidBody::RECTANGLE)
+        {
+            return std::make_shared<Rectangle>(
+                position, //center
+                args, //radius
+                orientation); //rotation
+        }
+
+
+        return std::make_shared<Sphere>();
+    }
 } // namespace rtc

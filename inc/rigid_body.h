@@ -1,6 +1,8 @@
 #if !defined(__RIGID_BODY_H__)
 #define __RIGID_BODY_H__
 #include "ray.h"
+#include "rotation.h"
+
 #include <memory>
 #include <string>
 // #include "hittable.h"
@@ -28,17 +30,18 @@ class RigidBody
         enum Types
         {
             // args:
-            // center: argv[0:dim], radius: argv[dim]
+            // radius: argv[0]
             SPHERE,
 
             // args:
-            // center: argv[0:dim],
-            // radius: argv[dim:2*dim],
-            // rotate plane: argv[2*dim:4*dim],
-            // rotate angle: [4*dim, 4*dim+1]
+            // radius: argv[0:dim],
             RECTANGLE,
             CUBE,
-            CYLLINDER,
+
+            // args:
+            // radius: argv[0],
+            // height: argv[1],
+            CYLINDER,
             ELLIPSOID
         };
         using HitRecordPtr = std::shared_ptr<HitRecord>;
@@ -46,6 +49,7 @@ class RigidBody
         virtual std::string str() const {return "";};
 
         static std::shared_ptr<RigidBody> choose(Types type, size_t dimension, const std::vector<FloatType>& args);
+        static std::shared_ptr<RigidBody> choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);
 };
 
 using RigidBodyPtr = std::shared_ptr<RigidBody>;
