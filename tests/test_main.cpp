@@ -18,6 +18,7 @@ int main(int argc, char const *argv[])
   testLinearAlgebra();
   testRotation();
   testRigidBody();
+  testPrimitiveGeometry();
   testRandomFactory();
   testMaterial();
   std::cout << "done" << std::endl;

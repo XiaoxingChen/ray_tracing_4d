@@ -56,13 +56,13 @@ inline Mat calcMatQ(const Mat& mat)
     Mat mat_u({mat.shape(0), mat.shape(1)});
     for(size_t i = 0; i < mat.shape(0); i++)
     {
-        Vec a_i(mat.block({}, {i, i+1}));
-        mat_u.setBlock(0, i, a_i);
+        Vec a_i(mat(Col(i)));
+        mat_u.set(Col(i), a_i);
         for(size_t j = 0; j < i; j++)
         {
-            mat_u.setBlock(0, i, mat_u.block({}, {i, i+1}) - project(mat_u.block({}, {j, j+1}), a_i));
+            mat_u.set(Col(i), mat_u(Col(i)) - project(mat_u(Col(j)), a_i));
         }
-        mat_u.setBlock(0, i, static_cast<UnitVec>(mat_u.block({}, {i, i+1})));
+        mat_u.set(Col(i), static_cast<UnitVec>(mat_u(Col(i))));
     }
     return mat_u;
 }

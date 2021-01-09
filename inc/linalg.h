@@ -3,7 +3,11 @@
 
 #include "linalg_vec.h"
 #include "linalg_mat.h"
+#include "linalg_mat_block.h"
+
 #include "linalg_solve.h"
+#include "linalg_utils.h"
+
 
 
 #endif // _LINALG_H_

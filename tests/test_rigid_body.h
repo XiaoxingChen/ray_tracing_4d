@@ -2,6 +2,8 @@
 #define _TEST_REGID_BODY_
 
 #include "rigid_body.h"
+#include "primitive_geometry.h"
+
 
 using namespace rtc;
 
@@ -81,6 +83,43 @@ inline void testRigidBody()
 
     testRectangle3D();
 
+}
+
+inline void testIntersectEquation2D()
+{
+    Mat line_seg({2,2}, {0, 1, 0, 1});
+    Ray ray({1,0}, {-1, 1});
+
+    Vec result(intersectEquation(line_seg, ray));
+    Vec expect({sqrt(0.5), .5});
+    if((result - expect).norm() > eps())
+    {
+        std::cout << result.T().str() << std::endl;
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+}
+
+inline void testIntersectEquationXD(size_t dim)
+{
+    Mat line_seg(Mat::Identity(dim));
+    Ray ray(Vec::zeros(dim), Vec::ones(dim));
+
+    Vec result(intersectEquation(line_seg, ray));
+    Vec expect(Vec::ones(dim) * (1./dim));
+    expect(0) = sqrt(expect(0));
+    if((result - expect).norm() > eps())
+    {
+        std::cout << result.T().str() << std::endl;
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+}
+
+
+inline void testPrimitiveGeometry()
+{
+    testIntersectEquation2D();
+    for(size_t dim = 2; dim < 5; dim++)
+        testIntersectEquationXD(dim);
 }
 
 #endif // _TEST_REGID_BODY_
