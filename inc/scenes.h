@@ -81,7 +81,9 @@ inline HitManager simple3D_002()
             Rotation::fromAxisAngle(Vec({1,0,1}), 0.5),
             // Rotation::Identity(dim),
             vertices, indices),
-        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.2})));
+        // Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.2}))
+            Material::choose(Material::METAL)
+        );
 
     return manager;
 }

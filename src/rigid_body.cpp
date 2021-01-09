@@ -115,16 +115,20 @@ public:
         const Mat& vertices,
         const std::vector<std::vector<size_t>>& indices)
         :position_(position), orientation_(orientation),
-        vertices_global_frame_(orientation.apply(vertices)), indices_(indices)
+        vertices_global_frame_(orientation.apply(vertices)),
+        indices_(indices), aabb_(position.size())
     {
         for(size_t i = 0; i < vertices_global_frame_.shape(1); i++)
         {
             vertices_global_frame_.set(Col(i), vertices_global_frame_(Col(i)) + position_);
         }
+        aabb_.extend(vertices_global_frame_);
     }
 
     virtual HitRecordPtr hit(const Ray& ray) const
     {
+        if(!aabb_.hit(ray)) return nullptr;
+
         FloatType min_t = ray.tMax();
         int closest_prim_idx = -1;
         for(size_t prim_idx = 0; prim_idx < indices_.size(); prim_idx++)
@@ -169,6 +173,7 @@ private:
     Rotation orientation_;
     Mat vertices_global_frame_;
     std::vector<std::vector<size_t>> indices_;
+    AxisAlignedBoundingBox aabb_;
 };
 
 #if 1

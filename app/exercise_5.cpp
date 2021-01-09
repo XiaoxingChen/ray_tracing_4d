@@ -17,11 +17,11 @@ using namespace rtc;
 
 int main(int argc, char const *argv[])
 {
-    // size_t nx = 640;
-    // size_t ny = 480;
-    size_t nx = 320;
-    size_t ny = 240;
-    size_t sample_num = 3;
+    size_t nx = 640;
+    size_t ny = 480;
+    // size_t nx = 320;
+    // size_t ny = 240;
+    size_t sample_num = 5;
     size_t recursion_depth = 10;
     Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2}));
     std::vector<Pixel> img;
