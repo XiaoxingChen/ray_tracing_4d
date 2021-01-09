@@ -7,33 +7,12 @@
 #include "material.h"
 #include "rigid_body.h"
 #include "hittable.h"
+#include "ray_tracer.h"
+#include "scenes.h"
+#include "utils.h"
 
 using namespace rtc;
 
-Pixel color(const HitManager& manager, const Ray& ray, int depth)
-{
-    auto p_record = manager.hit(ray);
-    std::cout << "ori: " << ray.origin().T().str() << ", dir: " << ray.direction().T().str() << std::endl;
-    if (nullptr != p_record)
-    {
-        // std::cout << "hit!" << std::endl;
-        if (depth < 10)
-        {
-
-            return static_cast<Vec>(
-                p_record->attenuation * color(manager, p_record->scattered, depth + 1));
-
-        }
-        else {
-            std::cout << ".";
-            return Pixel({1, 0, 0});
-        }
-    }
-    FloatType t = 0.5 * (ray.direction()(1) + 1.);
-    std::cout << "#" << std::flush;
-    return static_cast<Vec>(
-        (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.}));
-}
 
 int main(int argc, char const *argv[])
 {
@@ -45,6 +24,7 @@ int main(int argc, char const *argv[])
 
 
     size_t dim = 3;
+    size_t recursion_depth = 20;
 
     // std::vector<uint32_t> dir_raw{0xbcd280fa,0x3e19d468,0x3f7d0268};
     // std::vector<uint32_t> ori_raw{0xbead0e58,0x3ffced93,0x41500002};
@@ -64,7 +44,7 @@ int main(int argc, char const *argv[])
     }
     Ray ray(ori_f, dir_f);
     std::cout << "ray in: "  << ray.direction().T().str() << std::endl << std::flush;
-    auto px = color(manager, ray, 0);
+    auto px = trace(manager, ray, recursion_depth);
     std::cout << "done" << std::endl;
     return 0;
 }

@@ -1,6 +1,8 @@
 #include "rigid_body.h"
 #include "rotation.h"
 #include "axis_aligned_bounding_box.h"
+#include "primitive_geometry.h"
+
 
 
 namespace rtc
@@ -104,6 +106,72 @@ namespace rtc
             Rotation orientation_;
     };
 
+class PrimitiveMesh: public RigidBody
+{
+public:
+    PrimitiveMesh(
+        const Vec& position,
+        const Rotation& orientation,
+        const Mat& vertices,
+        const std::vector<std::vector<size_t>>& indices)
+        :position_(position), orientation_(orientation),
+        vertices_global_frame_(orientation.apply(vertices)), indices_(indices)
+    {
+        for(size_t i = 0; i < vertices_global_frame_.shape(1); i++)
+        {
+            vertices_global_frame_.set(Col(i), vertices_global_frame_(Col(i)) + position_);
+        }
+    }
+
+    virtual HitRecordPtr hit(const Ray& ray) const
+    {
+        FloatType min_t = ray.tMax();
+        int closest_prim_idx = -1;
+        for(size_t prim_idx = 0; prim_idx < indices_.size(); prim_idx++)
+        {
+            auto & vertex_indices(indices_.at(prim_idx));
+            if(position_.size() != vertex_indices.size())
+                throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+            Mat mat_a({position_.size(), position_.size()});
+            for(size_t i = 0; i < position_.size(); i++)
+            {
+                mat_a.set(Col(i), vertices_global_frame_(Col(vertex_indices.at(i))));
+            }
+            Vec result = intersectEquation(mat_a, ray);
+            if(!validIntersect(result)) continue;
+
+            FloatType intersection_t = result(0);
+
+            if(intersection_t < ray.tMin()) continue;
+            if (intersection_t >= min_t) continue;
+
+            min_t = intersection_t;
+            closest_prim_idx = prim_idx;
+        }
+        if(closest_prim_idx < 0)
+            return nullptr;
+
+        auto ret = std::make_shared<HitRecord>(position_.size());
+        Mat norm_complement({position_.size(), position_.size() - 1});
+        for(size_t i = 0; i < position_.size() - 1; i++)
+        {
+            norm_complement.set(Col(i),
+                vertices_global_frame_(Col(indices_.at(closest_prim_idx).at(i + 1)))
+                - vertices_global_frame_(Col(indices_.at(closest_prim_idx).at(i))));
+        }
+        ret->p = ray(min_t);
+        ret->t = min_t;
+        ret->n = orthogonalComplement(norm_complement);
+        return ret;
+    }
+private:
+    Vec position_;
+    Rotation orientation_;
+    Mat vertices_global_frame_;
+    std::vector<std::vector<size_t>> indices_;
+};
+
+#if 1
     RigidBodyPtr RigidBody::choose(Types type, size_t dimension, const std::vector<FloatType>& args)
     {
         if(type == RigidBody::SPHERE)
@@ -121,12 +189,13 @@ namespace rtc
 
         return std::make_shared<Sphere>();
     }
+    #endif
 
     RigidBodyPtr RigidBody::choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args)
     {
         if(position.size() != orientation.dim())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-            
+
         if(type == RigidBody::SPHERE)
             return std::make_shared<Sphere>(position, args.at(0));
 
@@ -141,4 +210,10 @@ namespace rtc
 
         return std::make_shared<Sphere>();
     }
+
+    RigidBodyPtr RigidBody::createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& vertices, const std::vector<std::vector<size_t>>& indices)
+    {
+        return std::make_shared<PrimitiveMesh>(position, orientation, vertices, indices);
+    }
+
 } // namespace rtc

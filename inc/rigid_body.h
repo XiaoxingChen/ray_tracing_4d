@@ -50,6 +50,7 @@ class RigidBody
 
         static std::shared_ptr<RigidBody> choose(Types type, size_t dimension, const std::vector<FloatType>& args);
         static std::shared_ptr<RigidBody> choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);
+        static std::shared_ptr<RigidBody> createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& primitives, const std::vector<std::vector<size_t>>& indices);
 };
 
 using RigidBodyPtr = std::shared_ptr<RigidBody>;

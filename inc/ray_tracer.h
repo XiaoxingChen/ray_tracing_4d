@@ -25,11 +25,11 @@ inline Pixel trace(const HitManager& manager, const Ray& ray, int depth, std::ve
     if (nullptr != p_record)
     {
         // std::cout << "hit!" << std::endl;
-        if (depth < 20)
+        if (depth > 0)
         {
 
             return static_cast<Vec>(
-                p_record->attenuation * trace(manager, p_record->scattered, depth + 1, ray_record));
+                p_record->attenuation * trace(manager, p_record->scattered, depth - 1, ray_record));
 
         }
         else {

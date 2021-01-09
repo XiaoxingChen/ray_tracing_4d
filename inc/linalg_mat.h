@@ -26,8 +26,8 @@ public:
     bool square() const {return shape(0) == shape(1);}
     bool rowMajor() const {return row_major_;}
 
-    Mat(const Shape& _shape, const std::vector<FloatType>& data={})
-        :shape_(_shape), data_(_shape[0] * _shape[1], 0), row_major_(true)
+    Mat(const Shape& _shape, const std::vector<FloatType>& data={}, bool col_major=false)
+        :shape_(_shape), data_(_shape[0] * _shape[1], 0), row_major_(!col_major)
     {
         if(data.size() == 0)
         {
@@ -128,7 +128,11 @@ public:
     const Mat& normalize(int8_t p = 2)
     {
         FloatType n = norm(p);
-        if(n < eps()) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        // if(n < eps()*eps()) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        if(n < eps()*eps())
+        {
+            return *this;
+        }
         for(auto & v : data_) v /= n;
         return *this;
     }

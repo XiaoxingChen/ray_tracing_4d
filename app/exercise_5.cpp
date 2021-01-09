@@ -17,13 +17,16 @@ using namespace rtc;
 
 int main(int argc, char const *argv[])
 {
-    size_t nx = 640;
-    size_t ny = 480;
-    size_t sample_num = 10;
+    // size_t nx = 640;
+    // size_t ny = 480;
+    size_t nx = 320;
+    size_t ny = 240;
+    size_t sample_num = 3;
+    size_t recursion_depth = 10;
     Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2}));
     std::vector<Pixel> img;
 
-    auto manager = rtc::scene::simple3D_001();
+    auto manager = rtc::scene::simple3D_002();
 
     bool multi_process = 1;
     auto ppm_coord = PPMCoordinateSequence(nx, ny);
@@ -38,7 +41,7 @@ int main(int argc, char const *argv[])
         {
             pool_results.emplace_back(
                 pool.enqueue(
-                    threadFunc, cam, manager, sample_num, ppm_coord.begin() + i,
+                    threadFunc, cam, manager, sample_num, recursion_depth, ppm_coord.begin() + i,
                     i + step_len >= ppm_coord.size() ? ppm_coord.end() : ppm_coord.begin() + i + step_len)
                 );
         }
@@ -54,7 +57,7 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        img = threadFunc(cam, manager, sample_num, ppm_coord.begin(), ppm_coord.end());
+        img = threadFunc(cam, manager, sample_num, recursion_depth, ppm_coord.begin(), ppm_coord.end());
     }
 
     writeToPPM("exercise_5.ppm", nx, ny, img);

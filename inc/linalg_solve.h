@@ -60,16 +60,29 @@ inline Mat calcMatQ(const Mat& mat)
         mat_u.set(Col(i), a_i);
         for(size_t j = 0; j < i; j++)
         {
-            mat_u.set(Col(i), mat_u(Col(i)) - project(mat_u(Col(j)), a_i));
+            Vec proj(project(mat_u(Col(j)), a_i));
+            mat_u.set(Col(i), mat_u(Col(i)) - proj);
         }
-        mat_u.set(Col(i), static_cast<UnitVec>(mat_u(Col(i))));
+        // mat_u.set(Col(i), static_cast<UnitVec>(mat_u(Col(i))));
     }
+    for(size_t i = 0; i < mat.shape(0); i++)
+    {
+        mat_u.set(Col(i), mat_u(Col(i)).normalized());
+    }
+
     return mat_u;
 }
 
 inline Vec solve(const Mat& mat_a, const Vec& b)
 {
     Mat mat_q(calcMatQ(mat_a));
+
+    if((mat_q.matmul(mat_q)).norm() - b.size() > eps())
+    {
+        // singular
+        return Vec::zeros(b.size());
+    }
+
     Mat mat_r(mat_q.T().matmul(mat_a));
     Vec x(solveUpperTriangle(mat_r, mat_q.T().dot(b)));
     return x;

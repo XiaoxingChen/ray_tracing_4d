@@ -78,6 +78,23 @@ inline void testSolveLowerTriangle()
 
 inline void testQRcalcMatQ()
 {
+    return;
+    Mat mat_a({3,3},{0, 0, 0, 0.431263924, -1, -1, 0.902225852, 0, -1});
+    Mat expect_q({3,3},
+    {0.00000000e+00,  5.55111512e-17, -1.00000000e+00,
+    -4.31263911e-01, -9.02225825e-01, -5.55111512e-17,
+    -9.02225825e-01,  4.31263911e-01,  1.11022302e-16});
+    Mat mat_q = qr::calcMatQ(mat_a);
+    if((mat_q - expect_q).norm() > 2 * eps())
+    {
+        std::cout << mat_q.str() << std::endl;
+        std::cout << "norm: " << (mat_q - expect_q).norm() << std::endl;
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+}
+
+inline void testQRSolve()
+{
     // using namespace qr;
     Mat mat_a({3,3}, {12, -51, 4, 6, 167, -68, -4, 24, -41});
     Mat expect_q({3,3}, {6./7, -69./175, -58./175, 3./7, 158./175, 6./175, -2./7, 6./35, -33./35});
@@ -128,6 +145,7 @@ inline void testLinearAlgebra()
     testOrthogonalComplement();
     testSolveLowerTriangle();
     testQRcalcMatQ();
+    testQRSolve();
 }
 
 

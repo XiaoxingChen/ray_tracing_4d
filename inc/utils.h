@@ -19,6 +19,7 @@ std::vector<Pixel> threadFunc(
     const Camera& cam,
     const HitManager& manager,
     int sample_num,
+    size_t recursion_depth,
     PixelCoordinates::const_iterator begin,
     PixelCoordinates::const_iterator end)
 {
@@ -30,7 +31,15 @@ std::vector<Pixel> threadFunc(
         auto r = cam.pixelRay(uv);
         for (int s = 0; s < sample_num; s++)
         {
-            col += trace(manager, r, 0);
+            std::vector<Ray> ray_record;
+            // col += trace(manager, r, 0, &ray_record);
+            col += trace(manager, r, recursion_depth, nullptr);
+            if(ray_record.size() >= recursion_depth - 1)
+            {
+                for(auto & ray: ray_record)
+                    std::cout << "ori: " << ray.origin().T().str() << " dir: " << ray.direction().T().str() << std::endl;
+                // exit(0);
+            }
         }
         col *= (1./float(sample_num));
         for(int i = 0; i < 3; i++) col(i) = sqrt(col(i));

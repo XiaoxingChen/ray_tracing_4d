@@ -57,6 +57,35 @@ inline HitManager simple3D_001()
     return manager;
 }
 
+inline HitManager simple3D_002()
+{
+    HitManager manager;
+
+    size_t dim = 3;
+
+    manager.addHittables(
+        RigidBody::choose(RigidBody::SPHERE, Vec({0.,-100,30}), Rotation::Identity(dim), {100}),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
+
+    Mat vertices({3,8}, {0,0,0, 1,0,0, 1,0,1, 0,0,1, 0,1,0, 1,1,0, 1,1,1, 0,1,1}, 1);
+    std::vector<std::vector<size_t>> indices({
+        {0,1,2}, {0,2,3},
+        {1,5,6}, {1,6,2},
+        {3,2,6}, {3,6,7},
+        {4,2,3}, {4,3,7},
+        {0,4,5}, {0,5,1},
+        {4,7,6}, {4,6,5}});
+
+    manager.addHittables(
+        RigidBody::createPrimitiveMesh(Vec({0, 0, 5}),
+            Rotation::fromAxisAngle(Vec({1,0,1}), 0.5),
+            // Rotation::Identity(dim),
+            vertices, indices),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.2})));
+
+    return manager;
+}
+
 inline HitManager simple4D_001()
 {
     HitManager manager;
@@ -69,7 +98,7 @@ inline HitManager simple4D_001()
         RigidBody::choose(RigidBody::SPHERE, Vec({0.,-105,0, 30}), Rotation::Identity(dim), {100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
-    Rotation rec_ori(Rotation::fromPlaneAngle(Vec({1,0,0,0}), Vec({0,0,0,1}), M_PI / 3)); 
+    Rotation rec_ori(Rotation::fromPlaneAngle(Vec({1,0,0,0}), Vec({0,0,0,1}), M_PI / 3));
     Vec rec_pos({-3, 0, 0, 15});
 
     manager.addHittables(

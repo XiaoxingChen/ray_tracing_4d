@@ -21,6 +21,7 @@ int main(int argc, char const *argv[])
     size_t ny = 480;
     size_t nz = 2;
     size_t sample_num = 5;
+    size_t recursion_depth = 10;
     size_t dim = 4;
     Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2, (FloatType)nz/2}));
     std::vector<Pixel> img;
@@ -41,7 +42,7 @@ int main(int argc, char const *argv[])
         {
             pool_results.emplace_back(
                 pool.enqueue(
-                    threadFunc, cam, manager, sample_num, ppm_coord.begin() + i,
+                    threadFunc, cam, manager, sample_num, recursion_depth, ppm_coord.begin() + i,
                     i + step_len >= ppm_coord.size() ? ppm_coord.end() : ppm_coord.begin() + i + step_len)
                 );
         }
@@ -57,7 +58,7 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        img = threadFunc(cam, manager, sample_num, ppm_coord.begin(), ppm_coord.end());
+        img = threadFunc(cam, manager, sample_num, recursion_depth, ppm_coord.begin(), ppm_coord.end());
     }
 
     writeToPPM("exercise_5_4d.ppm", nx, ny, img);

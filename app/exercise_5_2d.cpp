@@ -20,6 +20,7 @@ int main(int argc, char const *argv[])
     size_t height_repeat = 300;
     size_t dim = 2;
     size_t sample_num = 100;
+    size_t recursion_depth = 10;
     Camera cam(Vec(dim), Rotation::fromAngle(0.1), Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx/2.)));
     std::vector<Pixel> img;
 
@@ -39,7 +40,7 @@ int main(int argc, char const *argv[])
         {
             pool_results.emplace_back(
                 pool.enqueue(
-                    threadFunc, cam, manager, sample_num, ppm_coord.begin() + i,
+                    threadFunc, cam, manager, sample_num, recursion_depth, ppm_coord.begin() + i,
                     i + step_len >= ppm_coord.size() ? ppm_coord.end() : ppm_coord.begin() + i + step_len)
                 );
         }
@@ -55,7 +56,7 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        img = threadFunc(cam, manager, sample_num, ppm_coord.begin(), ppm_coord.end());
+        img = threadFunc(cam, manager, sample_num, recursion_depth, ppm_coord.begin(), ppm_coord.end());
     }
 
     decltype(img) img0(img);

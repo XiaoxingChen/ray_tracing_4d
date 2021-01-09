@@ -28,6 +28,16 @@ inline Vec intersectEquation(const Mat& primitive, const Ray& ray)
     return qr::solve(mat_a, b);
 }
 
+inline bool validIntersect(const Vec& x)
+{
+    for(size_t i = 1; i < x.size(); i++)
+    {
+        if(x(i) < 0) return false;
+    }
+    FloatType sum_k = x.norm(1) - x(0);
+    return sum_k < 1;
+}
+
 } // namespace rtc
 
 
