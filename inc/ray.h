@@ -35,6 +35,7 @@ class Ray
     Vec operator() (FloatType t) const { return origin() + direction() * t; }
     bool valid(FloatType t) const { return t < t_max_ && t > t_min_; }
     FloatType tMax() const { return t_max_; }
+    FloatType& tMax() { return t_max_; }
     FloatType tMin() const { return t_min_; }
 
     private:

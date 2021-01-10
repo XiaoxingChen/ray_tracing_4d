@@ -12,7 +12,7 @@ namespace rtc
 class Hittable
 {
     public:
-        Hittable(RigidBodyPtr&& p_rigid, MaterialPtr&& p_material):
+        Hittable(RigidBodyPtr p_rigid, MaterialPtr p_material):
             rigid_body_(p_rigid),
             material_(p_material){}
 
@@ -32,10 +32,11 @@ class Hittable
         const Material& material() const { return *material_; }
 
         struct HitRecord {
-            HitRecord(Vec attenuation_, const Ray& scattered_)
-            :attenuation(attenuation_), scattered(scattered_){}
+            HitRecord(Vec attenuation_, const Ray& scattered_, FloatType hit_t_)
+            :attenuation(attenuation_), scattered(scattered_), hit_t(hit_t_) {}
             Vec attenuation;
             Ray scattered;
+            FloatType hit_t;
         };
         using HitRecordPtr = std::shared_ptr<HitRecord>;
 
@@ -73,7 +74,8 @@ class HitManager
             }
             auto ret = std::make_shared<Hittable::HitRecord>(
                 nearest_obj->material().attenuation(),
-                nearest_obj->material().scatter(ray, nearest_hit->p, nearest_hit->n));
+                nearest_obj->material().scatter(ray, nearest_hit->p, nearest_hit->n),
+                nearest_hit->t);
             return ret;
         }
 

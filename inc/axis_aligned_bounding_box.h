@@ -20,12 +20,15 @@ class AxisAlignedBoundingBox
 
     const Vec& min() const {return min_;}
     const Vec& max() const {return max_;}
+    Vec center() const {return (min_ + max_) * 0.5;}
     bool empty() const { return min_(0) > max_(0); }
     bool clear()
     {
         min_ = Vec::ones(min_.size()) * INFINITY;
         max_ = Vec::ones(max_.size()) * (-INFINITY);
     }
+
+    std::vector<size_t> axesByLength() const { return argSort(max_ - min_); }
 
     void extend(const Mat& vertices)
     {
@@ -79,6 +82,8 @@ class AxisAlignedBoundingBox
     Vec min_;
     Vec max_;
 };
+
+using AABB = AxisAlignedBoundingBox;
 } // namespace rtc
 
 

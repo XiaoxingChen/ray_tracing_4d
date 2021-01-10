@@ -2,6 +2,7 @@
 #define _LINALG_UTILS_H
 
 #include "linalg_mat.h"
+#include <algorithm>
 
 namespace rtc
 {
@@ -53,5 +54,24 @@ inline Mat orthogonalComplement(const Mat& vs)
     throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     return Mat({1,1});
 }
+
+inline size_t argMax(const Vec& v)
+{
+    size_t idx_max(0);
+    FloatType val_max(v(0));
+    for(size_t i = 0; i < v.size(); i++)
+    {
+        if(v(i) > val_max) idx_max = i;
+    }
+    return idx_max;
+}
+
+inline std::vector<size_t> argSort(const Vec& v)
+{
+    std::vector<size_t> indices(v.size());
+    sort(indices.begin(), indices.end(),
+        [&v](size_t i1, size_t i2){ return v(i1) < v(i2); });
+}
+
 } // namespace rtc
 #endif // _LINALG_UTILS_H

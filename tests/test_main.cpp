@@ -6,6 +6,8 @@
 #include "test_random_factory.h"
 #include "test_material.h"
 #include "test_rotation.h"
+#include "test_bvh.h"
+
 
 
 
@@ -21,6 +23,7 @@ int main(int argc, char const *argv[])
   testPrimitiveGeometry();
   testRandomFactory();
   testMaterial();
+  testBuildTree();
   std::cout << "done" << std::endl;
   return 0;
 }

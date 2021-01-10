@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <string>
+#include "primitive_geometry.h"
 // #include "hittable.h"
 
 namespace rtc
@@ -46,6 +47,7 @@ class RigidBody
         };
         using HitRecordPtr = std::shared_ptr<HitRecord>;
         virtual HitRecordPtr hit(const Ray& ray) const = 0;
+        virtual Vec center() const = 0;
         virtual std::string str() const {return "";};
 
         static std::shared_ptr<RigidBody> choose(Types type, size_t dimension, const std::vector<FloatType>& args);
@@ -54,6 +56,35 @@ class RigidBody
 };
 
 using RigidBodyPtr = std::shared_ptr<RigidBody>;
+
+inline RigidBody::HitRecordPtr hitPrimitivePolygon(
+    const Ray& ray, std::shared_ptr<Mat> p_vertex_buffer, const std::vector<size_t>& indices)
+{
+    size_t dim(indices.size());
+    if(dim != ray.origin().size())
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    Mat mat_a({dim, dim});
+    for(size_t i = 0; i < dim; i++)
+    {
+        mat_a.set(Col(i), (*p_vertex_buffer)(Col(indices.at(i))));
+    }
+    Vec result = intersectEquation(mat_a, ray);
+    if(!validIntersect(result)) return nullptr;
+
+    FloatType intersection_t = result(0);
+
+    if(!ray.valid(intersection_t)) return nullptr;
+
+    Mat norm_complement(mat_a(Block({}, {1, dim})) - mat_a(Block({}, {0, dim-1})));
+
+    Vec norm = orthogonalComplement(norm_complement);
+
+    auto ret = std::make_shared<RigidBody::HitRecord>(
+        intersection_t, ray(intersection_t), norm);
+
+    return ret;
+}
 
 } // namespace rtc
 

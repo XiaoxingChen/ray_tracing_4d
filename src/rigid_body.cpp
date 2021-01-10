@@ -1,7 +1,7 @@
 #include "rigid_body.h"
 #include "rotation.h"
 #include "axis_aligned_bounding_box.h"
-#include "primitive_geometry.h"
+#include <memory>
 
 
 
@@ -33,24 +33,16 @@ namespace rtc
                 else
                     t += sqrt(radius_ * radius_ - dist * dist);
 
-                if (!ray.valid(t))
-                {
-                    // std::cout << "invalid t: " << t
-                    // << ", sqrt: " << sqrt(radius_ * radius_ - dist * dist)
-                    // << ", center_: " << center_
-                    // << ", r: " << radius_
-                    // << ", dot(): " << oc.dot(ray.direction())
-                    // << ", ray.origin(): " << ray.origin()
-                    // << ", ray.direction(): " << ray.direction()
-                    // << std::endl;
-                    return nullptr;
-                }
+                if (!ray.valid(t)) return nullptr;
                 return std::make_shared<HitRecord>(t, ray(t), ray(t) - center_);
             }
             virtual std::string str() const
             {
                 return std::string("c: ") + std::to_string(center_(0)) + ", " + std::to_string(center_(1)) + ", " + std::to_string(center_(2));
             }
+
+            virtual Vec center() const { return center_; }
+
         private:
             Vec center_;
             FloatType radius_;
@@ -80,6 +72,8 @@ namespace rtc
                 auto p_record = std::make_shared<HitRecord>();
                 FloatType hit_t = t_min_max[0];
 
+                if(! ray.valid(hit_t)) return nullptr;
+
                 FloatType min_dist = radius_(0);
                 size_t min_axis = 0;
                 Vec dist0(radius_ - moved_ray(hit_t));
@@ -100,6 +94,8 @@ namespace rtc
                 return p_record;
             }
 
+            virtual Vec center() const { return center_; }
+
         private:
             Vec center_;
             Vec radius_;
@@ -116,18 +112,19 @@ public:
         const std::vector<std::vector<size_t>>& indices)
         :position_(position), orientation_(orientation),
         vertices_global_frame_(orientation.apply(vertices)),
-        indices_(indices), aabb_(position.size())
+        indices_(indices)
+        // , aabb_(position.size())
     {
         for(size_t i = 0; i < vertices_global_frame_.shape(1); i++)
         {
             vertices_global_frame_.set(Col(i), vertices_global_frame_(Col(i)) + position_);
         }
-        aabb_.extend(vertices_global_frame_);
+        // aabb_.extend(vertices_global_frame_);
     }
 
     virtual HitRecordPtr hit(const Ray& ray) const
     {
-        if(!aabb_.hit(ray)) return nullptr;
+        // if(!aabb_.hit(ray)) return nullptr;
 
         FloatType min_t = ray.tMax();
         int closest_prim_idx = -1;
@@ -168,12 +165,40 @@ public:
         ret->n = orthogonalComplement(norm_complement);
         return ret;
     }
+
+    virtual Vec center() const { return position_; }
 private:
     Vec position_;
     Rotation orientation_;
     Mat vertices_global_frame_;
     std::vector<std::vector<size_t>> indices_;
-    AxisAlignedBoundingBox aabb_;
+    // AxisAlignedBoundingBox aabb_;
+};
+
+class PolygonPrimitive: public RigidBody
+{
+public:
+    PolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, std::vector<size_t> indices)
+        :p_vertex_buffer_(vertex_buffer), indices_(indices)
+        // , norm_(indices.size())
+        {   }
+
+    virtual HitRecordPtr hit(const Ray& ray) const
+    {
+        return hitPrimitivePolygon(ray, p_vertex_buffer_, indices_);
+    }
+
+    virtual Vec center() const
+    {
+        Vec center(indices_.size());
+        for(auto & idx : indices_) center += (*p_vertex_buffer_)(Col(idx));
+        center *= (1./ indices_.size());
+        return center;
+    }
+private:
+    std::shared_ptr<Mat> p_vertex_buffer_;
+    std::vector<size_t> indices_;
+    // UnitVec norm_;
 };
 
 #if 1
