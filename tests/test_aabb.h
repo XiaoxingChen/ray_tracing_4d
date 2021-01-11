@@ -26,4 +26,16 @@ void testAABB()
         if(box.hit(ray2))
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
+
+    {
+        AABB box(3);
+        AABB box1({0,0,0},{1,1,1});
+        AABB box2({3,3,3},{5,5,5});
+        box.extend(box1).extend(box2);
+
+        if((box.min() - Vec::zeros(3)).norm() > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        if((box.max() - 5 * Vec::ones(3)).norm() > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
 }

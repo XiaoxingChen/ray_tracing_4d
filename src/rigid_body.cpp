@@ -41,7 +41,11 @@ namespace rtc
                 return std::string("c: ") + std::to_string(center_(0)) + ", " + std::to_string(center_(1)) + ", " + std::to_string(center_(2));
             }
 
-            virtual Vec center() const { return center_; }
+            // virtual Vec center() const { return center_; }
+            virtual operator AABB () const
+            {
+                return AABB(center_ - radius_, center_ + radius_);
+            }
 
         private:
             Vec center_;
@@ -94,7 +98,25 @@ namespace rtc
                 return p_record;
             }
 
-            virtual Vec center() const { return center_; }
+            // virtual Vec center() const { return center_; }
+            virtual operator AABB () const
+            {
+                size_t dim(center_.size());
+                Mat vertices((center_ - radius_).matmul(Vec::ones(1 << dim).T()));
+                for(size_t i = 0; i < dim; i++)
+                {
+                    for(size_t j = 0; j < vertices.shape(1); j++)
+                    {
+                        if(j & (1 << i) > 0)
+                            vertices(i, j) += (2 * radius_(i));
+                    }
+                }
+                vertices = orientation_.apply(vertices);
+
+                AABB box(dim, dim);
+                box.extend(vertices);
+                return box;
+            }
 
         private:
             Vec center_;
@@ -166,7 +188,13 @@ public:
         return ret;
     }
 
-    virtual Vec center() const { return position_; }
+    // virtual Vec center() const { return position_; }
+    virtual operator AABB () const
+    {
+        AABB box(position_.size());
+        box.extend(vertices_global_frame_);
+        return box;
+    }
 private:
     Vec position_;
     Rotation orientation_;
@@ -188,12 +216,23 @@ public:
         return hitPrimitivePolygon(ray, p_vertex_buffer_, indices_);
     }
 
-    virtual Vec center() const
+    size_t dim() const { return indices_.size(); }
+
+    // virtual Vec center() const
+    // {
+    //     Vec center(indices_.size());
+    //     for(auto & idx : indices_) center += (*p_vertex_buffer_)(Col(idx));
+    //     center *= (1./ indices_.size());
+    //     return center;
+    // }
+    virtual operator AABB () const
     {
-        Vec center(indices_.size());
-        for(auto & idx : indices_) center += (*p_vertex_buffer_)(Col(idx));
-        center *= (1./ indices_.size());
-        return center;
+        AABB box(dim());
+        for(auto & idx: indices_)
+        {
+            box.extend((*p_vertex_buffer_)(Col(idx)));
+        }
+        return box;
     }
 private:
     std::shared_ptr<Mat> p_vertex_buffer_;
@@ -244,6 +283,13 @@ private:
     RigidBodyPtr RigidBody::createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& vertices, const std::vector<std::vector<size_t>>& indices)
     {
         return std::make_shared<PrimitiveMesh>(position, orientation, vertices, indices);
+    }
+
+    RigidBodyPtr RigidBody::createPolygonPrimitive(
+        std::shared_ptr<Mat> vertex_buffer,
+        const std::vector<size_t>& indices )
+    {
+        return std::make_shared<PolygonPrimitive>(vertex_buffer, indices);
     }
 
 } // namespace rtc

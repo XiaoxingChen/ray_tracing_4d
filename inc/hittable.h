@@ -5,9 +5,16 @@
 #include <vector>
 #include "material.h"
 #include "rigid_body.h"
+// #include "bounding_volume_hierarchy.h"
+
 
 namespace rtc
 {
+namespace bvh
+{
+    class Node;
+} // namespace bvh
+
 
 class Hittable
 {
@@ -27,6 +34,11 @@ class Hittable
         // Hittable():
         //     rigid_body_(RigidBody::choose(RigidBody::SPHERE)),
         //     material_(Material::choose(Material::METAL)){}
+        void operator = (const Hittable& rhs)
+        {
+            rigid_body_ = rhs.rigid_body_;
+            material_ = rhs.material_;
+        }
 
         const RigidBody& rigidBody() const { return *rigid_body_; }
         const Material& material() const { return *material_; }
@@ -52,7 +64,8 @@ class HitManager
 {
     public:
 
-        Hittable::HitRecordPtr hit(const Ray& ray) const
+        // virtual Hittable::HitRecordPtr hit(Ray& ray) const {};
+        virtual Hittable::HitRecordPtr hit(Ray& ray) const
         {
             RigidBody::HitRecordPtr nearest_hit = nullptr;
             const Hittable* nearest_obj = nullptr;
@@ -88,6 +101,9 @@ class HitManager
         // std::vector<HittablePtr> hittables_;
         std::vector<Hittable> hittables_;
 };
+
+using HittableBuffer = std::vector<Hittable>;
+using HittableBufferPtr = std::shared_ptr<HittableBuffer>;
 
 } //namespace rtc
 

@@ -16,7 +16,7 @@ inline Pixel skyBox(const Ray& ray)
         (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.}));
 }
 
-inline Pixel trace(const HitManager& manager, const Ray& ray, int depth, std::vector<Ray>* ray_record=nullptr)
+inline Pixel trace(const HitManager& manager, Ray& ray, int depth, std::vector<Ray>* ray_record=nullptr)
 {
     auto p_record = manager.hit(ray);
 
@@ -27,9 +27,9 @@ inline Pixel trace(const HitManager& manager, const Ray& ray, int depth, std::ve
         // std::cout << "hit!" << std::endl;
         if (depth > 0)
         {
-
+            auto new_ray = p_record->scattered;
             return static_cast<Vec>(
-                p_record->attenuation * trace(manager, p_record->scattered, depth - 1, ray_record));
+                p_record->attenuation * trace(manager, new_ray, depth - 1, ray_record));
 
         }
         else {

@@ -21,12 +21,12 @@ int main(int argc, char const *argv[])
     size_t ny = 480;
     // size_t nx = 320;
     // size_t ny = 240;
-    size_t sample_num = 5;
-    size_t recursion_depth = 10;
+    size_t sample_num = 20;
+    size_t recursion_depth = 15;
     Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2}));
     std::vector<Pixel> img;
 
-    auto manager = rtc::scene::simple3D_002();
+    auto manager = rtc::scene::simple3D_003();
 
     bool multi_process = 1;
     auto ppm_coord = PPMCoordinateSequence(nx, ny);

@@ -32,8 +32,9 @@ std::vector<Pixel> threadFunc(
         for (int s = 0; s < sample_num; s++)
         {
             std::vector<Ray> ray_record;
+            Ray input_ray(r);
             // col += trace(manager, r, 0, &ray_record);
-            col += trace(manager, r, recursion_depth, nullptr);
+            col += trace(manager, input_ray, recursion_depth, nullptr);
             if(ray_record.size() >= recursion_depth - 1)
             {
                 for(auto & ray: ray_record)

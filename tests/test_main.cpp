@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
   testPrimitiveGeometry();
   testRandomFactory();
   testMaterial();
-  testBuildTree();
+  testBvh();
   std::cout << "done" << std::endl;
   return 0;
 }

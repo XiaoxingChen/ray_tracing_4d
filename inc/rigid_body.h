@@ -12,6 +12,9 @@ namespace rtc
 {
 
 // class HitRecordPtr;
+class AxisAlignedBoundingBox;
+class RigidBody;
+using RigidBodyPtr = std::shared_ptr<RigidBody>;
 class RigidBody
 {
     public:
@@ -47,15 +50,15 @@ class RigidBody
         };
         using HitRecordPtr = std::shared_ptr<HitRecord>;
         virtual HitRecordPtr hit(const Ray& ray) const = 0;
-        virtual Vec center() const = 0;
+        // virtual Vec center() const = 0;
         virtual std::string str() const {return "";};
+        virtual operator AxisAlignedBoundingBox () const = 0;
 
-        static std::shared_ptr<RigidBody> choose(Types type, size_t dimension, const std::vector<FloatType>& args);
-        static std::shared_ptr<RigidBody> choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);
-        static std::shared_ptr<RigidBody> createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& primitives, const std::vector<std::vector<size_t>>& indices);
+        static RigidBodyPtr choose(Types type, size_t dimension, const std::vector<FloatType>& args);
+        static RigidBodyPtr choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);
+        static RigidBodyPtr createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& primitives, const std::vector<std::vector<size_t>>& indices);
+        static RigidBodyPtr createPolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, const std::vector<size_t>& indices );
 };
-
-using RigidBodyPtr = std::shared_ptr<RigidBody>;
 
 inline RigidBody::HitRecordPtr hitPrimitivePolygon(
     const Ray& ray, std::shared_ptr<Mat> p_vertex_buffer, const std::vector<size_t>& indices)

@@ -18,19 +18,23 @@ class AxisAlignedBoundingBox
     AxisAlignedBoundingBox(size_t dim):
         min_(dim), max_(dim) { clear(); }
 
+    using ThisType = AxisAlignedBoundingBox;
+
     const Vec& min() const {return min_;}
     const Vec& max() const {return max_;}
     Vec center() const {return (min_ + max_) * 0.5;}
+    FloatType center(size_t i) const {return (min_(i) + max_(i)) * 0.5;}
     bool empty() const { return min_(0) > max_(0); }
     bool clear()
     {
         min_ = Vec::ones(min_.size()) * INFINITY;
         max_ = Vec::ones(max_.size()) * (-INFINITY);
     }
+    size_t dim() const { return min_.size(); }
 
     std::vector<size_t> axesByLength() const { return argSort(max_ - min_); }
 
-    void extend(const Mat& vertices)
+    ThisType& extend(const Mat& vertices)
     {
         if(vertices.shape(0) != min_.size())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -43,6 +47,14 @@ class AxisAlignedBoundingBox
                 if(vertices(i, j) < min_(i)) min_(i) = vertices(i, j);
             }
         }
+        return *this;
+    }
+
+    ThisType& extend(const ThisType& others)
+    {
+        extend(others.min());
+        extend(others.max());
+        return *this;
     }
 
     void checkDimension(const char* file, uint32_t line) const
@@ -55,7 +67,10 @@ class AxisAlignedBoundingBox
     {
         if(empty()) return false;
         auto min_max = AxisAlignedBoundingBox::hit(ray, min_, max_);
-        return min_max[0] < min_max[1];
+        // if (min_max[0] < ray.tMin()) return false;
+        if (min_max[1] < min_max[0]) return false;
+        if (ray.tMax() < min_max[1]) return false;
+        return true;
     }
 
     static std::array<FloatType, 2> hit(const Ray& ray, const Vec& vertex_min, const Vec& vertex_max)
