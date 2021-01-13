@@ -41,6 +41,13 @@ public:
         return *this;
     }
     Rotation& orientation() { return orientation_; }
+    std::vector<size_t> resolution() const
+    {
+        std::vector<size_t> res;
+        for(size_t i = 0; i < c_.size(); i++)
+            res.push_back( static_cast<size_t>(2 * c_(i) + 0.5) );
+        return res;
+    }
 
 private:
     const Camera& checkDimension() const

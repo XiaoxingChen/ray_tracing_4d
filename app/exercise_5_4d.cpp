@@ -42,7 +42,7 @@ int main(int argc, char const *argv[])
         {
             pool_results.emplace_back(
                 pool.enqueue(
-                    threadFunc, cam, manager, sample_num, recursion_depth, ppm_coord.begin() + i,
+                    threadFunc, cam, &manager, sample_num, recursion_depth, ppm_coord.begin() + i,
                     i + step_len >= ppm_coord.size() ? ppm_coord.end() : ppm_coord.begin() + i + step_len)
                 );
         }
@@ -58,7 +58,7 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        img = threadFunc(cam, manager, sample_num, recursion_depth, ppm_coord.begin(), ppm_coord.end());
+        img = threadFunc(cam, &manager, sample_num, recursion_depth, ppm_coord.begin(), ppm_coord.end());
     }
 
     writeToPPM("exercise_5_4d.ppm", nx, ny, img);

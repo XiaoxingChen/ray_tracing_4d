@@ -104,6 +104,7 @@ class HitManager
 
 using HittableBuffer = std::vector<Hittable>;
 using HittableBufferPtr = std::shared_ptr<HittableBuffer>;
+using HitManagerPtr = HitManager*;
 
 } //namespace rtc
 
