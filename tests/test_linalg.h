@@ -118,16 +118,17 @@ inline void testQRSolve()
     }
 }
 
+inline Mat testMatRefTransposeReturn(size_t dim)
+{
+    return Mat::Identity(dim).T();
+}
+
 inline void testMatRef()
 {
     {
-        // Mat tf(Mat::Identity(4));
-        // std::vector<FloatType> data(16);
-        // MatRef rot({3,3}, tf, {1,1}, tf.majorAxis(), &data);
-        // rot = Mat::ones({3,3});
-        // rot += Mat::ones({3,3});
-        // for(auto & d : data) std::cout << d << " ";
-        // std::cout << std::endl;
+        auto mat = testMatRefTransposeReturn(3);
+        if(mat(0,0) != 1.f)
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
     // {
@@ -159,11 +160,12 @@ inline void testLinearAlgebra()
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
     testPixel();
+    testMatRef();
     testOrthogonalComplement();
     testSolveLowerTriangle();
     testQRcalcMatQ();
     testQRSolve();
-    testMatRef();
+
 }
 
 

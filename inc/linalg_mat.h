@@ -13,13 +13,7 @@
 namespace rtc
 {
 
-inline size_t indexConvert2D(size_t i, size_t j, bool row_major, size_t shape_i, size_t shape_j)
-{
-    if(row_major)
-        return (i * shape_j + j);
-    else
-        return (j * shape_i + i);
-}
+size_t indexConvert2D(size_t i, size_t j, bool major, size_t shape_i, size_t shape_j);
 
 class Vec;
 class Block;
@@ -51,6 +45,9 @@ public:
         data_ = data;
     }
 
+    Mat(const Mat& rhs)
+        :shape_(rhs.shape()), data_(*rhs.dataVectorPtr()), major_(rhs.majorAxis()) {}
+
     virtual void operator = (const Mat& rhs)
     {
         if(this->shape() == Shape{0,0})
@@ -74,13 +71,13 @@ public:
     virtual FloatType& operator () (size_t i, size_t j)
     {
         return data_.at(
-            indexConvert2D(i,j,majorAxis() == ROW, shape(0), shape(1)));
+            indexConvert2D(i,j,majorAxis(), shape(0), shape(1)));
     }
 
     virtual const FloatType& operator () (size_t i, size_t j) const
     {
         return data_.at(
-            indexConvert2D(i,j,majorAxis() == ROW, shape(0), shape(1)));
+            indexConvert2D(i,j,majorAxis(), shape(0), shape(1)));
     }
 
     template<typename Op>
@@ -161,7 +158,7 @@ public:
 
     Mat normalized() const { return Mat(*this).normalize(); }
 
-#if 1
+#if 0
     Mat T() const
     {
         Mat ret({shape(1), shape(0)}, data_);
@@ -169,8 +166,10 @@ public:
         return ret;
     }
 #else
-    ConstMatRef T() const;
-    MatRef T();
+    virtual ConstMatRef T() const;
+    virtual MatRef T();
+    // Mat(ConstMatRef rhs);
+    // Mat(MatRef rhs);
 #endif
 
     Mat dot(const Mat& rhs) const { return matmul(rhs); }
@@ -236,6 +235,8 @@ public:
     Mat& set(const Block& s, const Mat& rhs);
 
 protected:
+    virtual std::vector<FloatType>* dataVectorPtr() { return &data_; }
+    virtual const std::vector<FloatType>* dataVectorPtr() const { return &data_; }
 #if 1
     Mat block_(
         const std::array<size_t, 2>& row,
@@ -270,6 +271,13 @@ inline Mat operator + (FloatType lhs, const Mat& rhs) { return rhs + lhs;}
 inline Mat operator - (FloatType lhs, const Mat& rhs) { return -rhs + lhs;}
 inline Mat operator * (FloatType lhs, const Mat& rhs) { return rhs * lhs;}
 
+inline size_t indexConvert2D(size_t i, size_t j, bool major, size_t shape_i, size_t shape_j)
+{
+    if(major == Mat::ROW)
+        return (i * shape_j + j);
+    else
+        return (j * shape_i + i);
+}
 
 } // namespace rtc
 

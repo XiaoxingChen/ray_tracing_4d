@@ -45,7 +45,7 @@ public:
         owner_shape_(owner_shape),
         owner_major_(owner_major),
         ref_offset_(offset) { shape_ = shape; }
-
+    bool ownerMajor() const { return owner_major_; }
 protected:
 
     Shape owner_shape_;
@@ -57,6 +57,7 @@ class ConstMatRef: public MatRefBase
 {
 public:
     using ConstDataPtr = const std::vector<FloatType>*;
+    using ThisType = ConstMatRef;
     ConstMatRef(
         const Shape& shape, const Shape& owner_shape, bool major, bool owner_major, const Shape& offset, ConstDataPtr p_data)
         :MatRefBase(shape, owner_shape, major, owner_major, offset),
@@ -67,7 +68,14 @@ public:
         return accessOwnerData(i, j, owner_major_, majorAxis(), ref_offset_, owner_shape_, p_owner_data_);
     }
 
-    operator Mat () const { return Mat(shape(), *p_owner_data_); }
+    // virtual ThisType T() const
+    // {
+
+    // }
+
+    // operator Mat () const { return Mat(shape(), *p_owner_data_); }
+
+    virtual const std::vector<FloatType>* dataVectorPtr() const override { return p_owner_data_; }
 
 protected:
     ConstDataPtr p_owner_data_;
@@ -100,7 +108,11 @@ public:
         return ConstMatRef(shape(), owner_shape_, majorAxis(), owner_major_, {0,0}, &this->data_);
     }
 
-    operator Mat () const { return Mat(shape(), *p_owner_data_); }
+    // operator Mat () const { return Mat(shape(), *p_owner_data_); }
+
+    virtual std::vector<FloatType>* dataVectorPtr() override { return p_owner_data_; }
+    virtual const std::vector<FloatType>* dataVectorPtr() const override { return p_owner_data_; }
+
 protected:
     DataPtr p_owner_data_;
 };
@@ -109,19 +121,24 @@ protected:
 // {
 //     return MatRef({shape(1), shape(0)}, *this, {0,0}, rowMajor(), &this->data_);
 // }
+
+// inline Mat::Mat(ConstMatRef rhs):shape_(rhs.shape()),data_(*rhs.dataVectorPtr()), major_(rhs.ownerMajor()){}
+// inline Mat::Mat(MatRef rhs):shape_(rhs.shape()),data_(*rhs.dataVectorPtr()), major_(rhs.ownerMajor()){}
+
+
 inline ConstMatRef Mat::T() const
 {
     return ConstMatRef(
         {shape(1), shape(0)}, shape(),
         !majorAxis(), majorAxis(),
-        {0,0}, &this->data_);
+        {0,0}, dataVectorPtr());
 }
 inline MatRef Mat::T()
 {
     return MatRef(
         {shape(1), shape(0)}, shape(),
         !majorAxis(), majorAxis(),
-        {0,0}, &this->data_);
+        {0,0}, dataVectorPtr());
 }
 } // namespace rtc
 
