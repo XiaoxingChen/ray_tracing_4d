@@ -25,7 +25,7 @@ class AxisAlignedBoundingBox
     Vec center() const {return (min_ + max_) * 0.5;}
     FloatType center(size_t i) const {return (min_(i) + max_(i)) * 0.5;}
     bool empty() const { return min_(0) > max_(0); }
-    bool clear()
+    void clear()
     {
         min_ = Vec::ones(min_.size()) * INFINITY;
         max_ = Vec::ones(max_.size()) * (-INFINITY);

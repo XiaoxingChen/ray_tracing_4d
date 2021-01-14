@@ -59,14 +59,14 @@ public:
     };
     RenderSample(size_t dim): cam_(dim){}
     using ThisType = RenderSample;
-    ThisType& setCamera(const Camera& cam) { cam_ = cam; }
-    ThisType& setSampleNum(size_t n) { sample_num_ = n; }
-    ThisType& setRecursionDepth(size_t n) { recursion_depth_ = n; }
-    ThisType& setMode(Mode mode) { mode_ = mode; }
-    ThisType& setOutputFilename(const std::string& filename) { output_filename_ = filename; }
-    ThisType& setScene(HitManagerPtr scene) { scene_ = scene; }
-    ThisType& setTargetPixel(const std::vector<size_t>& px) { target_pixel_ = px; }
-    ThisType& enableRayStack(bool enable) { enable_ray_stack_ = enable; }
+    ThisType& setCamera(const Camera& cam) { cam_ = cam; return *this; }
+    ThisType& setSampleNum(size_t n) { sample_num_ = n; return *this; }
+    ThisType& setRecursionDepth(size_t n) { recursion_depth_ = n; return *this; }
+    ThisType& setMode(Mode mode) { mode_ = mode; return *this; }
+    ThisType& setOutputFilename(const std::string& filename) { output_filename_ = filename; return *this; }
+    ThisType& setScene(HitManagerPtr scene) { scene_ = scene; return *this; }
+    ThisType& setTargetPixel(const std::vector<size_t>& px) { target_pixel_ = px; return *this; }
+    ThisType& enableRayStack(bool enable) { enable_ray_stack_ = enable; return *this; }
 
 
     void run()

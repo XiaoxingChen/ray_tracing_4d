@@ -73,7 +73,7 @@ namespace rtc
                 bool hit = (t_min_max[0] < t_min_max[1]) && (0 < t_min_max[0]);
                 if(!hit) return nullptr;
 
-                auto p_record = std::make_shared<HitRecord>();
+                auto p_record = std::make_shared<HitRecord>(ray.origin().size());
                 FloatType hit_t = t_min_max[0];
 
                 if(! ray.valid(hit_t)) return nullptr;

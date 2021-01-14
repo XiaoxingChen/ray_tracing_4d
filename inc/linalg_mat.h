@@ -24,20 +24,23 @@ inline size_t indexConvert2D(size_t i, size_t j, bool row_major, size_t shape_i,
 class Vec;
 class Block;
 class MatRef;
+class ConstMatRef;
 class Mat
 {
 public:
     using Shape = std::array<size_t, 2>;
+    static const bool ROW = 0;
+    static const bool COL = 1;
 
     virtual size_t shape(uint8_t i) const {return shape_.at(i);}
     virtual const Shape& shape() const {return shape_;}
     // const Shape shape;
     bool square() const {return shape(0) == shape(1);}
-    bool rowMajor() const {return row_major_;}
-    bool& rowMajor() {return row_major_;}
+    bool majorAxis() const {return major_;}
+    bool& majorAxis() {return major_;}
 
-    Mat(const Shape& _shape, const std::vector<FloatType>& data={}, bool col_major=false)
-        :shape_(_shape), data_(_shape[0] * _shape[1], 0), row_major_(!col_major)
+    Mat(const Shape& _shape, const std::vector<FloatType>& data={}, bool major=ROW)
+        :shape_(_shape), data_(_shape[0] * _shape[1], 0), major_(major)
     {
         if(data.size() == 0)
         {
@@ -48,7 +51,14 @@ public:
         data_ = data;
     }
 
-    // Mat(Mat && mat): shape(mat.shape), data_(std::move(mat.data_)), row_major_(mat.row_major_){}
+    virtual void operator = (const Mat& rhs)
+    {
+        if(this->shape() == Shape{0,0})
+            shape_ = rhs.shape();
+        opEqual(rhs, [](const FloatType& a, const FloatType& b) {return b;});
+    }
+
+    // Mat(Mat && mat): shape(mat.shape), data_(std::move(mat.data_)), major_(mat.major_){}
 
     static Mat zeros(const Shape& _shape) { return Mat(_shape); }
 
@@ -64,13 +74,13 @@ public:
     virtual FloatType& operator () (size_t i, size_t j)
     {
         return data_.at(
-            indexConvert2D(i,j,rowMajor(), shape(0), shape(1)));
+            indexConvert2D(i,j,majorAxis() == ROW, shape(0), shape(1)));
     }
 
     virtual const FloatType& operator () (size_t i, size_t j) const
     {
         return data_.at(
-            indexConvert2D(i,j,rowMajor(), shape(0), shape(1)));
+            indexConvert2D(i,j,majorAxis() == ROW, shape(0), shape(1)));
     }
 
     template<typename Op>
@@ -81,8 +91,13 @@ public:
     {
         if(this->shape() != rhs.shape())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        for(int i = 0; i < data_.size(); i++)
-            data_.at(i) = f(data_.at(i), rhs.data_.at(i));
+        for(size_t i = 0; i < shape(0); i++)
+        {
+            for(size_t j = 0; j < shape(1); j++)
+            {
+                (*this)(i,j) = f((*this)(i,j), rhs(i,j));
+            }
+        }
         return *this;
     }
 
@@ -139,22 +154,24 @@ public:
         {
             return *this;
         }
-        for(auto & v : data_) v /= n;
+        // for(auto & v : data_) v /= n;
+        (*this) *= (1./n);
         return *this;
     }
 
     Mat normalized() const { return Mat(*this).normalize(); }
 
-// #if 0
+#if 1
     Mat T() const
     {
         Mat ret({shape(1), shape(0)}, data_);
-        ret.rowMajor() = !this->rowMajor();
+        ret.majorAxis() = !this->majorAxis();
         return ret;
     }
-// #else
+#else
+    ConstMatRef T() const;
     MatRef T();
-// #endif
+#endif
 
     Mat dot(const Mat& rhs) const { return matmul(rhs); }
 
@@ -219,6 +236,7 @@ public:
     Mat& set(const Block& s, const Mat& rhs);
 
 protected:
+#if 1
     Mat block_(
         const std::array<size_t, 2>& row,
         const std::array<size_t, 2>& col) const
@@ -233,11 +251,19 @@ protected:
         }
         return ret;
     }
+#else
+    ConstMatRef block_(
+        const std::array<size_t, 2>& row,
+        const std::array<size_t, 2>& col) const;
 
+    MatRef block_(
+        const std::array<size_t, 2>& row,
+        const std::array<size_t, 2>& col);
+#endif
 protected:
     Shape shape_;
     std::vector<FloatType> data_;
-    bool row_major_;
+    bool major_;
 };
 
 inline Mat operator + (FloatType lhs, const Mat& rhs) { return rhs + lhs;}

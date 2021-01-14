@@ -71,6 +71,7 @@ inline std::vector<size_t> argSort(const Vec& v)
     std::vector<size_t> indices(v.size());
     sort(indices.begin(), indices.end(),
         [&v](size_t i1, size_t i2){ return v(i1) < v(i2); });
+    return indices;
 }
 
 } // namespace rtc

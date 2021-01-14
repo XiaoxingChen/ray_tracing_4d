@@ -118,6 +118,23 @@ inline void testQRSolve()
     }
 }
 
+inline void testMatRef()
+{
+    {
+        // Mat tf(Mat::Identity(4));
+        // std::vector<FloatType> data(16);
+        // MatRef rot({3,3}, tf, {1,1}, tf.majorAxis(), &data);
+        // rot = Mat::ones({3,3});
+        // rot += Mat::ones({3,3});
+        // for(auto & d : data) std::cout << d << " ";
+        // std::cout << std::endl;
+    }
+
+    // {
+    //     Mat tf(Mat::Identity(4));
+    //     tf
+    // }
+}
 
 inline void testLinearAlgebra()
 {
@@ -146,6 +163,7 @@ inline void testLinearAlgebra()
     testSolveLowerTriangle();
     testQRcalcMatQ();
     testQRSolve();
+    testMatRef();
 }
 
 
