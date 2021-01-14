@@ -13,18 +13,28 @@
 namespace rtc
 {
 
+inline size_t indexConvert2D(size_t i, size_t j, bool row_major, size_t shape_i, size_t shape_j)
+{
+    if(row_major)
+        return (i * shape_j + j);
+    else
+        return (j * shape_i + i);
+}
+
 class Vec;
 class Block;
+class MatRef;
 class Mat
 {
 public:
     using Shape = std::array<size_t, 2>;
 
-    size_t shape(uint8_t i) const {return shape_.at(i);}
-    const Shape& shape() const {return shape_;}
+    virtual size_t shape(uint8_t i) const {return shape_.at(i);}
+    virtual const Shape& shape() const {return shape_;}
     // const Shape shape;
     bool square() const {return shape(0) == shape(1);}
     bool rowMajor() const {return row_major_;}
+    bool& rowMajor() {return row_major_;}
 
     Mat(const Shape& _shape, const std::vector<FloatType>& data={}, bool col_major=false)
         :shape_(_shape), data_(_shape[0] * _shape[1], 0), row_major_(!col_major)
@@ -51,20 +61,16 @@ public:
         return mat;
     }
 
-    FloatType& operator () (size_t i, size_t j)
+    virtual FloatType& operator () (size_t i, size_t j)
     {
-        if(row_major_)
-            return data_.at(i * shape(1) + j);
-        else
-            return data_.at(j * shape(0) + i);
+        return data_.at(
+            indexConvert2D(i,j,rowMajor(), shape(0), shape(1)));
     }
 
-    const FloatType& operator () (size_t i, size_t j) const
+    virtual const FloatType& operator () (size_t i, size_t j) const
     {
-        if(row_major_)
-            return data_.at(i * shape(1) + j);
-        else
-            return data_.at(j * shape(0) + i);
+        return data_.at(
+            indexConvert2D(i,j,rowMajor(), shape(0), shape(1)));
     }
 
     template<typename Op>
@@ -73,7 +79,7 @@ public:
     template<typename Op>
     Mat& opEqual(const Mat& rhs, Op f)
     {
-        if(shape_ != rhs.shape_)
+        if(this->shape() != rhs.shape())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
         for(int i = 0; i < data_.size(); i++)
             data_.at(i) = f(data_.at(i), rhs.data_.at(i));
@@ -139,12 +145,16 @@ public:
 
     Mat normalized() const { return Mat(*this).normalize(); }
 
+// #if 0
     Mat T() const
     {
         Mat ret({shape(1), shape(0)}, data_);
-        ret.row_major_ = !row_major_;
+        ret.rowMajor() = !this->rowMajor();
         return ret;
     }
+// #else
+    MatRef T();
+// #endif
 
     Mat dot(const Mat& rhs) const { return matmul(rhs); }
 
