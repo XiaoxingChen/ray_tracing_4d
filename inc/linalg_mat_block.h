@@ -25,13 +25,6 @@ public:
 protected:
     std::array<size_t, 4> row01_col01_;
 };
-#if 0
-inline Mat Mat::operator ()(const Block& s) const
-{
-    auto row01_col01 = s.getBlock(*this);
-    return Mat::block_({row01_col01[0], row01_col01[1]},{row01_col01[2], row01_col01[3]});
-}
-#endif
 
 inline Mat& Mat::set(const Block& s, const Mat& rhs)
 {

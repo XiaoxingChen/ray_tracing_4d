@@ -10,7 +10,7 @@ namespace rtc
 inline std::array<size_t,2> indexBlockToMat(size_t i, size_t j, size_t offset_i, size_t offset_j, bool same_major)
 {
     if(same_major) return std::array<size_t,2>{i + offset_i, j + offset_j};
-    return std::array<size_t,2>{j + offset_i, i + offset_j};
+    return std::array<size_t,2>{j + offset_j, i + offset_i};
 }
 
 class MatRef: public Mat
@@ -48,19 +48,16 @@ public:
             indexConvert2D(ref_ij[0], ref_ij[1], owner_major_, owner_shape_[0], owner_shape_[1]));
     }
 
-    virtual FloatType& operator () (size_t i, size_t j)
-    {
-        static FloatType dummy(666);
-        if(!dataVectorPtr()) return dummy;
-        return const_cast<FloatType&>(
-            static_cast<const ThisType&>(*this)(i,j));
-    }
+    virtual FloatType& operator () (size_t i, size_t j) { return const_cast<FloatType&>(static_cast<const ThisType&>(*this)(i,j)); }
+
+    //
+    // All overloaded operators except assignment (operator=)
+    // are inherited by derived classes.
     virtual void operator = (const Mat& rhs)
     {
-        traverse([&](size_t i, size_t j)
-            {
-                (*this)(i,j) = rhs(i,j);
-            });
+        if(shape() != rhs.shape())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        traverse([&](size_t i, size_t j) { (*this)(i,j) = rhs(i,j); });
     }
 
 protected:
@@ -102,6 +99,14 @@ inline const MatRef Mat::operator () (const Block& s) const
 inline MatRef Mat::operator () (const Block& s)
 {
     return static_cast<const Mat&>(*this)(s);
+}
+#endif
+
+#if 0
+inline Mat::Mat(const MatRef& rhs)
+    :shape_(rhs.shape()),data_(rhs.shape(0) * rhs.shape(1)),major_(rhs.majorAxis())
+{
+    (*this) = rhs;
 }
 #endif
 

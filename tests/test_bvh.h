@@ -17,8 +17,8 @@ inline std::shared_ptr<Mat> createTriangleBand(
     for(size_t n = 0; n < half_n; n++)
     {
         size_t i = 2*n;
-        vertices.set(Col(i), Vec({static_cast<FloatType>(i), 0, 0}));
-        vertices.set(Col(i + 1), Vec({static_cast<FloatType>(i), 1, 0}));
+        vertices(Col(i)) = Vec({static_cast<FloatType>(i), 0, 0});
+        vertices(Col(i + 1)) = Vec({static_cast<FloatType>(i), 1, 0});
 
         if(i < half_n - 1)
         {

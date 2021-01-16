@@ -57,17 +57,17 @@ inline Mat calcMatQ(const Mat& mat)
     for(size_t i = 0; i < mat.shape(0); i++)
     {
         Vec a_i(mat(Col(i)));
-        mat_u.set(Col(i), a_i);
+        mat_u(Col(i)) = a_i;
         for(size_t j = 0; j < i; j++)
         {
             Vec proj(project(mat_u(Col(j)), a_i));
-            mat_u.set(Col(i), mat_u(Col(i)) - proj);
+            mat_u(Col(i)) = mat_u(Col(i)) - proj;
         }
         // mat_u.set(Col(i), static_cast<UnitVec>(mat_u(Col(i))));
     }
     for(size_t i = 0; i < mat.shape(0); i++)
     {
-        mat_u.set(Col(i), mat_u(Col(i)).normalized());
+        mat_u(Col(i)) = mat_u(Col(i)).normalized();
     }
 
     return mat_u;
@@ -89,6 +89,22 @@ inline Vec solve(const Mat& mat_a, const Vec& b)
 }
 } // namespace qr
 
+inline FloatType Mat::det() const
+{
+    if(square() && shape(0) == 2)
+        return (*this)(0,0) * (*this)(1,1) - (*this)(1,0)*(*this)(0,1);
+
+    Mat mat_q(qr::calcMatQ(*this));
+
+    // check full rank
+    if((mat_q.matmul(mat_q)).trace() - shape(0) > eps())
+        return 0.;
+
+    Mat mat_r(mat_q.T().matmul(*this));
+    FloatType det(1);
+    for(size_t i = 0; i < shape(0); i++) det *= mat_r(i,i);
+    return det;
+}
 
 } // namespace rtc
 

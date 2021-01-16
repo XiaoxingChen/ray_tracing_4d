@@ -39,7 +39,7 @@ inline void testOrthogonalComplement()
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
-    {
+    if(0){
         Mat in({1,3},{1,0,0});
         Mat complement = orthogonalComplement(in);
         Vec out1 = complement(Row(0));
@@ -165,6 +165,9 @@ inline void testLinearAlgebra()
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
     if((u1 - v1 * sqrt(1./3)).norm() > eps())
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    if(fabs(Mat::Identity(3).det() - 1.) > eps())
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
     testPixel();

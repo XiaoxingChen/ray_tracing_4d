@@ -40,9 +40,8 @@ public:
         return sum;
     }
 
-    static Mat zeros(size_t n) { return Vec(n); }
-
-    static Mat ones(size_t n) { return Vec(n) + 1; }
+    static Vec zeros(size_t n) { return Vec(n); }
+    static Vec ones(size_t n) { return Vec(n) + 1; }
 
     operator std::vector<FloatType> () const
     {

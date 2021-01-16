@@ -37,10 +37,25 @@ inline void rotationTestCase2()
     }
 }
 
+inline void rotationTestDeterminant()
+{
+    for(size_t i = 0; i < 10; i++)
+    {
+        Rotation r(Rotation::fromAxisAngle(UnitVec({1.,1,1}), 0.1 * i));
+        if(fabs(r.asMatrix().det() - 1) > 4 * eps())
+        {
+            std::cout << r.asMatrix().det() - 1 << std::endl;
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        }
+
+    }
+}
+
 inline void testRotation()
 {
     rotationTestCase1();
     rotationTestCase2();
+    rotationTestDeterminant();
 }
 
 #endif // _TEST_ROTATION_H_
