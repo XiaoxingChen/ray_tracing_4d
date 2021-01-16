@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
     size_t sample_num = 5;
     size_t recursion_depth = 10;
     size_t dim = 4;
-    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 500}), Vec({(FloatType)nx/2, (FloatType)ny/2, (FloatType)nz/2}));
+    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 500}), Vec({(FloatType)nx, (FloatType)ny, (FloatType)nz}));
     std::vector<Pixel> img;
 
     auto manager = rtc::scene::simple4D_001();

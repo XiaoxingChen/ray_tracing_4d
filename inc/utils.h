@@ -57,7 +57,7 @@ public:
         eMULTITHREADING,
         eSINGLE_RAY
     };
-    RenderSample(size_t dim): cam_(dim){}
+    RenderSample(size_t dim): cam_(dim), test_ray_(dim){}
     using ThisType = RenderSample;
     ThisType& setCamera(const Camera& cam) { cam_ = cam; return *this; }
     ThisType& setSampleNum(size_t n) { sample_num_ = n; return *this; }
@@ -65,7 +65,8 @@ public:
     ThisType& setMode(Mode mode) { mode_ = mode; return *this; }
     ThisType& setOutputFilename(const std::string& filename) { output_filename_ = filename; return *this; }
     ThisType& setScene(HitManagerPtr scene) { scene_ = scene; return *this; }
-    ThisType& setTargetPixel(const std::vector<size_t>& px) { target_pixel_ = px; return *this; }
+    // ThisType& setTargetPixel(const std::vector<size_t>& px) { target_pixel_ = px; return *this; }
+    ThisType& setTestRay(const Ray& r) { test_ray_ = r; return *this; }
     ThisType& enableRayStack(bool enable) { enable_ray_stack_ = enable; return *this; }
 
 
@@ -111,11 +112,12 @@ public:
         }
         else if(mode_ == eSINGLE_RAY)
         {
-            auto ray = cam_.pixelRay(target_pixel_);
+            // auto ray = cam_.pixelRay(target_pixel_);
+            Ray ray(test_ray_);
             auto px = trace(*scene_, ray, recursion_depth_, p_ray_stack);
             for(auto & r: ray_stack)
             {
-                std::cout << "o: " << r.origin().T().str() << ", d: " << r.direction().T().str() << std::endl;
+                std::cout << "o: " << r.origin().T().str() << "d: " << r.direction().T().str() << std::endl;
             }
         }
 
@@ -131,7 +133,8 @@ private:
     size_t recursion_depth_;
     Mode mode_;
     bool enable_ray_stack_;
-    std::vector<size_t> target_pixel_;
+    // std::vector<size_t> target_pixel_;
+    Ray test_ray_;
     HitManagerPtr scene_;
     std::string output_filename_;
 

@@ -28,6 +28,7 @@ inline Pixel trace(const HitManager& manager, Ray& ray, int depth, std::vector<R
         if (depth > 0)
         {
             auto new_ray = p_record->scattered;
+            // std::cout << "hit!" << std::endl;
             return static_cast<Vec>(
                 p_record->attenuation * trace(manager, new_ray, depth - 1, ray_record));
 

@@ -42,7 +42,7 @@ namespace rtc
             }
 
             // virtual Vec center() const { return center_; }
-            virtual operator AABB () const
+            virtual AABB aabb() const
             {
                 return AABB(center_ - radius_, center_ + radius_);
             }
@@ -69,14 +69,14 @@ namespace rtc
                 Ray moved_ray(
                     orientation_.inv().apply(ray.origin() - center_),
                     orientation_.inv().apply(ray.direction()));
-                auto t_min_max = AxisAlignedBoundingBox::hit(moved_ray, -radius_, radius_);
-                bool hit = (t_min_max[0] < t_min_max[1]) && (0 < t_min_max[0]);
+                auto t_in_out = AxisAlignedBoundingBox::hit(moved_ray, -radius_, radius_);
+                bool hit = (t_in_out[0] < t_in_out[1]) && (ray.valid(t_in_out[0]) || ray.valid(t_in_out[1]));
                 if(!hit) return nullptr;
 
                 auto p_record = std::make_shared<HitRecord>(ray.origin().size());
-                FloatType hit_t = t_min_max[0];
+                FloatType hit_t = ray.valid(t_in_out[0]) ? t_in_out[0] : t_in_out[1];
 
-                if(! ray.valid(hit_t)) return nullptr;
+                // if(! ray.valid(hit_t)) return nullptr;
 
                 FloatType min_dist = radius_(0);
                 size_t min_axis = 0;
@@ -92,28 +92,28 @@ namespace rtc
                 norm_vec(min_axis) = -moved_ray.direction()(min_axis);
 
                 p_record->n = static_cast<Vec>(orientation_.apply(norm_vec));
-                p_record->t = t_min_max[0];
-                p_record->p = ray(t_min_max[0]);
+                p_record->t = hit_t;
+                p_record->p = ray(hit_t);
                 // p_record->n = norm_vec;
                 return p_record;
             }
 
             // virtual Vec center() const { return center_; }
-            virtual operator AABB () const
+            virtual AABB aabb() const
             {
                 size_t dim(center_.size());
-                Mat vertices((center_ - radius_).matmul(Vec::ones(1 << dim).T()));
+                Mat vertices(radius_.matmul(Vec::ones(1 << dim).T()));
                 for(size_t i = 0; i < dim; i++)
                 {
                     for(size_t j = 0; j < vertices.shape(1); j++)
                     {
                         if(j & (1 << i) > 0)
-                            vertices(i, j) += (2 * radius_(i));
+                            vertices(i, j) -= (2 * radius_(i));
                     }
                 }
-                vertices = orientation_.apply(vertices);
+                vertices = orientation_.apply(vertices) + center_.matmul(Vec::ones(1 << dim).T());
 
-                AABB box(dim, dim);
+                AABB box(dim);
                 box.extend(vertices);
                 return box;
             }
@@ -189,7 +189,7 @@ public:
     }
 
     // virtual Vec center() const { return position_; }
-    virtual operator AABB () const
+    virtual AABB aabb() const
     {
         AABB box(position_.size());
         box.extend(vertices_global_frame_);
@@ -225,7 +225,7 @@ public:
     //     center *= (1./ indices_.size());
     //     return center;
     // }
-    virtual operator AABB () const
+    virtual AABB aabb() const
     {
         AABB box(dim());
         for(auto & idx: indices_)

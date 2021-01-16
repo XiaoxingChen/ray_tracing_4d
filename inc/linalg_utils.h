@@ -30,7 +30,7 @@ inline Mat orthogonalComplement(const Mat& vs)
     return ret;
 
 }
-
+#if 0
 inline Mat orthogonalComplement_(const Mat& vs)
 {
     if(vs.shape(0) == 2 && vs.shape(1) == 3)
@@ -78,6 +78,7 @@ inline Mat orthogonalComplement_(const Mat& vs)
     throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     return Mat({1,1});
 }
+#endif
 
 inline size_t argMax(const Vec& v)
 {

@@ -13,6 +13,8 @@ namespace rtc
 
 // class HitRecordPtr;
 class AxisAlignedBoundingBox;
+using AABB = AxisAlignedBoundingBox;
+
 class RigidBody;
 using RigidBodyPtr = std::shared_ptr<RigidBody>;
 class RigidBody
@@ -52,7 +54,7 @@ class RigidBody
         virtual HitRecordPtr hit(const Ray& ray) const = 0;
         // virtual Vec center() const = 0;
         virtual std::string str() const {return "";};
-        virtual operator AxisAlignedBoundingBox () const = 0;
+        virtual AABB aabb() const = 0;
 
         static RigidBodyPtr choose(Types type, size_t dimension, const std::vector<FloatType>& args);
         static RigidBodyPtr choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);

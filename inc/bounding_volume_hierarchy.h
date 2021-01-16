@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include "hittable.h"
+#include <algorithm>
 
 
 namespace rtc
@@ -43,7 +44,7 @@ public:
         aabb_.clear();
         for(size_t idx = hittable_range_[0]; idx < hittable_range_[1]; idx++)
         {
-            aabb_.extend(static_cast<AABB>(hittable_buffer_->at(idx).rigidBody()));
+            aabb_.extend(hittable_buffer_->at(idx).rigidBody().aabb());
         }
     }
 
@@ -138,17 +139,17 @@ inline size_t sortInLongestAxis(
     AABB box(dim);
     for(size_t i = range[0]; i < range[1]; i++)
     {
-        box.extend(static_cast<AABB>(buffer->at(i).rigidBody()));
+        box.extend(buffer->at(i).rigidBody().aabb());
     }
     size_t target_axis = argMax(box.max() - box.min());
-    std::cout << "longest axis: " << target_axis << std::endl;
-
+    std::cout << "range: [" << range[0] << "," << range[1] << "), axis: " << target_axis << std::endl;
+#if 0
     std::array<size_t, 2> p(range);
     p[1] -= 1;
     while(p[0] < p[1])
     {
-        if( static_cast<AABB>(buffer->at(p[0]).rigidBody()).center(target_axis) >
-            static_cast<AABB>(buffer->at(p[1]).rigidBody()).center(target_axis))
+        if( buffer->at(p[0]).rigidBody().aabb().center(target_axis) >
+            buffer->at(p[1]).rigidBody().aabb().center(target_axis))
         {
             Hittable temp(buffer->at(p[0]));
             buffer->at(p[0]) = buffer->at(p[1]);
@@ -158,6 +159,12 @@ inline size_t sortInLongestAxis(
         p[1] --;
     }
     return p[0];
+#endif
+    sort(buffer->begin() + range[0], buffer->begin() + range[1],
+        [&](const Hittable& h1, const Hittable& h2){
+            return h1.rigidBody().aabb().center(target_axis)
+                < h2.rigidBody().aabb().center(target_axis);});
+    return (range[0] + range[1]) / 2;
 }
 
 } // namespace bvh

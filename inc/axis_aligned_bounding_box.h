@@ -66,10 +66,12 @@ class AxisAlignedBoundingBox
     bool hit(const Ray& ray) const
     {
         if(empty()) return false;
-        auto min_max = AxisAlignedBoundingBox::hit(ray, min_, max_);
-        // if (min_max[0] < ray.tMin()) return false;
-        if (min_max[1] < min_max[0]) return false;
-        if (ray.tMax() < min_max[1]) return false;
+        auto in_out = AxisAlignedBoundingBox::hit(ray, min_, max_);
+        // if (in_out[0] < ray.tMin()) return false;
+        if (in_out[1] < in_out[0]) return false;
+        if(!ray.valid(in_out[0]) && !ray.valid(in_out[1])) return false;
+
+        // if (min_max[0] < 0 && ray.tMax() < min_max[1]) return false;
         return true;
     }
 
@@ -81,16 +83,16 @@ class AxisAlignedBoundingBox
         if(ray.origin().size() != vertex_max.size())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
-        FloatType t_min = -INFINITY;
-        FloatType t_max = INFINITY;
+        FloatType t_in = -INFINITY;
+        FloatType t_out = INFINITY;
         for(int i = 0; i < vertex_min.size(); i++)
         {
             FloatType t0 = (vertex_min(i) - ray.origin()(i)) / ray.direction()(i);
             FloatType t1 = (vertex_max(i) - ray.origin()(i)) / ray.direction()(i);
-            t_min = std::max(t_min, std::min(t0, t1));
-            t_max = std::min(t_max, std::max(t0, t1));
+            t_in = std::max(t_in, std::min(t0, t1));
+            t_out = std::min(t_out, std::max(t0, t1));
         }
-        return {t_min, t_max};
+        return {t_in, t_out};
     }
 
   private:

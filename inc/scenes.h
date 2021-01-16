@@ -99,20 +99,56 @@ inline AcceleratedHitManager simple3D_003()
 
     buffer->push_back(Hittable(
         RigidBody::choose(RigidBody::SPHERE, Vec({0, 1, 5}), Rotation::Identity(dim), {1}),
-        Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5}))));
+        Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})), "glass"));
     buffer->push_back(Hittable(
         RigidBody::choose(RigidBody::SPHERE, Vec({3,-1,7}), Rotation::Identity(dim), {1}),
-        Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4}))));
+        Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4})), "ball"));
     buffer->push_back(Hittable(
         RigidBody::choose(RigidBody::SPHERE, Vec({-3,-1,7}), Rotation::Identity(dim), {1}),
-        Material::choose(Material::METAL)));
+        Material::choose(Material::METAL), "iron ball"));
     buffer->push_back(Hittable(
         RigidBody::choose(RigidBody::SPHERE, Vec({0.,-100,30}), Rotation::Identity(dim), {100}),
-        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8}))));
+        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})), "ground"));
 
     buffer->push_back(Hittable(
         RigidBody::choose(RigidBody::RECTANGLE, Vec({0.,2, 15}), Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.9), {2,2,2}),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.3, 0.3})), "cube"));
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+}
+
+inline AcceleratedHitManager rectangle3D_001()
+{
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+
+    size_t dim = 3;
+
+    buffer->push_back(Hittable(
+        RigidBody::choose(RigidBody::RECTANGLE, Vec({0.,3, 15}), Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,0}), M_PI_2), {2,2,2}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.3, 0.3}))));
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+}
+
+inline AcceleratedHitManager rectangle3D_002()
+{
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+
+    size_t dim = 3;
+
+    buffer->push_back(Hittable(
+        RigidBody::choose(RigidBody::RECTANGLE, Vec({0.,2, 15}), Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.9), {2,2,2}),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.3, 0.3})), "cube"));
 
     AcceleratedHitManager manager;
     auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));

@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
     size_t dim = 2;
     size_t sample_num = 100;
     size_t recursion_depth = 10;
-    Camera cam(Vec(dim), Rotation::fromAngle(0.1), Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx/2.)));
+    Camera cam(Vec(dim), Rotation::fromAngle(0.1), Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx)));
     std::vector<Pixel> img;
 
     HitManager manager = rtc::scene::simple2D_001();

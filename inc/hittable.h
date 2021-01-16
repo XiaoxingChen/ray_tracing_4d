@@ -19,17 +19,20 @@ namespace bvh
 class Hittable
 {
     public:
-        Hittable(RigidBodyPtr p_rigid, MaterialPtr p_material):
+        Hittable(RigidBodyPtr p_rigid, MaterialPtr p_material, const std::string& id=""):
             rigid_body_(p_rigid),
-            material_(p_material){}
+            material_(p_material),
+            id_(id){}
 
         Hittable(Hittable&& other):
             rigid_body_(other.rigid_body_),
-            material_(other.material_){}
+            material_(other.material_),
+            id_(other.id_){}
 
         Hittable(const Hittable& other):
             rigid_body_(other.rigid_body_),
-            material_(other.material_){}
+            material_(other.material_),
+            id_(other.id_){}
 
         // Hittable():
         //     rigid_body_(RigidBody::choose(RigidBody::SPHERE)),
@@ -38,6 +41,7 @@ class Hittable
         {
             rigid_body_ = rhs.rigid_body_;
             material_ = rhs.material_;
+            id_ = rhs.id_;
         }
 
         const RigidBody& rigidBody() const { return *rigid_body_; }
@@ -55,6 +59,7 @@ class Hittable
     protected:
         RigidBodyPtr rigid_body_;
         MaterialPtr material_;
+        std::string id_;
 
 };
 

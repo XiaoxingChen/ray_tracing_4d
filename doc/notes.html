@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="notes.css" />
 </head>
 <body>
-
+    <h1>Ray Tracing in 4D Space</h1>
     <h2>Linear Algebra Features</h2>
     <table class="md">
         <tr>
@@ -32,7 +32,7 @@
 mat_a(Col(3)) = Vec::ones(3);
 return mat_a.T(); // without data copy</pre>
             </td>
-            <td>processing</td>
+            <td>WIP</td>
         </tr>
         <tr>
             <td>Dimensionless Initialization</td>
@@ -50,6 +50,64 @@ Vec v = Vec::ones(3);</pre>
     </table>
 
     <h2>Ray Tracing Features</h2>
+
+    <table class="md">
+        <tr>
+            <th>Feature</th>
+            <th>Module</th>
+            <th>Description</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Bad ray tracking</td>
+            <td></td>
+            <td></td>
+            <td>WIP <br> low priority</td>
+        </tr>
+        <tr>
+            <td>Single ray test</td>
+            <td></td>
+            <td></td>
+            <td><code class="md">done</code></td>
+        </tr>
+        <tr>
+            <td>AABB Visualization</td>
+            <td></td>
+            <td></td>
+            <td>todo</td>
+        </tr>
+        <tr>
+            <td>Configuration File</td>
+            <td></td>
+            <td></td>
+            <td>todo</td>
+        </tr>
+
+    </table>
+
+    <h2>Ray Tracing Issue</h2>
+
+    <table class="md">
+        <tr>
+            <th>Issue</th>
+            <th>Description</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>AABB Intersection Check Condition</td>
+            <td>
+                Given <code class="md">t_in</code> and <code class="md">t_out</code>,
+                the condition should be:
+                <code class="md">t_in &lt; t_out && (ray.valid(t_in) || ray.valid(t_out))</code>
+            </td>
+            <td>todo</td>
+        </tr>
+        <tr>
+            <td>Bug of rectangular when BVH enabled</td>
+            <td><code class="md">scene::rectangle3D_002</code></td>
+            <td>todo</td>
+        </tr>
+    </table>
 
     <h2>References</h2>
     <ol>
