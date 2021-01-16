@@ -23,18 +23,20 @@ class Vec: public Mat
 public:
     Vec(size_t size): Mat({size, 1}){}
     Vec(const std::vector<FloatType>& v): Mat({v.size(), 1}, v){}
-    // Vec(std::vector<FloatType>&& v): Mat({v.size(), 1}, std::move(v)){}
-    size_t size() const { return data_.size(); }
 
-    FloatType& operator () (size_t i) { return data_.at(i); }
-    const FloatType& operator () (size_t i) const { return data_.at(i); }
+    size_t size() const { return shape(0); }
+    Vec(const Mat& mat);
+
+
+    FloatType& operator () (size_t i) { return Mat::operator()(i, 0); }
+    const FloatType& operator () (size_t i) const { return Mat::operator()(i, 0); }
 
     FloatType dot(const Vec& rhs) const
     {
         if(size() != rhs.size())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
         FloatType sum(0);
-        for(int i = 0; i < size(); i++) sum += data_.at(i) * rhs.data_.at(i);
+        for(int i = 0; i < size(); i++) sum += (*this)(i) * rhs(i);
         return sum;
     }
 
@@ -42,7 +44,12 @@ public:
 
     static Mat ones(size_t n) { return Vec(n) + 1; }
 
-    operator const std::vector<FloatType>& () const { return data_; }
+    operator std::vector<FloatType> () const
+    {
+        std::vector<FloatType> ret;
+        for(size_t i = 0; i < size(); i++) ret.push_back((*this)(i));
+        return ret;
+    }
 
     operator Pixel() const;
 };
@@ -50,7 +57,7 @@ public:
 class UnitVec: public Vec
 {
 public:
-    UnitVec(size_t size): Vec(size) {data_.at(0) = 1;}
+    UnitVec(size_t size): Vec(size) { Vec::operator()(0) = 1;}
     UnitVec(const Vec& v): Vec(v) {this->normalize();}
     UnitVec(const Mat& m): Vec(m) {this->normalize();}
     UnitVec(const std::vector<FloatType>& v): Vec(v) {this->normalize();}
@@ -62,7 +69,7 @@ public:
     Mat& operator += (const Mat& rhs) = delete;
     Mat& operator -= (const Mat& rhs) = delete;
 
-    const FloatType& operator () (size_t i) const { return data_.at(i); }
+    const FloatType& operator () (size_t i) const { return Vec::operator()(i); }
 
     // FloatType& operator () (size_t i) {}
     // FloatType& operator () (size_t i, size_t j) {}
@@ -75,11 +82,11 @@ private:
 using VecIn = const Vec&;
 using UnitVecIn = const UnitVec&;
 
-inline Mat::operator rtc::Vec() const
-{
-    if(shape(1) != 1 && shape(0) != 1) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-    return Vec(data_);
-}
+// inline Mat::operator rtc::Vec() const
+// {
+//     if(shape(1) != 1 && shape(0) != 1) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+//     return Vec(data_);
+// }
 
 class Pixel: public Vec
 {
@@ -89,9 +96,9 @@ public:
     Pixel(const Vec& v): Vec(v){}
     Pixel(): Vec(3){}
 
-    const float_t & r() const {return data_.at(0);}
-    const float_t & g() const {return data_.at(1);}
-    const float_t & b() const {return data_.at(2);}
+    const float_t & r() const {return Vec::operator()(0);}
+    const float_t & g() const {return Vec::operator()(1);}
+    const float_t & b() const {return Vec::operator()(2);}
 
     int rU8() const {return r() < 0 ? 0 : r() > 1 ? 255 : r() * 255.99;}
     int gU8() const {return g() < 0 ? 0 : g() > 1 ? 255 : g() * 255.99;}

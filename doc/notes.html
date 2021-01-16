@@ -10,6 +10,47 @@
 </head>
 <body>
 
+    <h2>Linear Algebra Features</h2>
+    <table class="md">
+        <tr>
+            <th>Feature</th>
+            <th>Module</th>
+            <th>Description</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Block Access</td>
+            <td><code class="md">linalg_mat_block.h</code></td>
+            <td></td>
+            <td>complete</td>
+        </tr>
+        <tr>
+            <td>Block Assignment & Reference</td>
+            <td><code class="md">linalg_mat_ref.h</code></td>
+            <td style="text-align: left;">
+            <pre class="md">
+mat_a(Col(3)) = Vec::ones(3);
+return mat_a.T(); // without data copy</pre>
+            </td>
+            <td>processing</td>
+        </tr>
+        <tr>
+            <td>Dimensionless Initialization</td>
+            <td>
+                <code class="md">linalg_mat.h</code> <br>
+                <code class="md">linalg_vec.h</code>
+                <code class="md">full_dimensional_rotation.h</code>
+            </td>
+            <td style="text-align: left;">
+                <pre class="md">
+Vec v = Vec::ones(3);</pre>
+            </td>
+            <td>todo</td>
+        </tr>
+    </table>
+
+    <h2>Ray Tracing Features</h2>
+
     <h2>References</h2>
     <ol>
         <li> <a href="https://miegakure.com/">Miegakure</a> </li>

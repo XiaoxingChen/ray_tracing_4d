@@ -18,7 +18,8 @@ size_t indexConvert2D(size_t i, size_t j, bool major, size_t shape_i, size_t sha
 class Vec;
 class Block;
 class MatRef;
-class ConstMatRef;
+// class MatRefBase;
+// class ConstMatRef;
 class Mat
 {
 public:
@@ -36,26 +37,23 @@ public:
     Mat(const Shape& _shape, const std::vector<FloatType>& data={}, bool major=ROW)
         :shape_(_shape), data_(_shape[0] * _shape[1], 0), major_(major)
     {
-        if(data.size() == 0)
-        {
-            return;
-        }
+        if(data.size() == 0)  return;
         if(shape(0) * shape(1) != data.size())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
         data_ = data;
     }
 
     Mat(const Mat& rhs)
-        :shape_(rhs.shape()), data_(*rhs.dataVectorPtr()), major_(rhs.majorAxis()) {}
+        :shape_(rhs.shape()), data_(rhs.shape(0) * rhs.shape(1)), major_(rhs.majorAxis())
+    {
+        (*this) = rhs;
+    }
 
     virtual void operator = (const Mat& rhs)
     {
-        if(this->shape() == Shape{0,0})
-            shape_ = rhs.shape();
-        opEqual(rhs, [](const FloatType& a, const FloatType& b) {return b;});
+        if(this->shape() == Shape{0,0}) shape_ = rhs.shape();
+        traverse([&](size_t i, size_t j){ (*this)(i,j) = rhs(i,j); });
     }
-
-    // Mat(Mat && mat): shape(mat.shape), data_(std::move(mat.data_)), major_(mat.major_){}
 
     static Mat zeros(const Shape& _shape) { return Mat(_shape); }
 
@@ -68,47 +66,38 @@ public:
         return mat;
     }
 
-    virtual FloatType& operator () (size_t i, size_t j)
-    {
-        return data_.at(
-            indexConvert2D(i,j,majorAxis(), shape(0), shape(1)));
-    }
-
     virtual const FloatType& operator () (size_t i, size_t j) const
     {
         return data_.at(
             indexConvert2D(i,j,majorAxis(), shape(0), shape(1)));
     }
 
-    template<typename Op>
-    Mat& opEqual(FloatType scalar, Op f) { for(auto & v: data_) v = f(v, scalar); return *this;}
-
-    template<typename Op>
-    Mat& opEqual(const Mat& rhs, Op f)
+    virtual FloatType& operator () (size_t i, size_t j)
     {
-        if(this->shape() != rhs.shape())
-            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        for(size_t i = 0; i < shape(0); i++)
-        {
-            for(size_t j = 0; j < shape(1); j++)
-            {
-                (*this)(i,j) = f((*this)(i,j), rhs(i,j));
-            }
-        }
-        return *this;
+        return const_cast<FloatType&>(
+            static_cast<const Mat&>(*this)(i,j));
     }
 
-    Mat& operator *= (FloatType scalar)  { return opEqual(scalar, std::multiplies<FloatType>()); }
-    Mat& operator += (FloatType scalar)  { return opEqual(scalar, std::plus<FloatType>()); }
-    Mat& operator -= (FloatType scalar)  { return opEqual(scalar, std::minus<FloatType>()); }
+    template<typename Op>
+    void traverse(Op f) const
+    {
+        for(size_t i = 0; i < shape(0); i++)
+            for(size_t j = 0; j < shape(1); j++)
+                f(i, j);
+    }
+
+
+    Mat& operator *= (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= scalar;}); return *this;}
+    Mat& operator += (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) += scalar;}); return *this;}
+    Mat& operator -= (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) -= scalar;}); return *this;}
 
     Mat operator * (FloatType scalar) const { return Mat(*this) *= scalar; }
     Mat operator + (FloatType scalar) const { return Mat(*this) += scalar; }
     Mat operator - (FloatType scalar) const { return Mat(*this) -= scalar; }
 
-    Mat& operator *= (const Mat& rhs)  { return opEqual(rhs, std::multiplies<FloatType>()); }
-    Mat& operator += (const Mat& rhs)  { return opEqual(rhs, std::plus<FloatType>()); }
-    Mat& operator -= (const Mat& rhs)  { return opEqual(rhs, std::minus<FloatType>()); }
+    Mat& operator *= (const Mat& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= rhs(i,j);}); return *this;}
+    Mat& operator += (const Mat& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) += rhs(i,j);}); return *this;}
+    Mat& operator -= (const Mat& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) -= rhs(i,j);}); return *this;}
 
     Mat operator * (const Mat& rhs) const { return Mat(*this) *= rhs; }
     Mat operator + (const Mat& rhs) const { return Mat(*this) += rhs; }
@@ -116,7 +105,7 @@ public:
 
     Mat operator -() const        { return Mat(*this) *= -1;}
 
-    operator Vec() const;
+    // operator Vec() const;
     // operator Vec() const { return Vec(data_); }
 
     FloatType norm(int8_t p = 'f') const
@@ -124,7 +113,8 @@ public:
         if('f' == p || 2 == p)
         {
             FloatType sum2(0);
-            for(auto & v : data_) sum2 += v*v;
+            Mat mat_2((*this)*(*this));
+            traverse([&](size_t i, size_t j){sum2 += mat_2(i,j);});
             return sqrt(sum2);
         }
         if(1 == p)
@@ -146,12 +136,7 @@ public:
     const Mat& normalize(int8_t p = 2)
     {
         FloatType n = norm(p);
-        // if(n < eps()*eps()) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        if(n < eps()*eps())
-        {
-            return *this;
-        }
-        // for(auto & v : data_) v /= n;
+        if(n < eps()*eps()) { return *this; }
         (*this) *= (1./n);
         return *this;
     }
@@ -166,7 +151,7 @@ public:
         return ret;
     }
 #else
-    virtual ConstMatRef T() const;
+    virtual const MatRef T() const;
     virtual MatRef T();
     // Mat(ConstMatRef rhs);
     // Mat(MatRef rhs);
@@ -179,35 +164,23 @@ public:
         const Mat& lhs(*this);
         if(lhs.shape(1) != rhs.shape(0))
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        Mat ret({lhs.shape(0), rhs.shape(1)});
-        for(int i = 0; i < ret.shape(0); i++)
+        Mat ret(Mat::zeros({lhs.shape(0), rhs.shape(1)}));
+        ret.traverse([&](size_t i, size_t j)
         {
-            for(int j = 0; j < ret.shape(1); j++)
-            {
-                ret(i,j) = 0;
-                for(int k = 0; k < lhs.shape(1); k++)
-                {
-                    ret(i,j) += lhs(i, k) * rhs(k, j);
-                }
-            }
-        }
+            for(int k = 0; k < lhs.shape(1); k++)
+                ret(i,j) += lhs(i, k) * rhs(k, j);
+        });
         return ret;
     }
 
     std::string str() const
     {
         std::string ret;
-        for(int i = 0; i < shape(0); i++)
-        {
-            for(int j = 0; j < shape(1); j++)
-            {
-                ret += (std::to_string((*this) (i,j)) + " ");
-            }
-            ret += "\n";
-        }
+        traverse([&](size_t i, size_t j){
+            ret += (std::to_string((*this)(i,j)) + (j == shape(1) - 1 ? "\n" : " ")); });
         return ret;
     }
-
+#if 0
     Mat block(const std::vector<size_t>& i, const std::vector<size_t>& j) const
     {
         std::array<size_t, 2> j_in({0, shape(1)});
@@ -218,38 +191,35 @@ public:
 
         return block_(i_in, j_in);
     }
-
+#endif
     Mat& setBlock(size_t i0, size_t j0, const Mat& mat)
     {
-        for(size_t i = 0; i < mat.shape(0); i++)
-        {
-            for(size_t j = 0; j < mat.shape(1); j++)
-            {
-                (*this)(i + i0, j + j0) = mat(i, j);
-            }
-        }
+        mat.traverse([&](size_t i, size_t j) {(*this)(i + i0, j + j0) = mat(i, j);});
         return *this;
     }
-
+#if 0
     Mat operator () (const Block& s) const;
+#else
+    const MatRef operator () (const Block& s) const;
+    MatRef operator () (const Block& s);
+#endif
     Mat& set(const Block& s, const Mat& rhs);
 
 protected:
     virtual std::vector<FloatType>* dataVectorPtr() { return &data_; }
     virtual const std::vector<FloatType>* dataVectorPtr() const { return &data_; }
+    virtual bool ownerMajor() const {return majorAxis();}
+    virtual Shape ownerShape() const {return shape();}
+    virtual Shape refOffset() const { return Shape({0,0}); }
+
 #if 1
     Mat block_(
         const std::array<size_t, 2>& row,
         const std::array<size_t, 2>& col) const
     {
         Mat ret({row[1] - row[0], col[1] - col[0]});
-        for(size_t i = 0; i < ret.shape(0); i++)
-        {
-            for(size_t j = 0; j < ret.shape(1); j++)
-            {
-                ret(i,j) = (*this)(i + row[0], j + col[0]);
-            }
-        }
+        ret.traverse(
+            [&](size_t i, size_t j){ret(i,j) = (*this)(i + row[0], j + col[0]);});
         return ret;
     }
 #else

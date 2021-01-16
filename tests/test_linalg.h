@@ -32,18 +32,18 @@ inline void testOrthogonalComplement()
     {
         Mat in({2,3},{0,0,1, 0,1,0});
 
-        if(in.block({0,1},{0,3}).matmul(orthogonalComplement(in).T())(0,0) > eps())
+        if(in(Row(0)).matmul(orthogonalComplement(in).T())(0,0) > eps())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
-        if(in.block({1,2},{0,3}).matmul(orthogonalComplement(in.T()))(0,0) > eps())
+        if(in(Row(1)).matmul(orthogonalComplement(in.T()))(0,0) > eps())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
     {
         Mat in({1,3},{1,0,0});
         Mat complement = orthogonalComplement(in);
-        Vec out1 = complement.block({0,1},{0,3});
-        Vec out2 = complement.block({1,2},{0,3});
+        Vec out1 = complement(Row(0));
+        Vec out2 = complement(Row(1));
 
         if(static_cast<Vec>(in).dot(out1) > eps())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -132,9 +132,17 @@ inline void testMatRef()
     }
 
     // {
-    //     Mat tf(Mat::Identity(4));
-    //     tf
+    //     Mat mat_a(Mat::ones({3,3}));
+    //     mat_a(Col(2)) = Vec::zeros(3);
+    //     std::cout << mat_a(Col(2)).T().str() << std::endl;
     // }
+
+    // {
+    //     const Mat mat_a(Mat::ones({3,3}));
+    //     mat_a(Col(2)) = Vec::zeros(3);
+    //     std::cout << mat_a(Col(2)).T().str() << std::endl;
+    // }
+
 }
 
 inline void testLinearAlgebra()
@@ -150,7 +158,7 @@ inline void testLinearAlgebra()
     if(fabs(u2(2) - sqrt(1./3)) > eps())
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
-    if(v1.str() != "1.000000 \n1.000000 \n1.000000 \n")
+    if(v1.str() != "1.000000\n1.000000\n1.000000\n")
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
     if((m1.matmul(v1) - expected).norm() > eps())

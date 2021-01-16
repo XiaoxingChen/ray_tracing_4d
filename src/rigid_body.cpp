@@ -252,7 +252,8 @@ private:
             return std::make_shared<Rectangle>(
                 std::vector<FloatType>(args.begin(), args.begin() + dimension), //center
                 std::vector<FloatType>(args.begin() + dimension, args.begin() + 2*dimension), //radius
-                Rotation::fromPlaneAngle(plane.block({},{0,1}), plane.block({},{1,2}), args.back())); //rotation
+                Rotation::fromPlaneAngle(plane(Col(0)), plane(Col(1)), args.back())
+                ); //rotation
         }
 
 

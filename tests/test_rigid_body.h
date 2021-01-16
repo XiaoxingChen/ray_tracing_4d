@@ -34,7 +34,7 @@ inline void testRectangle2D(int k = 1)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
-    if((record->n.block({0,2},{0,1}) - Vec({-sqrt(.5), sqrt(.5)})).norm() > 10 * eps())
+    if((record->n - Vec({-sqrt(.5), sqrt(.5)})).norm() > 10 * eps())
     {
         std::cout << record->n.str() << std::endl;
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
