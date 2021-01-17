@@ -69,7 +69,7 @@ class AxisAlignedBoundingBox
         if(empty()) return false;
         auto in_out = AxisAlignedBoundingBox::hit(ray, min_, max_);
         // if (in_out[0] < ray.tMin()) return false;
-        if (in_out[1] < in_out[0]) return false;
+        if (in_out[1] < in_out[0] - eps()) return false;
         if(!ray.valid(in_out[0]) && !ray.valid(in_out[1])) return false;
 
         // if (min_max[0] < 0 && ray.tMax() < min_max[1]) return false;

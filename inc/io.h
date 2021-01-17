@@ -37,7 +37,8 @@ inline PixelCoordinates PPMCoordinateSequence(size_t width, size_t height)
     {
         for(size_t i = 0; i < width; i++)
         {
-            ret.push_back(std::vector<size_t>{i, height - j - 1});
+            // ret.push_back(std::vector<size_t>{i, height - j - 1});
+            ret.push_back(std::vector<size_t>{i, j});
         }
     }
     return ret;

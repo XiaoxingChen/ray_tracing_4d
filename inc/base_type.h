@@ -10,7 +10,7 @@ using FloatType = float_t;
 inline constexpr FloatType eps() {return 1e-7;}
 using size_t = std::vector<FloatType>::size_type;
 
-inline constexpr FloatType tMin() {return 1e-5;}
+inline constexpr FloatType tMin() {return 1e-4;}
 inline constexpr FloatType tMax() {return 10000.;}
 
 }//

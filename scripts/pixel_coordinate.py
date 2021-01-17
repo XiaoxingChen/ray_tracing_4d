@@ -5,7 +5,7 @@ import numpy as np
 def format_coord(x, y):
         col = int(x + 0.5)
         row = int(y + 0.5)
-        print("[{},{}]".format(col, 480-row))
+        print("[{},{}]".format(col, row))
         return 'x=%1.4f, y=%1.4f' % (x, y)
 
 if __name__ == "__main__":

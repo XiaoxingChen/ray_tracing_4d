@@ -7,6 +7,16 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
     </script>
     <link rel="stylesheet" type="text/css" href="notes.css" />
+    <style>
+        code.safe{
+            background-color:#aea;
+            color:seagreen;
+            border-radius: 3px;
+            border:1px solid #888;
+            padding: 1px 2px;
+        }
+
+    </style>
 </head>
 <body>
     <h1>Ray Tracing in 4D Space</h1>
@@ -22,7 +32,7 @@
             <td>Block Access</td>
             <td><code class="md">linalg_mat_block.h</code></td>
             <td></td>
-            <td>complete</td>
+            <td><code class="safe">done</code></td>
         </tr>
         <tr>
             <td>Block Assignment & Reference</td>
@@ -32,7 +42,7 @@
 mat_a(Col(3)) = Vec::ones(3);
 return mat_a.T(); // without data copy</pre>
             </td>
-            <td>WIP</td>
+            <td><code class="safe">done</code></td>
         </tr>
         <tr>
             <td>Dimensionless Initialization</td>
@@ -68,7 +78,7 @@ Vec v = Vec::ones(3);</pre>
             <td>Single ray test</td>
             <td></td>
             <td></td>
-            <td><code class="md">done</code></td>
+            <td><code class="safe">done</code></td>
         </tr>
         <tr>
             <td>AABB Visualization</td>
@@ -99,13 +109,32 @@ Vec v = Vec::ones(3);</pre>
                 Given <code class="md">t_in</code> and <code class="md">t_out</code>,
                 the condition should be:
                 <code class="md">t_in &lt; t_out && (ray.valid(t_in) || ray.valid(t_out))</code>
+                <hr>
+                <b>Root cause</b>: numerical error. When the ray direction is almost parallel to the reflect
+                plane, the numerical error will somehow make the hit point inside the plane.
+                e.g. the plane is located at \(x = 1\) , a ray starts from \(x = 0\) towards \(x\) axis.
+                But calculated hit point might be <code class="md">x = 1.000000037564</code> which makes
+                the ray hit through the plane. This makes the reflected rays trapped in the space where \(x > 1\).
+                <hr>
+                <b>Solution:</b>
+                changed <code class="md">ray::tMin()</code> to <code class="md">1e-5</code>.
+
             </td>
-            <td>todo</td>
+            <td><code class="safe">done</code></td>
         </tr>
         <tr>
             <td>Bug of rectangular when BVH enabled</td>
-            <td><code class="md">scene::rectangle3D_002</code></td>
-            <td>todo</td>
+            <td>
+                <code class="md">scene::rectangle3D_002</code>
+                <hr>
+                <b>Root cause:</b> <a href="https://github.com/XiaoxingChen/ray_tracing_in_one_week/blob/94b3b7154e9ffc64a0f480b3c5315465f71dca75/src/rigid_body.cpp#L110">
+                Here</a>. <code class="md">if(j & (1 &lt;&lt; i) > 0)</code> will calculate the <code class="md">></code> operation
+                first, then <code class="md">&</code> operation.
+                <hr>
+                <b>Solution:</b>
+                <code class="md">if((j & (1 &lt;&lt; i)) > 0)</code>
+            </td>
+            <td><code class="safe">done</code></td>
         </tr>
     </table>
 

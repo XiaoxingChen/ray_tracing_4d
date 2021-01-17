@@ -34,8 +34,8 @@ inline bool validIntersect(const Vec& x)
     {
         if(x(i) < 0) return false;
     }
-    FloatType sum_k = x.norm(1) - x(0);
-    return sum_k < 1;
+    FloatType sum_k = x.norm(1) - fabs(x(0));
+    return sum_k < 1 + eps();
 }
 
 } // namespace rtc
