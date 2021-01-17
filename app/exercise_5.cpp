@@ -18,8 +18,8 @@ using namespace rtc;
 int main(int argc, char const *argv[])
 {
     Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({500, 500}), Vec({640, 480}));
-    auto scene = scene::rectangle3D_002();
-    // auto scene = scene::simple3D_003();
+    // auto scene = scene::rectangle3D_002();
+    auto scene = scene::simple3D_003();
 
     auto render = RenderSample(3);
     render.setOutputFilename("exercise_5.ppm");
@@ -31,8 +31,8 @@ int main(int argc, char const *argv[])
         .enableRayStack(true)
         .setSampleNum(5)
         .setScene(&scene)
-        .setTestRay(cam.pixelRay({162,161}))
-        // .setTestRay(Ray(Vec({-2.149441,-0.474552,6.978703}), Vec({0.223787,0.254858,0.940727})))
+        .setTestRay(cam.pixelRay({269, 294}))
+        // .setTestRay(Ray(Vec({0.8857144713,1.0000002384,14.2857179642}), Vec({0.0617306866,-0.0696959719,0.9956564903})))
         .run();
 
     return 0;

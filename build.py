@@ -12,6 +12,7 @@ class Dir():
     script_folder = os.path.abspath(os.path.dirname(__file__))
     build_root = os.path.join(script_folder, 'build')
     cmake_project = script_folder
+    plot_script = os.path.join(script_folder, 'scripts', 'pixel_coordinate.py')
 
 class BuildTarget():
     def __init__(self):
@@ -150,6 +151,7 @@ def createParser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--clean', action='store_true', help='Clean build folder')
+    parser.add_argument('--plot', nargs='+', help='plot target image')
     parser.add_argument('--all', action='store_true', help='Compile for all platforms')
     parser.add_argument('--test-all', action='store_true', help='Run test on all platforms')
     parser.add_argument('--cmake-options', dest='cmake_options', help='additional cmake options. Put in quote, start with space: " -DCMAKE_BUILD_TYPE=Debug"')
@@ -192,6 +194,10 @@ def run(build_script_folder=os.path.abspath(os.path.dirname(__file__))):
 
     for target in targets:
         target.runExecutable()
+
+    if args.plot:
+        os.system('python3 {} {}'.format(Dir.plot_script, args.plot[0]))
+
 
 if __name__ == "__main__":
     run()

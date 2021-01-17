@@ -130,7 +130,8 @@ inline AcceleratedHitManager rectangle3D_001()
 
     buffer->push_back(Hittable(
         RigidBody::choose(RigidBody::RECTANGLE, Vec({0.,3, 15}), Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,0}), M_PI_2), {2,2,2}),
-        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.3, 0.3}))));
+        // Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.3, 0.3}))));
+        Material::choose(Material::METAL), "cube"));
 
     AcceleratedHitManager manager;
     auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));

@@ -37,6 +37,35 @@ inline void rotationTestCase2()
     }
 }
 
+inline void rotationTestCase3()
+{
+    std::cout << "TODO: move this test to RigidBody::aabb() method test" << std::endl;
+    return ;
+    #if 0
+    Vec center({0.,2, 15});
+    Vec radius({2,2,2});
+    Rotation r (Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.9));
+
+    size_t dim(center.size());
+    Mat vertices(radius.matmul(Vec::ones(1 << dim).T()));
+    for(size_t i = 0; i < dim; i++)
+    {
+        for(size_t j = 0; j < vertices.shape(1); j++)
+        {
+            if((j & (1 << i)) > 0)
+                vertices(i, j) -= (2 * radius(i));
+        }
+    }
+
+    std::cout << r.asMatrix().str() << std::endl;
+
+    std::cout << vertices.str() << std::endl;
+    vertices = r.apply(vertices);
+    std::cout << "after: " << std::endl;
+    std::cout << vertices.str() << std::endl;
+    #endif
+}
+
 inline void rotationTestDeterminant()
 {
     for(size_t i = 0; i < 10; i++)
@@ -55,6 +84,7 @@ inline void testRotation()
 {
     rotationTestCase1();
     rotationTestCase2();
+    rotationTestCase3();
     rotationTestDeterminant();
 }
 

@@ -74,6 +74,17 @@ namespace rtc
                 if(!hit) return nullptr;
 
                 auto p_record = std::make_shared<HitRecord>(ray.origin().size());
+                #if 0
+                if(ray.valid(t_in_out[0]))
+                {
+                    std::cout << "outside" << std::endl;
+                }
+                else
+                {
+                    std::cout << "inside, t_in:" << t_in_out[0] << std::endl;
+                }
+                #endif
+
                 FloatType hit_t = ray.valid(t_in_out[0]) ? t_in_out[0] : t_in_out[1];
 
                 // if(! ray.valid(hit_t)) return nullptr;
@@ -92,6 +103,7 @@ namespace rtc
                 norm_vec(min_axis) = -moved_ray.direction()(min_axis);
 
                 p_record->n = static_cast<Vec>(orientation_.apply(norm_vec));
+                // std::cout << "n: " << p_record->n.T().str() << "dist: " << min_dist << std::endl;
                 p_record->t = hit_t;
                 p_record->p = ray(hit_t);
                 // p_record->n = norm_vec;
@@ -107,11 +119,12 @@ namespace rtc
                 {
                     for(size_t j = 0; j < vertices.shape(1); j++)
                     {
-                        if(j & (1 << i) > 0)
+                        if((j & (1 << i)) > 0)
                             vertices(i, j) -= (2 * radius_(i));
                     }
                 }
-                vertices = orientation_.apply(vertices) + center_.matmul(Vec::ones(1 << dim).T());
+                vertices = orientation_.apply(vertices);
+                vertices += center_.matmul(Vec::ones(1 << dim).T());
 
                 AABB box(dim);
                 box.extend(vertices);

@@ -44,8 +44,10 @@ public:
         aabb_.clear();
         for(size_t idx = hittable_range_[0]; idx < hittable_range_[1]; idx++)
         {
+            // std::cout << "aabb: " << hittable_buffer_->at(idx).rigidBody().aabb().str() << std::endl;
             aabb_.extend(hittable_buffer_->at(idx).rigidBody().aabb());
         }
+
     }
 
     Hittable::HitRecordPtr hit(Ray& ray)
@@ -80,7 +82,7 @@ public:
         {
             child->updateAABB();
             // std::cout << "max: " << child->aabb_.max().T().str()
-            // << ", min: " << child->aabb_.min().T().str() << std::endl;
+            // << "min: " << child->aabb_.min().T().str() << std::endl;
             child->split(max_hittable_num, children_num);
         }
     }

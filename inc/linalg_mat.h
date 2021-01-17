@@ -8,12 +8,23 @@
 #include <string>
 #include <assert.h>
 #include <math.h>
+#include <sstream>
+#include <iomanip>
+
 #include "base_type.h"
+
+
 
 namespace rtc
 {
 
 size_t indexConvert2D(size_t i, size_t j, bool major, size_t shape_i, size_t shape_j);
+inline std::string to_string(const FloatType& v, size_t prec=6)
+{
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(prec) << v;
+    return stream.str();
+}
 
 class Vec;
 class Block;
@@ -160,7 +171,7 @@ public:
     {
         std::string ret;
         traverse([&](size_t i, size_t j){
-            ret += (std::to_string((*this)(i,j)) + (j == shape(1) - 1 ? "\n" : " ")); });
+            ret += (rtc::to_string((*this)(i,j), 6) + (j == shape(1) - 1 ? "\n" : " ")); });
         return ret;
     }
 

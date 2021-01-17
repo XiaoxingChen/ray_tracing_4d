@@ -31,6 +31,7 @@ class AxisAlignedBoundingBox
         max_ = Vec::ones(max_.size()) * (-INFINITY);
     }
     size_t dim() const { return min_.size(); }
+    std::string str() const { return min_.T().str() + max_.T().str(); }
 
     std::vector<size_t> axesByLength() const { return argSort(max_ - min_); }
 
@@ -91,6 +92,7 @@ class AxisAlignedBoundingBox
             FloatType t1 = (vertex_max(i) - ray.origin()(i)) / ray.direction()(i);
             t_in = std::max(t_in, std::min(t0, t1));
             t_out = std::min(t_out, std::max(t0, t1));
+            // std::cout << "t_in this: " << std::min(t0, t1) << std::endl;
         }
         return {t_in, t_out};
     }
