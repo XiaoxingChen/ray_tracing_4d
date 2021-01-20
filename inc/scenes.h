@@ -5,8 +5,7 @@
 #include "rigid_body.h"
 #include "hittable.h"
 #include "bounding_volume_hierarchy.h"
-
-
+#include "gltf_utils.h"
 
 namespace rtc
 {
@@ -157,6 +156,70 @@ inline AcceleratedHitManager simple3D_004()
     manager.setRoot(root);
 
     return manager;
+}
+
+inline AcceleratedHitManager gltf3DTriangle()
+{
+    tinygltf::Model model;
+    size_t dim = 3;
+    loadModel(model, "assets/triangle/triangle.gltf");
+
+    std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
+
+    std::vector<std::vector<size_t>> indices;
+    for(size_t i = 0; i < vertex_buffer->shape(1) / 3; i++)
+        indices.push_back({3 * i, 3 * i + 1, 3 * i + 2});
+
+    (*vertex_buffer)(Row(2)) += 3;
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    for(auto & idx: indices)
+    {
+        buffer->push_back(Hittable(
+            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
+            Material::choose(Material::METAL)));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+
+}
+
+inline AcceleratedHitManager gltf3DBox()
+{
+    tinygltf::Model model;
+    size_t dim = 3;
+    loadModel(model, "assets/box/box.gltf");
+
+    std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
+
+    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+
+    std::cout << "Vertices: \n" << vertex_buffer->str();
+
+    Rotation r(Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.9));
+    *vertex_buffer = r.apply(*vertex_buffer);
+    (*vertex_buffer)(Row(2)) += 3;
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    for(auto & idx: indices)
+    {
+        buffer->push_back(Hittable(
+            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
+            Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+
 }
 
 inline AcceleratedHitManager rectangle3D_001()

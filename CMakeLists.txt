@@ -11,10 +11,11 @@ endif()
 
 # include_directories(inc)
 # add_library(rtc src/io.cpp src/material.cpp src/rigid_body.cpp src/rotation.cpp)
+add_subdirectory(third_party)
 
 include_directories(inc)
-add_library(rtc src/material.cpp src/rigid_body.cpp src/rotation.cpp)
-
+add_library(rtc src/material.cpp src/rigid_body.cpp src/rotation.cpp src/tinygltf_impl.cpp)
+target_link_libraries(rtc PUBLIC tinygltf)
 
 add_subdirectory(app)
 
