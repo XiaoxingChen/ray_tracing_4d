@@ -20,10 +20,10 @@ inline Vec intersectEquation(const Mat& primitive, const Ray& ray)
 
     Vec b = primitive(Col(0)) - ray.origin();
     Mat mat_a(primitive.shape());
-    mat_a.set(Col(0), ray.direction());
+    mat_a(Col(0)) = ray.direction();
     for(size_t i = 1; i < primitive.shape(0); i++)
     {
-        mat_a.set(Col(i), primitive(Col(0)) - primitive(Col(i)));
+        mat_a(Col(i)) = primitive(Col(0)) - primitive(Col(i));
     }
     return qr::solve(mat_a, b);
 }

@@ -72,7 +72,7 @@ inline RigidBody::HitRecordPtr hitPrimitivePolygon(
     Mat mat_a({dim, dim});
     for(size_t i = 0; i < dim; i++)
     {
-        mat_a.set(Col(i), (*p_vertex_buffer)(Col(indices.at(i))));
+        mat_a(Col(i)) = (*p_vertex_buffer)(Col(indices.at(i)));
     }
     Vec result = intersectEquation(mat_a, ray);
     if(!validIntersect(result)) return nullptr;

@@ -8,6 +8,7 @@
 
 #include "linalg_solve.h"
 #include "linalg_utils.h"
+#include "linalg_complex.h"
 
 
 

@@ -145,6 +145,17 @@ inline void testMatRef()
 
 }
 
+inline void testComplexBase()
+{
+    Complex a({1,2});
+    Complex b({3,1});
+    Complex expected({1,7});
+
+    std::cout << a.str() << std::endl;
+    if((a * b - expected).norm() > eps())
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+}
+
 inline void testLinearAlgebra()
 {
     Mat m1({3,3},{1,1,1, 2,2,2, 3,3,3});
@@ -176,6 +187,7 @@ inline void testLinearAlgebra()
     testSolveLowerTriangle();
     testQRcalcMatQ();
     testQRSolve();
+    testComplexBase();
 
 }
 

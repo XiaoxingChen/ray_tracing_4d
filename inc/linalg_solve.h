@@ -63,7 +63,6 @@ inline Mat calcMatQ(const Mat& mat)
             Vec proj(project(mat_u(Col(j)), a_i));
             mat_u(Col(i)) = mat_u(Col(i)) - proj;
         }
-        // mat_u.set(Col(i), static_cast<UnitVec>(mat_u(Col(i))));
     }
     for(size_t i = 0; i < mat.shape(0); i++)
     {

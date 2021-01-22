@@ -26,11 +26,11 @@ protected:
     std::array<size_t, 4> row01_col01_;
 };
 
-inline Mat& Mat::set(const Block& s, const Mat& rhs)
-{
-    auto row01_col01 = s.getBlock(*this);
-    return Mat::setBlock(row01_col01[0], row01_col01[2], rhs);
-}
+// inline Mat& Mat::set(const Block& s, const Mat& rhs)
+// {
+//     auto row01_col01 = s.getBlock(*this);
+//     return Mat::setBlock(row01_col01[0], row01_col01[2], rhs);
+// }
 
 class Row: public Block
 {

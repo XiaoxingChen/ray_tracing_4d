@@ -152,7 +152,7 @@ public:
     {
         for(size_t i = 0; i < vertices_global_frame_.shape(1); i++)
         {
-            vertices_global_frame_.set(Col(i), vertices_global_frame_(Col(i)) + position_);
+            vertices_global_frame_(Col(i)) = vertices_global_frame_(Col(i)) + position_;
         }
         // aabb_.extend(vertices_global_frame_);
     }
@@ -171,7 +171,7 @@ public:
             Mat mat_a({position_.size(), position_.size()});
             for(size_t i = 0; i < position_.size(); i++)
             {
-                mat_a.set(Col(i), vertices_global_frame_(Col(vertex_indices.at(i))));
+                mat_a(Col(i)) = vertices_global_frame_(Col(vertex_indices.at(i)));
             }
             Vec result = intersectEquation(mat_a, ray);
             if(!validIntersect(result)) continue;
@@ -191,9 +191,9 @@ public:
         Mat norm_complement({position_.size(), position_.size() - 1});
         for(size_t i = 0; i < position_.size() - 1; i++)
         {
-            norm_complement.set(Col(i),
+            norm_complement(Col(i)) =
                 vertices_global_frame_(Col(indices_.at(closest_prim_idx).at(i + 1)))
-                - vertices_global_frame_(Col(indices_.at(closest_prim_idx).at(i))));
+                - vertices_global_frame_(Col(indices_.at(closest_prim_idx).at(i)));
         }
         ret->p = ray(min_t);
         ret->t = min_t;

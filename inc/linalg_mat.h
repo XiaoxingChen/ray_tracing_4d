@@ -36,6 +36,7 @@ public:
     using Shape = std::array<size_t, 2>;
     static const bool ROW = 0;
     static const bool COL = 1;
+    using ThisType = Mat;
 
     //
     // interfaces
@@ -58,13 +59,13 @@ public:
         data_ = data;
     }
 
-    Mat(const Mat& rhs)
+    Mat(const ThisType& rhs)
         :shape_(rhs.shape()), data_(rhs.shape(0) * rhs.shape(1)), major_(rhs.majorAxis())
     {
         (*this) = rhs;
     }
 
-    virtual void operator = (const Mat& rhs)
+    virtual void operator = (const ThisType& rhs)
     {
         if(this->shape() == Shape{0,0}) shape_ = rhs.shape();
         traverse([&](size_t i, size_t j){ (*this)(i,j) = rhs(i,j); });
@@ -73,11 +74,11 @@ public:
     //
     // static methods
     //
-    static Mat zeros(const Shape& _shape) { return Mat(_shape); }
-    static Mat ones(const Shape& _shape) { return Mat(_shape) + 1; }
-    static Mat Identity(size_t n)
+    static ThisType zeros(const Shape& _shape) { return ThisType(_shape); }
+    static ThisType ones(const Shape& _shape) { return ThisType(_shape) + 1; }
+    static ThisType Identity(size_t n)
     {
-        Mat mat({n,n});
+        ThisType mat({n,n});
         for(int i = 0; i < n; i++) mat(i,i) = 1;
         return mat;
     }
@@ -91,7 +92,7 @@ public:
             indexConvert2D(i,j,majorAxis(), shape(0), shape(1)));
     }
 
-    virtual FloatType& operator () (size_t i, size_t j) { return const_cast<FloatType&>(static_cast<const Mat&>(*this)(i,j)); }
+    virtual FloatType& operator () (size_t i, size_t j) { return const_cast<FloatType&>(static_cast<const ThisType&>(*this)(i,j)); }
 
     template<typename Op>
     void traverse(Op f) const
@@ -104,23 +105,23 @@ public:
     //
     // arithmetic operators
     //
-    Mat& operator *= (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= scalar;}); return *this;}
-    Mat& operator += (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) += scalar;}); return *this;}
-    Mat& operator -= (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) -= scalar;}); return *this;}
+    ThisType& operator *= (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= scalar;}); return *this;}
+    ThisType& operator += (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) += scalar;}); return *this;}
+    ThisType& operator -= (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) -= scalar;}); return *this;}
 
-    Mat operator * (FloatType scalar) const { return Mat(*this) *= scalar; }
-    Mat operator + (FloatType scalar) const { return Mat(*this) += scalar; }
-    Mat operator - (FloatType scalar) const { return Mat(*this) -= scalar; }
+    ThisType operator * (FloatType scalar) const { return ThisType(*this) *= scalar; }
+    ThisType operator + (FloatType scalar) const { return ThisType(*this) += scalar; }
+    ThisType operator - (FloatType scalar) const { return ThisType(*this) -= scalar; }
 
-    Mat& operator *= (const Mat& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= rhs(i,j);}); return *this;}
-    Mat& operator += (const Mat& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) += rhs(i,j);}); return *this;}
-    Mat& operator -= (const Mat& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) -= rhs(i,j);}); return *this;}
+    ThisType& operator *= (const ThisType& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= rhs(i,j);}); return *this;}
+    ThisType& operator += (const ThisType& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) += rhs(i,j);}); return *this;}
+    ThisType& operator -= (const ThisType& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) -= rhs(i,j);}); return *this;}
 
-    Mat operator * (const Mat& rhs) const { return Mat(*this) *= rhs; }
-    Mat operator + (const Mat& rhs) const { return Mat(*this) += rhs; }
-    Mat operator - (const Mat& rhs) const { return Mat(*this) -= rhs; }
+    ThisType operator * (const ThisType& rhs) const { return ThisType(*this) *= rhs; }
+    ThisType operator + (const ThisType& rhs) const { return ThisType(*this) += rhs; }
+    ThisType operator - (const ThisType& rhs) const { return ThisType(*this) -= rhs; }
 
-    Mat operator -() const        { return Mat(*this) *= -1;}
+    ThisType operator -() const        { return ThisType(*this) *= -1;}
 
     FloatType det() const;
     FloatType trace() const
@@ -139,26 +140,26 @@ public:
         return 0;
     }
 
-    const Mat& normalize(uint8_t p = 2)
+    const ThisType& normalize(uint8_t p = 2)
     {
         FloatType n = norm(p);
         if(n < eps()*eps()) { return *this; }
         return ((*this) *= (1./n));
     }
 
-    Mat normalized() const { return Mat(*this).normalize(); }
+    ThisType normalized() const { return ThisType(*this).normalize(); }
 
     virtual const MatRef T() const;
     virtual MatRef T();
 
-    Mat dot(const Mat& rhs) const { return matmul(rhs); }
+    ThisType dot(const ThisType& rhs) const { return matmul(rhs); }
 
-    Mat matmul(const Mat& rhs) const
+    ThisType matmul(const ThisType& rhs) const
     {
-        const Mat& lhs(*this);
+        const ThisType& lhs(*this);
         if(lhs.shape(1) != rhs.shape(0))
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        Mat ret(Mat::zeros({lhs.shape(0), rhs.shape(1)}));
+        ThisType ret(ThisType::zeros({lhs.shape(0), rhs.shape(1)}));
         ret.traverse([&](size_t i, size_t j)
             {
                 for(int k = 0; k < lhs.shape(1); k++)
@@ -175,14 +176,13 @@ public:
         return ret;
     }
 
-    Mat& setBlock(size_t i0, size_t j0, const Mat& mat)
+    ThisType& setBlock(size_t i0, size_t j0, const ThisType& mat)
     {
         mat.traverse([&](size_t i, size_t j) {(*this)(i + i0, j + j0) = mat(i, j);});
         return *this;
     }
     const MatRef operator () (const Block& s) const;
     MatRef operator () (const Block& s);
-    Mat& set(const Block& s, const Mat& rhs);
 
 protected:
     virtual std::vector<FloatType>* dataVectorPtr() { return &data_; }
