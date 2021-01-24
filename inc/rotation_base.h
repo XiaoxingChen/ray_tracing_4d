@@ -95,6 +95,19 @@ inline Mat bivectorToRotationMatrix(UnitVecIn u, UnitVecIn v)
 {
     return reflection(v).matmul(reflection(u));
 }
+
+inline FloatType normSO2(const Mat& R)
+{
+    return acos(R(0,0));
+}
+
+inline FloatType normSO3(const Mat& R)
+{
+    UnitVec axis;
+    FloatType angle;
+    matrixToAxisAngle3D(R, axis, angle);
+    return angle;
+}
 } // namespace rtc
 
 

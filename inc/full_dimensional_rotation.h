@@ -41,6 +41,8 @@ public:
 
     static ThisType Identity(size_t dim) { return ThisType(Mat::Identity(dim)); }
 
+    FloatType norm() const { return 0. }
+
 
 
 private:
