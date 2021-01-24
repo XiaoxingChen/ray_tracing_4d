@@ -145,7 +145,7 @@ inline std::shared_ptr<rtc::Mat> loadMeshVertices(
 
     const float* positions = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
-    ret = std::make_shared<Mat>(Mat::Shape({3, accessor.count}));
+    ret = std::make_shared<Mat>(Shape({3, accessor.count}));
 
     for (size_t i = 0; i < accessor.count; ++i)
     {

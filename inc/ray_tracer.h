@@ -12,8 +12,7 @@ namespace rtc
 inline Pixel skyBox(const Ray& ray)
 {
     FloatType t = 0.5 * (ray.direction()(1) + 1.);
-    return static_cast<Vec>(
-        (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.}));
+    return (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.});
 }
 
 inline Pixel trace(const HitManager& manager, Ray& ray, int depth, std::vector<Ray>* ray_record=nullptr)
@@ -29,8 +28,7 @@ inline Pixel trace(const HitManager& manager, Ray& ray, int depth, std::vector<R
         {
             auto new_ray = p_record->scattered;
             // std::cout << "hit!" << std::endl;
-            return static_cast<Vec>(
-                p_record->attenuation * trace(manager, new_ray, depth - 1, ray_record));
+            return p_record->attenuation * trace(manager, new_ray, depth - 1, ray_record);
 
         }
         else {

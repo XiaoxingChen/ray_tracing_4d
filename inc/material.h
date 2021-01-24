@@ -2,6 +2,7 @@
 #define _MATERIAL_H_
 
 // #include "vec3.h"
+#include "pixel.h"
 #include "linalg.h"
 #include "ray.h"
 #include "random_factory.h"
@@ -15,7 +16,7 @@ class Material
 {
 public:
     Material():albedo_(Pixel::black()){}
-    Material(const Vec& albedo):albedo_(albedo){}
+    Material(const Pixel& albedo):albedo_(albedo){}
     Material(const Pixel::InitialType& albedo):albedo_(albedo){}
 
     const Pixel& attenuation() const { return albedo_; }

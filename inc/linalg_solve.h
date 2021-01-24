@@ -88,19 +88,20 @@ inline Vec solve(const Mat& mat_a, const Vec& b)
 }
 } // namespace qr
 
-inline FloatType Mat::det() const
+template <typename DType>
+DType Matrix<DType>::det() const
 {
     if(square() && shape(0) == 2)
         return (*this)(0,0) * (*this)(1,1) - (*this)(1,0)*(*this)(0,1);
 
-    Mat mat_q(qr::calcMatQ(*this));
+    Matrix<DType> mat_q(qr::calcMatQ(*this));
 
     // check full rank
     if((mat_q.matmul(mat_q)).trace() - shape(0) > eps())
         return 0.;
 
-    Mat mat_r(mat_q.T().matmul(*this));
-    FloatType det(1);
+    Matrix<DType> mat_r(mat_q.T().matmul(*this));
+    DType det(1);
     for(size_t i = 0; i < shape(0); i++) det *= mat_r(i,i);
     return det;
 }

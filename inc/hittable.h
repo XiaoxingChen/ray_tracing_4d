@@ -48,9 +48,9 @@ class Hittable
         const Material& material() const { return *material_; }
 
         struct HitRecord {
-            HitRecord(Vec attenuation_, const Ray& scattered_, FloatType hit_t_)
+            HitRecord(Pixel attenuation_, const Ray& scattered_, FloatType hit_t_)
             :attenuation(attenuation_), scattered(scattered_), hit_t(hit_t_) {}
-            Vec attenuation;
+            Pixel attenuation;
             Ray scattered;
             FloatType hit_t;
         };
@@ -97,9 +97,9 @@ class HitManager
             return ret;
         }
 
-        void addHittables(RigidBodyPtr&& p_rigid, MaterialPtr&& p_material)
+        void addHittables(const RigidBodyPtr& p_rigid, const MaterialPtr& p_material)
         {
-            hittables_.push_back(Hittable(std::forward<RigidBodyPtr>(p_rigid), std::forward<MaterialPtr>(p_material)));
+            hittables_.push_back(Hittable(p_rigid, p_material));
         }
 
     private:

@@ -16,22 +16,32 @@
 namespace rtc
 {
 
-class Pixel;
+// class Pixel;
 
-class Vec: public Mat
+template<typename DType>
+class Vector: public Matrix<DType>
 {
 public:
-    Vec(size_t size): Mat({size, 1}){}
-    Vec(const std::vector<FloatType>& v): Mat({v.size(), 1}, v){}
+    using ThisType = Vector<DType>;
+    using BaseType = Matrix<DType>;
 
-    size_t size() const { return shape(0); }
-    Vec(const Mat& mat);
+    Vector(size_t size): BaseType({size, 1}){}
+    Vector(const std::vector<FloatType>& v): BaseType({v.size(), 1}, v){}
+
+    Vector(const BaseType& mat)
+        : BaseType(mat.shape(1) == 1 ? mat : mat.T())
+    {
+        if(mat.shape(0) != 1 && mat.shape(1) != 1)
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
+    size_t size() const { return BaseType::shape(0); }
 
 
-    FloatType& operator () (size_t i) { return Mat::operator()(i, 0); }
-    const FloatType& operator () (size_t i) const { return Mat::operator()(i, 0); }
+    FloatType& operator () (size_t i) { return BaseType::operator()(i, 0); }
+    const FloatType& operator () (size_t i) const { return BaseType::operator()(i, 0); }
 
-    FloatType dot(const Vec& rhs) const
+    FloatType dot(const ThisType& rhs) const
     {
         if(size() != rhs.size())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -40,8 +50,8 @@ public:
         return sum;
     }
 
-    static Vec zeros(size_t n) { return Vec(n); }
-    static Vec ones(size_t n) { return Vec(n) + 1; }
+    static ThisType zeros(size_t n) { return ThisType(n); }
+    static ThisType ones(size_t n) { return ThisType(n) + 1; }
 
     operator std::vector<FloatType> () const
     {
@@ -49,10 +59,9 @@ public:
         for(size_t i = 0; i < size(); i++) ret.push_back((*this)(i));
         return ret;
     }
-
-    operator Pixel() const;
 };
 
+using Vec = Vector<FloatType>;
 class UnitVec: public Vec
 {
 public:
@@ -81,36 +90,6 @@ private:
 using VecIn = const Vec&;
 using UnitVecIn = const UnitVec&;
 
-// inline Mat::operator rtc::Vec() const
-// {
-//     if(shape(1) != 1 && shape(0) != 1) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-//     return Vec(data_);
-// }
-
-class Pixel: public Vec
-{
-public:
-    using InitialType = std::array<FloatType, 3>;
-    Pixel(const InitialType& v): Vec(std::vector<FloatType>(v.begin(), v.end())){}
-    Pixel(const Vec& v): Vec(v){}
-    Pixel(): Vec(3){}
-
-    const float_t & r() const {return Vec::operator()(0);}
-    const float_t & g() const {return Vec::operator()(1);}
-    const float_t & b() const {return Vec::operator()(2);}
-
-    int rU8() const {return r() < 0 ? 0 : r() > 1 ? 255 : r() * 255.99;}
-    int gU8() const {return g() < 0 ? 0 : g() > 1 ? 255 : g() * 255.99;}
-    int bU8() const {return b() < 0 ? 0 : b() > 1 ? 255 : b() * 255.99;}
-
-    static Pixel black() {return Pixel();}
-    static Pixel white() {return Pixel({1,1,1});}
-
-private:
-
-};
-
-inline Vec::operator Pixel() const {return Pixel(*this);}
 
 } // namespace rtc
 

@@ -26,17 +26,21 @@ inline std::string to_string(const FloatType& v, size_t prec=6)
     return stream.str();
 }
 
-class Vec;
+// class Vec;
 class Block;
-class MatRef;
+template<typename DType> class MatrixRef;
+// using MatRef = MatrixRef<FloatType>;
 
-class Mat
+using Shape = std::array<size_t, 2>;
+template<typename DType>
+class Matrix
 {
 public:
-    using Shape = std::array<size_t, 2>;
+
     static const bool ROW = 0;
     static const bool COL = 1;
-    using ThisType = Mat;
+    using ThisType = Matrix<DType>;
+    using DataPtr = std::vector<DType>*;
 
     //
     // interfaces
@@ -48,9 +52,9 @@ public:
 
     //
     // constructors
-    Mat():shape_({0,0}), data_(), major_(ROW) {}
+    Matrix():shape_({0,0}), data_(), major_(ROW) {}
 
-    Mat(const Shape& _shape, const std::vector<FloatType>& data={}, bool major=ROW)
+    Matrix(const Shape& _shape, const std::vector<DType>& data={}, bool major=ROW)
         :shape_(_shape), data_(_shape[0] * _shape[1], 0), major_(major)
     {
         if(data.size() == 0)  return;
@@ -59,7 +63,7 @@ public:
         data_ = data;
     }
 
-    Mat(const ThisType& rhs)
+    Matrix(const ThisType& rhs)
         :shape_(rhs.shape()), data_(rhs.shape(0) * rhs.shape(1)), major_(rhs.majorAxis())
     {
         (*this) = rhs;
@@ -86,13 +90,13 @@ public:
     //
     // basic accessor
     //
-    virtual const FloatType& operator () (size_t i, size_t j) const
+    virtual const DType& operator () (size_t i, size_t j) const
     {
         return data_.at(
             indexConvert2D(i,j,majorAxis(), shape(0), shape(1)));
     }
 
-    virtual FloatType& operator () (size_t i, size_t j) { return const_cast<FloatType&>(static_cast<const ThisType&>(*this)(i,j)); }
+    virtual DType& operator () (size_t i, size_t j) { return const_cast<DType&>(static_cast<const ThisType&>(*this)(i,j)); }
 
     template<typename Op>
     void traverse(Op f) const
@@ -105,13 +109,13 @@ public:
     //
     // arithmetic operators
     //
-    ThisType& operator *= (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= scalar;}); return *this;}
-    ThisType& operator += (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) += scalar;}); return *this;}
-    ThisType& operator -= (FloatType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) -= scalar;}); return *this;}
+    ThisType& operator *= (DType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= scalar;}); return *this;}
+    ThisType& operator += (DType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) += scalar;}); return *this;}
+    ThisType& operator -= (DType scalar)  { traverse([&](size_t i, size_t j){(*this)(i,j) -= scalar;}); return *this;}
 
-    ThisType operator * (FloatType scalar) const { return ThisType(*this) *= scalar; }
-    ThisType operator + (FloatType scalar) const { return ThisType(*this) += scalar; }
-    ThisType operator - (FloatType scalar) const { return ThisType(*this) -= scalar; }
+    ThisType operator * (DType scalar) const { return ThisType(*this) *= scalar; }
+    ThisType operator + (DType scalar) const { return ThisType(*this) += scalar; }
+    ThisType operator - (DType scalar) const { return ThisType(*this) -= scalar; }
 
     ThisType& operator *= (const ThisType& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) *= rhs(i,j);}); return *this;}
     ThisType& operator += (const ThisType& rhs)  { traverse([&](size_t i, size_t j){(*this)(i,j) += rhs(i,j);}); return *this;}
@@ -123,17 +127,17 @@ public:
 
     ThisType operator -() const        { return ThisType(*this) *= -1;}
 
-    FloatType det() const;
-    FloatType trace() const
+    DType det() const;
+    DType trace() const
     {
         if(!square()) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        FloatType ret(0);
+        DType ret(0);
         for(size_t i = 0; i < shape(0); i++) ret += (*this)(i,i);
         return ret;
     }
 
-    FloatType norm(uint8_t p = 2) const;
-    FloatType norm(const std::string& p) const
+    DType norm(uint8_t p = 2) const;
+    DType norm(const std::string& p) const
     {
         if(p == std::string("F")) return norm(2);
         if(p == std::string("inf")) return norm(255);
@@ -142,15 +146,15 @@ public:
 
     const ThisType& normalize(uint8_t p = 2)
     {
-        FloatType n = norm(p);
+        DType n = norm(p);
         if(n < eps()*eps()) { return *this; }
         return ((*this) *= (1./n));
     }
 
     ThisType normalized() const { return ThisType(*this).normalize(); }
 
-    virtual const MatRef T() const;
-    virtual MatRef T();
+    virtual const MatrixRef<DType> T() const;
+    virtual MatrixRef<DType> T();
 
     ThisType dot(const ThisType& rhs) const { return matmul(rhs); }
 
@@ -181,25 +185,28 @@ public:
         mat.traverse([&](size_t i, size_t j) {(*this)(i + i0, j + j0) = mat(i, j);});
         return *this;
     }
-    const MatRef operator () (const Block& s) const;
-    MatRef operator () (const Block& s);
+    const MatrixRef<DType> operator () (const Block& s) const;
+    MatrixRef<DType> operator () (const Block& s);
 
 protected:
-    virtual std::vector<FloatType>* dataVectorPtr() { return &data_; }
-    virtual const std::vector<FloatType>* dataVectorPtr() const { return &data_; }
+    virtual DataPtr dataVectorPtr() { return &data_; }
+    virtual const DataPtr dataVectorPtr() const { return &data_; }
     virtual bool ownerMajor() const {return majorAxis();}
     virtual Shape ownerShape() const {return shape();}
     virtual Shape refOffset() const { return Shape({0,0}); }
 
 protected:
     Shape shape_;
-    std::vector<FloatType> data_;
+    // mutable for MatrixRef
+    mutable std::vector<DType> data_;
     bool major_;
 };
 
-inline Mat operator + (FloatType lhs, const Mat& rhs) { return rhs + lhs;}
-inline Mat operator - (FloatType lhs, const Mat& rhs) { return -rhs + lhs;}
-inline Mat operator * (FloatType lhs, const Mat& rhs) { return rhs * lhs;}
+using Mat = Matrix<FloatType>;
+
+template<typename LType, typename DType> Mat operator + (LType lhs, const Mat& rhs) { return rhs + lhs;}
+template<typename LType, typename DType> Mat operator - (LType lhs, const Mat& rhs) { return -rhs + lhs;}
+template<typename LType, typename DType> Matrix<DType> operator * (LType lhs, const Matrix<DType>& rhs) { return rhs * lhs;}
 
 inline size_t indexConvert2D(size_t i, size_t j, bool major, size_t shape_i, size_t shape_j)
 {
@@ -207,21 +214,22 @@ inline size_t indexConvert2D(size_t i, size_t j, bool major, size_t shape_i, siz
     return (j * shape_i + i);
 }
 
-inline FloatType Mat::norm(uint8_t p) const
+template <typename DType>
+DType Matrix<DType>::norm(uint8_t p) const
 {
     if(2 == p)
     {
-        FloatType sum2(0);
+        DType sum2(0);
         Mat mat_2((*this)*(*this));
         traverse([&](size_t i, size_t j){sum2 += mat_2(i,j);});
         return sqrt(sum2);
     }
     if(1 == p)
     {
-        FloatType max_abs_sum(0);
+        DType max_abs_sum(0);
         for(int j = 0; j < shape(1); j++)
         {
-            FloatType abs_sum(0);
+            DType abs_sum(0);
             for(int i = 0; i < shape(0); i++) abs_sum += fabs((*this)(i,j));
             max_abs_sum = std::max(max_abs_sum, abs_sum);
         }

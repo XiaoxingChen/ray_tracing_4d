@@ -5,6 +5,7 @@
 #include <string>
 #include <cmath>
 #include "base_type.h"
+#include "accessor.h"
 
 namespace rtc
 {
@@ -21,16 +22,9 @@ inline std::string complexSymbol(size_t i)
     return table[i];
 }
 
-template<typename DType>
-inline std::string to_string(const DType& v, size_t prec=6)
-{
-    std::stringstream stream;
-    stream << std::fixed << std::setprecision(prec) << v;
-    return stream.str();
-}
 
 template<typename DType, unsigned int N>
-class ComplexNumber
+class ComplexNumber: public LinearData<ComplexNumber<DType, N>, DType>
 {
 public:
     using ThisType = ComplexNumber<DType,N>;
@@ -42,61 +36,28 @@ public:
     ComplexNumber(){}
     ~ComplexNumber(){}
 
-
     const DType& operator () (size_t i) const { return data_.at(i); }
     DType& operator () (size_t i) { return const_cast<DType&>(static_cast<const ThisType&>(*this)(i)); }
 
-    template<typename Op>
-    void traverse(Op f) const
-    {
-        for(size_t i = 0; i < N; i++) f(i);
-    }
+    constexpr size_t size() const { return N; }
 
     void operator = (const ThisType& rhs)
     {
-        traverse([&](size_t i){ (*this)(i) = rhs(i); });
+        this->traverse([&](size_t i){ (*this)(i) = rhs(i); });
     }
 
     ThisType& operator *= (DType scalar)  { traverse([&](size_t i){(*this)(i) *= scalar;}); return *this;}
-    ThisType& operator += (DType scalar)  { traverse([&](size_t i){(*this)(i) += scalar;}); return *this;}
-    ThisType& operator -= (DType scalar)  { traverse([&](size_t i){(*this)(i) -= scalar;}); return *this;}
-
     ThisType operator * (DType scalar) const { return ThisType(*this) *= scalar; }
-    ThisType operator + (DType scalar) const { return ThisType(*this) += scalar; }
-    ThisType operator - (DType scalar) const { return ThisType(*this) -= scalar; }
-
-    ThisType& operator += (const ThisType& rhs)  { traverse([&](size_t i){(*this)(i) += rhs(i);}); return *this;}
-    ThisType& operator -= (const ThisType& rhs)  { traverse([&](size_t i){(*this)(i) -= rhs(i);}); return *this;}
-
-    ThisType operator + (const ThisType& rhs) const { return ThisType(*this) += rhs; }
-    ThisType operator - (const ThisType& rhs) const { return ThisType(*this) -= rhs; }
 
     ThisType& operator *= (const ThisType& rhs)  { (*this) = complexMul(*this, rhs); return *this;}
     ThisType& operator * (const ThisType& rhs)  { return ThisType(*this) *= rhs;}
 
-    ThisType conjugate() const { ThisType ret(-(*this)); ret(0) = -ret(0); return ret;}
-
-    DType norm() const
-    {
-        DType sum;
-        traverse([&](size_t i) {sum += (*this)(i) * (*this)(i);});
-        return sqrt(sum);
-    }
-
-    ThisType& normalize()
-    {
-        DType n(norm());
-        if(n < eps() * eps()) return (*this);
-        traverse([&](size_t i) {(*this)(i) /= n;});
-        return (*this);
-    }
-
-    ThisType normalized() { return ThisType(*this).normalized(); }
+    ThisType conjugate() const { ThisType ret(-(*this)); ret(0) *= -1; return ret;}
 
     std::string str() const
     {
         std::string ret;
-        traverse([&](size_t i){
+        this->traverse([&](size_t i){
             ret += ((*this)(i) >= 0 && i > 0 ? "+" : "");
             ret += (rtc::to_string((*this)(i), 6) + complexSymbol(i)); });
         return ret;

@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include "linalg.h"
+#include "pixel.h"
+#include "accessor.h"
+
 
 using namespace rtc;
 
@@ -180,6 +183,8 @@ inline void testLinearAlgebra()
 
     if(fabs(Mat::Identity(3).det() - 1.) > eps())
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    // traverse(m1, [&](size_t i, size_t j){std::cout << i << std::endl;});
 
     testPixel();
     testMatRef();

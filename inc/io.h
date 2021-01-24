@@ -8,6 +8,7 @@
 #include <fstream>
 #include "linalg.h"
 #include <iostream>
+#include "pixel.h"
 
 namespace rtc{
 

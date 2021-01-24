@@ -13,13 +13,16 @@ inline std::array<size_t,2> indexBlockToMat(size_t i, size_t j, size_t offset_i,
     return std::array<size_t,2>{j + offset_j, i + offset_i};
 }
 
-class MatRef: public Mat
+template<typename DType>
+class MatrixRef: public Matrix<DType>
 {
 public:
-    using ConstDataPtr = const std::vector<FloatType>*;
-    using DataPtr = std::vector<FloatType>*;
+    using ConstDataPtr = const std::vector<DType>*;
+    using ThisType = MatrixRef;
+    using BaseType = Matrix<DType>;
+    using DataPtr = typename Matrix<DType>::DataPtr;
 
-    MatRef(
+    MatrixRef(
         const Shape& shape, const Shape& owner_shape,
         bool major, bool owner_major,
         const Shape& offset,
@@ -29,35 +32,34 @@ public:
         ref_offset_(offset),
         p_owner_data_(p_owner_data)
         {
-            shape_ = shape;
+            BaseType::shape_ = shape;
         }
 
-    using ThisType = MatRef;
 
     virtual bool ownerMajor() const override { return owner_major_; }
     virtual Shape refOffset() const override { return ref_offset_; }
     virtual Shape ownerShape() const {return owner_shape_;}
 
-    virtual std::vector<FloatType>* dataVectorPtr() override { return p_owner_data_; }
-    virtual const std::vector<FloatType>* dataVectorPtr() const override { return p_owner_data_; }
+    virtual DataPtr dataVectorPtr() override { return p_owner_data_; }
+    virtual const DataPtr dataVectorPtr() const override { return p_owner_data_; }
 
-    virtual const FloatType& operator () (size_t i, size_t j) const
+    virtual const DType& operator () (size_t i, size_t j) const
     {
-        auto ref_ij = indexBlockToMat(i,j, ref_offset_[0], ref_offset_[1], owner_major_ == majorAxis());
+        auto ref_ij = indexBlockToMat(i,j, ref_offset_[0], ref_offset_[1], owner_major_ == BaseType::majorAxis());
         return dataVectorPtr()->at(
             indexConvert2D(ref_ij[0], ref_ij[1], owner_major_, owner_shape_[0], owner_shape_[1]));
     }
 
-    virtual FloatType& operator () (size_t i, size_t j) { return const_cast<FloatType&>(static_cast<const ThisType&>(*this)(i,j)); }
+    virtual DType& operator () (size_t i, size_t j) { return const_cast<FloatType&>(static_cast<const ThisType&>(*this)(i,j)); }
 
     //
     // All overloaded operators except assignment (operator=)
     // are inherited by derived classes.
-    virtual void operator = (const Mat& rhs)
+    virtual void operator = (const Matrix<DType>& rhs)
     {
-        if(shape() != rhs.shape())
+        if(BaseType::shape() != rhs.shape())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        traverse([&](size_t i, size_t j) { (*this)(i,j) = rhs(i,j); });
+        Matrix<DType>::traverse([&](size_t i, size_t j) { (*this)(i,j) = rhs(i,j); });
     }
 
 protected:
@@ -69,56 +71,43 @@ protected:
     ConstDataPtr cp_owner_data_;
 };
 
-inline const MatRef Mat::T() const
+template <typename DType>
+const MatrixRef<DType> Matrix<DType>::T() const
 {
-    return MatRef(
+    return MatrixRef<DType>(
         {shape(1), shape(0)}, ownerShape(),
         !majorAxis(), ownerMajor(),
         refOffset(),
-        const_cast<MatRef::DataPtr>(dataVectorPtr()));
+        const_cast<typename Matrix<DType>::DataPtr>(dataVectorPtr()));
 }
 
-inline MatRef Mat::T()
+template <typename DType>
+MatrixRef<DType> Matrix<DType>::T()
 {
-    return static_cast<const Mat&>(*this).T();
+    return static_cast<const Matrix<DType>&>(*this).T();
 }
 
-#if 1
-inline const MatRef Mat::operator () (const Block& s) const
+template <typename DType>
+const MatrixRef<DType> Matrix<DType>::operator () (const Block& s) const
 {
     auto i01j01 = s.getBlock(*this);
     auto newOffset = refOffset();
     newOffset[0] += i01j01[0];
     newOffset[1] += i01j01[2];
-    return MatRef(
+    return MatrixRef<DType>(
         {i01j01[1] - i01j01[0], i01j01[3] - i01j01[2]}, ownerShape(),
         majorAxis(), ownerMajor(),
-        newOffset, const_cast<MatRef::DataPtr>(dataVectorPtr()));
+        newOffset, const_cast<typename Matrix<DType>::DataPtr>(dataVectorPtr()));
 }
 
-inline MatRef Mat::operator () (const Block& s)
+template <typename DType>
+MatrixRef<DType> Matrix<DType>::operator () (const Block& s)
 {
     return static_cast<const Mat&>(*this)(s);
 }
-#endif
 
-#if 0
-inline Mat::Mat(const MatRef& rhs)
-    :shape_(rhs.shape()),data_(rhs.shape(0) * rhs.shape(1)),major_(rhs.majorAxis())
-{
-    (*this) = rhs;
-}
-#endif
+using MatRef = MatrixRef<FloatType>;
 
-#include "linalg_vec.h"
-
-
-inline Vec::Vec(const Mat& mat)
-    : Mat(mat.shape(1) == 1 ? mat : mat.T())
-{
-    if(mat.shape(0) != 1 && mat.shape(1) != 1)
-        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-}
 
 } // namespace rtc
 

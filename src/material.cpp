@@ -2,6 +2,7 @@
 #include "ray.h"
 #include "hittable.h"
 #include "random_factory.h"
+#include "pixel.h"
 
 namespace rtc
 {
@@ -25,7 +26,7 @@ class Lambertian :public Material
 class Metal :public Material
 {
     public:
-        Metal(const Vec& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 0 : fuzz){}
+        Metal(const Pixel& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 0 : fuzz){}
 
         virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const
         {
