@@ -222,6 +222,48 @@ inline AcceleratedHitManager gltf3DBox()
 
 }
 
+inline AcceleratedHitManager gltf3DSphere()
+{
+    tinygltf::Model model;
+    size_t dim = 3;
+    loadModel(model, "assets/sphere/sphere.gltf");
+
+    std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
+    // for(size_t i = 0; i < 20; i++)
+    // {
+    //     std::cout << (*vertex_buffer)(Col(i)).T().str();
+    // }
+
+    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+
+    // std::cout << "Vertices: \n" << vertex_buffer->str();
+
+    // Rotation r(Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.));
+    // *vertex_buffer = r.apply(*vertex_buffer);
+    (*vertex_buffer)(Row(2)) += 3;
+    // indices.resize(15);
+
+
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    for(auto & idx: indices)
+    {
+        // for(auto & xyz: idx) std::cout << xyz <<  " ";
+        // std::cout << std::endl;
+        buffer->push_back(Hittable(
+            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
+            Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1, /*verbose*/ false);
+    manager.setRoot(root);
+
+    return manager;
+
+}
+
 inline AcceleratedHitManager rectangle3D_001()
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();

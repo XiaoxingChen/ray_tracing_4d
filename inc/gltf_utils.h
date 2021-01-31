@@ -140,16 +140,24 @@ inline std::shared_ptr<rtc::Mat> loadMeshVertices(
 
     const tinygltf::Accessor& accessor = model.accessors[primitive.attributes["POSITION"]];
 
+    if(accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
     const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
+    if(bufferView.target != TINYGLTF_TARGET_ARRAY_BUFFER)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
     const tinygltf::Buffer&     buffer     = model.buffers[bufferView.buffer];
 
-    const float* positions = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
+    // const float* positions = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
     ret = std::make_shared<Mat>(Shape({3, accessor.count}));
+    size_t stride = 8;
 
     for (size_t i = 0; i < accessor.count; ++i)
     {
-        (*ret)(Col(i)) = Vec({positions[i * 3 + 0], positions[i * 3 + 1], positions[i * 3 + 2]});
+        const float* positions = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + i * bufferView.byteStride + accessor.byteOffset]);
+        (*ret)(Col(i)) = Vec({positions[0], positions[1], positions[2]});
     }
     return ret;
 

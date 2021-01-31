@@ -103,7 +103,7 @@ inline FloatType normSO2(const Mat& R)
 
 inline FloatType normSO3(const Mat& R)
 {
-    UnitVec axis;
+    UnitVec axis(3);
     FloatType angle;
     matrixToAxisAngle3D(R, axis, angle);
     return angle;

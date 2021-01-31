@@ -185,8 +185,8 @@ public:
         mat.traverse([&](size_t i, size_t j) {(*this)(i + i0, j + j0) = mat(i, j);});
         return *this;
     }
-    const MatrixRef<DType> operator () (const Block& s) const;
-    MatrixRef<DType> operator () (const Block& s);
+    virtual const MatrixRef<DType> operator () (const Block& s) const;
+    virtual MatrixRef<DType> operator () (const Block& s);
 
 protected:
     virtual DataPtr dataVectorPtr() { return &data_; }

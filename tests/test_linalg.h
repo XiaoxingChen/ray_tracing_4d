@@ -134,17 +134,24 @@ inline void testMatRef()
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
-    // {
-    //     Mat mat_a(Mat::ones({3,3}));
-    //     mat_a(Col(2)) = Vec::zeros(3);
-    //     std::cout << mat_a(Col(2)).T().str() << std::endl;
-    // }
+    {
+        Mat mat_a(Mat::ones({3, 10}));
+        MatRef mr(mat_a(Col(1)).T());
+        if((mr - Mat::ones({1, 3})).norm() > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
 
-    // {
-    //     const Mat mat_a(Mat::ones({3,3}));
-    //     mat_a(Col(2)) = Vec::zeros(3);
-    //     std::cout << mat_a(Col(2)).T().str() << std::endl;
-    // }
+    {
+        Mat mat_a(Mat::ones({3, 10}));
+        MatRef m1(mat_a(Block({},{3,7})).T());
+        MatRef m2(m1(Row(1)).T());
+        MatRef m3(m1(Col(1)));
+        if((m2 - Mat::ones({3, 1})).norm() > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        if((m3 - Mat::ones({4, 1})).norm() > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
 
 }
 

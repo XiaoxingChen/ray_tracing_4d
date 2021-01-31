@@ -9,8 +9,8 @@ namespace rtc
 
 inline std::array<size_t,2> indexBlockToMat(size_t i, size_t j, size_t offset_i, size_t offset_j, bool same_major)
 {
-    if(same_major) return std::array<size_t,2>{i + offset_i, j + offset_j};
-    return std::array<size_t,2>{j + offset_j, i + offset_i};
+    if(same_major) return std::array<size_t,2>{offset_i + i, offset_j + j};
+    return std::array<size_t,2>{offset_i + j, offset_j + i};
 }
 
 template<typename DType>
@@ -43,14 +43,23 @@ public:
     virtual DataPtr dataVectorPtr() override { return p_owner_data_; }
     virtual const DataPtr dataVectorPtr() const override { return p_owner_data_; }
 
-    virtual const DType& operator () (size_t i, size_t j) const
+    virtual const DType& operator () (size_t i, size_t j) const override
     {
         auto ref_ij = indexBlockToMat(i,j, ref_offset_[0], ref_offset_[1], owner_major_ == BaseType::majorAxis());
         return dataVectorPtr()->at(
             indexConvert2D(ref_ij[0], ref_ij[1], owner_major_, owner_shape_[0], owner_shape_[1]));
     }
 
-    virtual DType& operator () (size_t i, size_t j) { return const_cast<FloatType&>(static_cast<const ThisType&>(*this)(i,j)); }
+    virtual DType& operator () (size_t i, size_t j) override { return const_cast<FloatType&>(static_cast<const ThisType&>(*this)(i,j)); }
+    virtual const MatrixRef<DType> operator () (const Block& s) const override
+    {
+        return Matrix<DType>::operator () (s);
+    }
+
+    virtual MatrixRef<DType> operator () (const Block& s) override
+    {
+        return static_cast<const ThisType&>(*this)(s);
+    }
 
     //
     // All overloaded operators except assignment (operator=)
@@ -92,8 +101,17 @@ const MatrixRef<DType> Matrix<DType>::operator () (const Block& s) const
 {
     auto i01j01 = s.getBlock(*this);
     auto newOffset = refOffset();
-    newOffset[0] += i01j01[0];
-    newOffset[1] += i01j01[2];
+    if(ownerMajor() == majorAxis())
+    {
+        newOffset[0] += i01j01[0];
+        newOffset[1] += i01j01[2];
+    }
+    else
+    {
+        newOffset[0] += i01j01[2];
+        newOffset[1] += i01j01[0];
+    }
+
     return MatrixRef<DType>(
         {i01j01[1] - i01j01[0], i01j01[3] - i01j01[2]}, ownerShape(),
         majorAxis(), ownerMajor(),

@@ -18,8 +18,10 @@ using namespace rtc;
 int main(int argc, char const *argv[])
 {
     Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({500, 500}), Vec({640, 480}));
+    // Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({250, 250}), Vec({320, 240}));
     // auto scene = scene::rectangle3D_002();
-    auto scene = scene::gltf3DBox();
+    // auto scene = scene::gltf3DBox();
+    auto scene = scene::gltf3DSphere();
     // auto scene = scene::simple3D_003();
 
     auto render = RenderSample(3);
@@ -28,9 +30,9 @@ int main(int argc, char const *argv[])
         .setMode(RenderSample::eMULTITHREADING)
         // .setMode(RenderSample::eSINGLE_RAY)
         // .setMode(RenderSample::eNAIVE)
-        .setRecursionDepth(5)
+        .setRecursionDepth(10)
         .enableRayStack(true)
-        .setSampleNum(1)
+        .setSampleNum(5)
         .setScene(&scene)
         .setTestRay(cam.pixelRay({493, 304}))
         // .setTestRay(Ray(Vec({0.8857144713,1.0000002384,14.2857179642}), Vec({0.0617306866,-0.0696959719,0.9956564903})))

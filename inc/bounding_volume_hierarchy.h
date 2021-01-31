@@ -16,7 +16,8 @@ class Node;
 size_t sortInLongestAxis(
     HittableBufferPtr buffer,
     const std::array<size_t, 2>& range,
-    size_t dim);
+    size_t dim,
+    bool verbose);
 using NodePtr = std::unique_ptr<Node>;
 class Node
 {
@@ -61,7 +62,7 @@ public:
         return is_leaf_ ? hitLeaf(ray) : hitInternalNode(ray);
     }
 
-    void split(size_t max_hittable_num=4, size_t children_num=2)
+    void split(size_t max_hittable_num=4, bool verbose=true, size_t children_num=2)
     {
         if(hittable_range_[1] - hittable_range_[0] <= max_hittable_num)
         {
@@ -74,7 +75,7 @@ public:
         children_.push_back(std::make_unique<Node>(*this));
         children_.push_back(std::make_unique<Node>(*this));
 
-        size_t mid = sortInLongestAxis(hittable_buffer_, hittable_range_, aabb_.dim());
+        size_t mid = sortInLongestAxis(hittable_buffer_, hittable_range_, aabb_.dim(), verbose);
 
         children_.front()->hittable_range_[1] = mid;
         children_.back()->hittable_range_[0] = mid;
@@ -84,7 +85,7 @@ public:
             child->updateAABB();
             // std::cout << "max: " << child->aabb_.max().T().str()
             // << "min: " << child->aabb_.min().T().str() << std::endl;
-            child->split(max_hittable_num, children_num);
+            child->split(max_hittable_num, verbose, children_num);
         }
     }
 
@@ -137,7 +138,8 @@ private:
 inline size_t sortInLongestAxis(
     HittableBufferPtr buffer,
     const std::array<size_t, 2>& range,
-    size_t dim)
+    size_t dim,
+    bool verbose=true)
 {
     AABB box(dim);
     for(size_t i = range[0]; i < range[1]; i++)
@@ -145,7 +147,8 @@ inline size_t sortInLongestAxis(
         box.extend(buffer->at(i).rigidBody().aabb());
     }
     size_t target_axis = argMax(box.max() - box.min());
-    std::cout << "range: [" << range[0] << "," << range[1] << "), axis: " << target_axis << std::endl;
+    if(verbose)
+        std::cout << "range: [" << range[0] << "," << range[1] << "), axis: " << target_axis << std::endl;
 #if 0
     std::array<size_t, 2> p(range);
     p[1] -= 1;
