@@ -150,13 +150,15 @@ inline std::shared_ptr<rtc::Mat> loadMeshVertices(
     const tinygltf::Buffer&     buffer     = model.buffers[bufferView.buffer];
 
     // const float* positions = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
+    // std::cout << "bufferView.byteStride: " << bufferView.byteStride << std::endl;
+    // std::cout << "accessor.byteOffset: " << accessor.byteOffset << std::endl;
 
     ret = std::make_shared<Mat>(Shape({3, accessor.count}));
-    size_t stride = 8;
+    size_t byteStride = bufferView.byteStride > 0 ? bufferView.byteStride : 3 * sizeof(float);
 
     for (size_t i = 0; i < accessor.count; ++i)
     {
-        const float* positions = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + i * bufferView.byteStride + accessor.byteOffset]);
+        const float* positions = reinterpret_cast<const float*>(&buffer.data[bufferView.byteOffset + i * byteStride + accessor.byteOffset]);
         (*ret)(Col(i)) = Vec({positions[0], positions[1], positions[2]});
     }
     return ret;

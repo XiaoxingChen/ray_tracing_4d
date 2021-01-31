@@ -4,6 +4,8 @@ import sys
 import os
 import shutil
 import argparse
+sys.path.append( os.path.join(os.path.abspath(os.path.dirname(__file__)), 'scripts'))
+from build_lib import *
 
 UNIX_CMAKE_STR = 'cmake {} -B{} -G "Unix Makefiles"'
 TEST_EXCUTABLE_NAME = 'test_main'
@@ -13,6 +15,8 @@ class Dir():
     build_root = os.path.join(script_folder, 'build')
     cmake_project = script_folder
     plot_script = os.path.join(script_folder, 'scripts', 'pixel_coordinate.py')
+    lfs_yaml = os.path.join(script_folder, 'lfs.yaml')
+    lfs_asset = os.path.join(build_root, 'assets')
 
 class BuildTarget():
     def __init__(self):
@@ -155,18 +159,10 @@ def createParser():
     parser.add_argument('--all', action='store_true', help='Compile for all platforms')
     parser.add_argument('--test-all', action='store_true', help='Run test on all platforms')
     parser.add_argument('--cmake-options', dest='cmake_options', help='additional cmake options. Put in quote, start with space: " -DCMAKE_BUILD_TYPE=Debug"')
+    parser.add_argument('--sync-lfs', action='store_true', help='Synchronize large file storage')
 
     return parser
 
-def handleAutoComplete():
-    if sys.platform == 'linux':
-        complete_cmd = 'complete -F _longopt {}'.format(os.path.basename(__file__))
-        bashrc_path = os.path.expanduser('~/.bashrc')
-        with open(bashrc_path) as f:
-            if not complete_cmd in f.read():
-                os.system('echo "{}" >> {}'.format(complete_cmd, bashrc_path))
-    else:
-        pass
 
 def run(build_script_folder=os.path.abspath(os.path.dirname(__file__))):
     parser = createParser()
@@ -197,6 +193,9 @@ def run(build_script_folder=os.path.abspath(os.path.dirname(__file__))):
 
     if args.plot:
         os.system('python3 {} {}'.format(Dir.plot_script, args.plot[0]))
+
+    if args.sync_lfs:
+        WebDrive.sync(Dir.lfs_yaml, Dir.lfs_asset)
 
 
 if __name__ == "__main__":

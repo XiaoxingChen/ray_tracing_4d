@@ -48,7 +48,7 @@ public:
             // std::cout << "aabb: " << hittable_buffer_->at(idx).rigidBody().aabb().str() << std::endl;
             aabb_.extend(hittable_buffer_->at(idx).rigidBody().aabb());
         }
-        std::cout << "aabb: " << aabb_.str() << std::endl;
+        // std::cout << "aabb: " << aabb_.str() << std::endl;
 
     }
 

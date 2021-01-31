@@ -66,6 +66,20 @@ inline void rotationTestCase3()
     #endif
 }
 
+inline void rotationTestCase4()
+{
+    Mat expect(Mat::Identity(3));
+    expect(1,1) = -1;
+    expect(2,2) = -1;
+
+    Rotation r(Rotation::fromPlaneAngle(Vec({0,1,0}), Vec({0,0,1}), M_PI));
+    if((r.asMatrix() - expect).norm() > 5*eps())
+    {
+        std::cout << "\n" << r.asMatrix().str();
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+}
+
 inline void rotationTestDeterminant()
 {
     for(size_t i = 0; i < 10; i++)
@@ -85,6 +99,7 @@ inline void testRotation()
     rotationTestCase1();
     rotationTestCase2();
     rotationTestCase3();
+    rotationTestCase4();
     rotationTestDeterminant();
 }
 
