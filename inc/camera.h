@@ -29,7 +29,12 @@ public:
     Ray pixelRay(const std::vector<size_t>& pixel_coordinate) const
     {
         if(position_.size() > pixel_coordinate.size() + 1)
+        {
+            std::cout << "position dim: " << position_.size()
+                << " pixel coordinate dim: " << pixel_coordinate.size() << std::endl;
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        }
+
 
         Vec dir(position_.size());
         for(size_t i = 0; i < position_.size() - 1; i++)

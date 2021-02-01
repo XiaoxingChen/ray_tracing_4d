@@ -349,23 +349,152 @@ inline HitManager simple4D_001()
         RigidBody::choose(RigidBody::SPHERE, Vec({5, 0, 0, 18}), Rotation::Identity(dim), {3}),
         Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0.,-105,0, 30}), Rotation::Identity(dim), {100}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0.,105,0, 30}), Rotation::Identity(dim), {100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     Rotation rec_ori(Rotation::fromPlaneAngle(Vec({1,0,0,0}), Vec({0,0,0,1}), M_PI / 3));
     Vec rec_pos({-3, 0, 0, 15});
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::RECTANGLE, rec_pos, rec_ori, {2,2,2,0.0001}),
+        RigidBody::choose(RigidBody::RECTANGLE, rec_pos, rec_ori, {2,-2,2,0.0001}),
         Material::choose(Material::METAL));
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::RECTANGLE, rec_pos, rec_ori, {1,1,1,0.0002}),
+        RigidBody::choose(RigidBody::RECTANGLE, rec_pos, rec_ori, {1,-1,1,0.0002}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.2, 0.6, 0.2})));
 
     return manager;
 }
 
+inline AcceleratedHitManager gltf4DBox()
+{
+    tinygltf::Model model;
+    size_t dim = 4;
+    loadModel(model, "assets/box/box.gltf");
+
+    std::shared_ptr<Mat> vertex_buffer_3d = loadMeshVertices(model, 0);
+    std::shared_ptr<Mat> vertex_buffer = std::make_shared<Mat>(Shape({4, vertex_buffer_3d->shape(1) + 1}));
+    vertex_buffer->setBlock(0,0, *vertex_buffer_3d);
+    (*vertex_buffer)(vertex_buffer->shape(0) - 1, vertex_buffer->shape(1) - 1) = .1;
+
+    size_t last_vertex_idx = vertex_buffer->shape(1) - 1;
+
+    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+    for(auto & idx: indices)
+        idx.push_back(last_vertex_idx);
+
+    // std::cout << "Vertices: \n" << vertex_buffer->str();
+
+    Rotation r(Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), M_PI_4));
+    *vertex_buffer = r.apply(*vertex_buffer);
+    (*vertex_buffer)(Row(dim - 1)) += 5;
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    for(auto & idx: indices)
+    {
+        buffer->push_back(Hittable(
+            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
+            Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+
+}
+
+inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
+{
+    tinygltf::Model model;
+    loadModel(model, "assets/box/box.gltf");
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    FloatType target_dist = 3;
+    Rotation target_rot(Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), M_PI_4));
+
+    if(1){
+        //
+        // create box
+        std::shared_ptr<Mat> vertex_buffer_3d = loadMeshVertices(model, 0);
+
+        std::shared_ptr<Mat> cube_vertex_buffer = std::make_shared<Mat>(Shape({4, vertex_buffer_3d->shape(1) + 1 }));
+        cube_vertex_buffer->setBlock(0,0, *vertex_buffer_3d);
+        (*cube_vertex_buffer)(cube_vertex_buffer->shape(0)-1, cube_vertex_buffer->shape(1) - 1) = 0.1;
+
+        // size_t box_vertex_num = vertex_buffer_3d->shape(1);
+        // size_t box_triangle_num = 2 * 6;
+        const size_t FACE_PER_CUBE = 6;
+
+        FloatType face_scale = 0.1;
+        std::array<size_t, FACE_PER_CUBE> scale_axis{0,0,1,1,2,2};
+        std::array<FloatType, FACE_PER_CUBE> scale_axis_offset{-0.45, 0.45,-0.45, 0.45,-0.45, 0.45};
+
+        size_t last_vertex_idx = cube_vertex_buffer->shape(1) - 1;
+        std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+        for(auto & idx: indices) idx.push_back(last_vertex_idx);
+
+        for(size_t face_idx = 0; face_idx < FACE_PER_CUBE; face_idx++)
+        {
+            std::shared_ptr<Mat> face_vertex_buffer = std::shared_ptr<Mat>(new Mat(*cube_vertex_buffer));
+            // (*face_vertex_buffer) = (*cube_vertex_buffer);
+            (*face_vertex_buffer)(Row(scale_axis[face_idx])) *= face_scale;
+            (*face_vertex_buffer)(Row(scale_axis[face_idx])) += scale_axis_offset[face_idx];
+
+            *face_vertex_buffer = target_rot.apply(*face_vertex_buffer);
+            (*face_vertex_buffer)(Row(dim - 1)) += target_dist;
+
+            for(size_t i = 0; i < indices.size(); i++)
+            {
+                buffer->push_back(Hittable(
+                    RigidBody::createPolygonPrimitive(face_vertex_buffer, indices.at(i)),
+                    Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.7})),
+                    std::string("face_") + std::to_string(face_idx) + "_" + std::to_string(i)));
+            }
+        }
+
+    }
+
+
+    {
+        //
+        // create tetrahedron
+        size_t tetrahedron_triangle_num = 4;
+        std::shared_ptr<Mat> vertex_buffer = std::shared_ptr<Mat>(
+            new Mat({4,5},{
+            -.3, 0.4, 0.0, 0.0, 0.0,
+            -.3, 0.0, 0.4, 0.0, 0.0,
+            -.3, -.3, -.3, 0.4, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.1}));
+
+        *vertex_buffer = target_rot.apply(*vertex_buffer);
+        (*vertex_buffer)(Row(dim - 1)) += target_dist;
+
+        std::vector<std::vector<size_t>> indices({
+            {0,1,2,4},
+            {0,1,3,4},
+            {0,2,3,4},
+            {1,2,3,4}});
+
+        for(size_t i = 0; i < tetrahedron_triangle_num; i++)
+        {
+            buffer->push_back(Hittable(
+                RigidBody::createPolygonPrimitive(vertex_buffer, indices.at(i)),
+                Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.7, 0.3})),
+                std::string("tetrahedron_") + std::to_string(i)));
+        }
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+
+}
 
 } // namespace scene
 } // namespace rtc

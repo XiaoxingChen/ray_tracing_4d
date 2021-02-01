@@ -73,7 +73,9 @@ public:
     void run()
     {
         auto resolution = cam_.resolution();
-        auto ppm_coord = PPMCoordinateSequence(resolution.at(0), resolution.at(1));
+        auto ppm_coord = resolution.size() == 2 ?
+            PPMCoordinateSequence(resolution.at(0), resolution.at(1)) :
+            PPMCoordinateSequence(resolution.at(0), resolution.at(1), resolution.at(2));
         std::vector<Ray> ray_stack;
         std::vector<Ray>* p_ray_stack = enable_ray_stack_ ? &ray_stack : nullptr;
         std::vector<Pixel> img;
@@ -123,7 +125,13 @@ public:
 
         if(mode_ != eSINGLE_RAY)
         {
-            writeToPPM(output_filename_, resolution.at(0), resolution.at(1), img);
+            // writeToPPM(output_filename_, resolution.at(0), resolution.at(1), img);
+            size_t stride = resolution.at(0) * resolution.at(1);
+            for(size_t i = 0; i < img.size(); i+= stride)
+            {
+                std::string output_name = output_filename_ + "_" + std::to_string(i / stride) + ".ppm";
+                writeToPPM(output_name, resolution.at(0), resolution.at(1), img.cbegin() + i, img.cbegin() + i + stride);
+            }
         }
     }
 

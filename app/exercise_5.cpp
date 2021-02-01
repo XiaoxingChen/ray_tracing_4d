@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
     // auto scene = scene::simple3D_003();
 
     auto render = RenderSample(3);
-    render.setOutputFilename("exercise_5.ppm");
+    render.setOutputFilename("exercise_5");
     render.setCamera(cam)
         .setMode(RenderSample::eMULTITHREADING)
         // .setMode(RenderSample::eSINGLE_RAY)

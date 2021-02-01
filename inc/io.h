@@ -14,6 +14,23 @@ namespace rtc{
 
 using PixelCoordinates = std::vector<std::vector<size_t>>;
 
+template<typename iterator>
+inline void writeToPPM(const std::string& filename, int w, int h, iterator begin, iterator end)
+{
+    auto f = std::fstream(filename, std::ios::out );
+    if(end - begin != w * h)
+    {
+        std::cout << "size mismatch! w:" << w <<", h: " << h
+        << ", w*h: " << w*h << ", real size: " << end - begin << std::endl;
+    }
+    f << "P3\n" << w << " " << h << "\n255\n";
+    // for(const auto & px: pixs)
+    for(auto it = begin; it != end; it++)
+        f << it->rU8() << " " << it->gU8() <<  " " << it->bU8() << "\n";
+
+    f.close();
+}
+
 template<template<typename ...> class Container>
 inline void writeToPPM(const std::string& filename, int w, int h, const Container<Pixel>& pixs)
 {
@@ -33,17 +50,34 @@ inline void writeToPPM(const std::string& filename, int w, int h, const Containe
 inline PixelCoordinates PPMCoordinateSequence(size_t width, size_t height)
 {
     PixelCoordinates ret;
-    // for(int j = height - 1; j >= 0; j--)
+
     for(size_t j = 0; j < height; j++)
     {
         for(size_t i = 0; i < width; i++)
         {
-            // ret.push_back(std::vector<size_t>{i, height - j - 1});
             ret.push_back(std::vector<size_t>{i, j});
         }
     }
     return ret;
 }
+
+inline PixelCoordinates PPMCoordinateSequence(size_t width, size_t height, size_t thickness)
+{
+    PixelCoordinates ret;
+
+    for(size_t k = 0; k < thickness; k++)
+    {
+        for(size_t j = 0; j < height; j++)
+        {
+            for(size_t i = 0; i < width; i++)
+            {
+                ret.push_back(std::vector<size_t>{i, j, k});
+            }
+        }
+    }
+    return ret;
+}
+
 
 }// rtc
 #endif

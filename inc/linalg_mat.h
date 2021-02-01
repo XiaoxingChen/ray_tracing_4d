@@ -26,6 +26,10 @@ inline std::string to_string(const FloatType& v, size_t prec=6)
     return stream.str();
 }
 
+inline std::string to_string(const std::array<size_t, 2>& s)
+{
+    return std::to_string(s[0]) + " "  + std::to_string(s[1]);
+}
 // class Vec;
 class Block;
 template<typename DType> class MatrixRef;
