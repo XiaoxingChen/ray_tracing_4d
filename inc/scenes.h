@@ -280,7 +280,7 @@ inline AcceleratedHitManager gltf3DBoomBox()
     r = Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,0,1}), -M_PI/6) * r;
     *vertex_buffer = r.apply(*vertex_buffer);
 
-    (*vertex_buffer)(Row(2)) += 3;
+    (*vertex_buffer)(Row(2)) += 6;
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
 
@@ -292,6 +292,48 @@ inline AcceleratedHitManager gltf3DBoomBox()
         buffer->push_back(Hittable(
             RigidBody::createPolygonPrimitive(vertex_buffer, idx),
             Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1, /*verbose*/ false);
+    manager.setRoot(root);
+
+    return manager;
+
+}
+
+inline AcceleratedHitManager gltf3DDuck()
+{
+    tinygltf::Model model;
+    size_t dim = 3;
+    loadModel(model, "build/assets/Duck.gltf");
+
+    std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
+
+    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+    (*vertex_buffer) *= 5e-3;
+    std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
+
+    // Rotation r(Rotation::fromPlaneAngle(Vec({0,1,0}), Vec({1,0,0}), M_PI));
+    // r = Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,0,1}), -M_PI/6) * r;
+    // *vertex_buffer = r.apply(*vertex_buffer);
+
+    (*vertex_buffer)(Row(2)) += 3;
+    // (*vertex_buffer)(Row(1)) += 13;
+
+    auto texture = loadMeshTexture(model);
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+
+    // indices.resize(50);
+    // for(size_t i = 0; i < indices.size(); i++)
+    for(auto & idx: indices)
+    {
+        buffer->push_back(Hittable(
+            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
+            Material::choose(Material::LAMBERTIAN,
+            texture.at(idx.at(0)))));
     }
 
     AcceleratedHitManager manager;
@@ -408,9 +450,6 @@ inline AcceleratedHitManager gltf4DBox()
 
 inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
 {
-    tinygltf::Model model;
-    loadModel(model, "assets/box/box.gltf");
-
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
     FloatType target_dist = 3;
     Rotation target_rot(Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), M_PI_4));
@@ -418,14 +457,15 @@ inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
     if(1){
         //
         // create box
+        tinygltf::Model model;
+        loadModel(model, "assets/box/box.gltf");
+
         std::shared_ptr<Mat> vertex_buffer_3d = loadMeshVertices(model, 0);
 
         std::shared_ptr<Mat> cube_vertex_buffer = std::make_shared<Mat>(Shape({4, vertex_buffer_3d->shape(1) + 1 }));
         cube_vertex_buffer->setBlock(0,0, *vertex_buffer_3d);
         (*cube_vertex_buffer)(cube_vertex_buffer->shape(0)-1, cube_vertex_buffer->shape(1) - 1) = 0.1;
 
-        // size_t box_vertex_num = vertex_buffer_3d->shape(1);
-        // size_t box_triangle_num = 2 * 6;
         const size_t FACE_PER_CUBE = 6;
 
         FloatType face_scale = 0.1;
@@ -458,7 +498,7 @@ inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
     }
 
 
-    {
+    if(0){
         //
         // create tetrahedron
         size_t tetrahedron_triangle_num = 4;
@@ -484,6 +524,39 @@ inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
                 RigidBody::createPolygonPrimitive(vertex_buffer, indices.at(i)),
                 Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.7, 0.3})),
                 std::string("tetrahedron_") + std::to_string(i)));
+        }
+    }
+
+    if(1)
+    {
+        tinygltf::Model model;
+        loadModel(model, "build/assets/Duck.gltf");
+
+        std::shared_ptr<Mat> vertex_buffer_3d = loadMeshAttributes(model, 0, "POSITION");
+        std::shared_ptr<Mat> vertex_buffer = std::make_shared<Mat>(Shape({4, vertex_buffer_3d->shape(1) + 1}));
+
+        size_t last_vertex_idx = vertex_buffer->shape(1) - 1;
+        vertex_buffer->setBlock(0, 0, *vertex_buffer_3d);
+        (*vertex_buffer)(Col(vertex_buffer->shape(1) - 1)) = Vec({0,10,0,0.1}).T();
+        (*vertex_buffer)(Row(1)) -= 80;
+        // (*vertex_buffer)(vertex_buffer->shape(0) - 1, vertex_buffer->shape(1) - 1) = 0.1;
+
+        std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+        for(auto & idx: indices) idx.push_back(last_vertex_idx);
+        (*vertex_buffer) *= 2e-3;
+        // std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
+
+        *vertex_buffer = target_rot.apply(*vertex_buffer);
+        (*vertex_buffer)(Row(dim-1)) += target_dist;
+
+        auto texture = loadMeshTexture(model);
+
+        for(auto & idx: indices)
+        {
+            buffer->push_back(Hittable(
+                RigidBody::createPolygonPrimitive(vertex_buffer, idx),
+                Material::choose(Material::LAMBERTIAN,
+                texture.at(idx.at(0)))));
         }
     }
 
