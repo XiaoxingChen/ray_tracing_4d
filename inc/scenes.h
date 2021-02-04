@@ -448,13 +448,37 @@ inline AcceleratedHitManager gltf4DBox()
 
 }
 
+inline void To4DMesh(
+    std::shared_ptr<Mat>& vertex_3d,
+    const std::vector<std::vector<size_t>>& index_3d,
+    std::shared_ptr<Mat>& vertex_4d,
+    std::vector<std::vector<size_t>>& index_4d,
+    FloatType thickness=1e-4)
+{
+    size_t offset = vertex_3d->shape(1);
+    vertex_4d = std::shared_ptr<Mat>(new Mat({4, vertex_3d->shape(1) * 2}));
+    vertex_4d->setBlock(0, 0, *vertex_3d);
+    vertex_4d->setBlock(0, offset, *vertex_3d);
+    (*vertex_4d)(Col(3)) *= 0;
+    (*vertex_4d)(Block({3,}, {offset, })) += thickness;
+
+    index_4d.clear();
+    for(auto & tri_index: index_3d)
+    {
+        index_4d.push_back({tri_index.at(0), tri_index.at(1), tri_index.at(2), tri_index.at(0) + offset});
+        index_4d.push_back({tri_index.at(1), tri_index.at(2), tri_index.at(0) + offset, tri_index.at(1) + offset});
+        index_4d.push_back({tri_index.at(2), tri_index.at(0) + offset, tri_index.at(1) + offset, tri_index.at(2) + offset});
+    }
+
+}
+
 inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
     FloatType target_dist = 3;
     Rotation target_rot(Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), M_PI_4));
 
-    if(1){
+    if(0){
         //
         // create box
         tinygltf::Model model;
@@ -533,8 +557,16 @@ inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
         loadModel(model, "build/assets/Duck.gltf");
 
         std::shared_ptr<Mat> vertex_buffer_3d = loadMeshAttributes(model, 0, "POSITION");
-        std::shared_ptr<Mat> vertex_buffer = std::make_shared<Mat>(Shape({4, vertex_buffer_3d->shape(1) + 1}));
+        (*vertex_buffer_3d)(Row(1)) -= 80;
+        (*vertex_buffer_3d) *= 8e-3;
 
+        std::shared_ptr<Mat> vertex_buffer_4d = nullptr;//std::make_shared<Mat>(Shape({4, vertex_buffer_3d->shape(1) + 1}));
+        std::vector<std::vector<size_t>> indices_3d = loadMeshIndices(model, 0);
+        std::vector<std::vector<size_t>> indices_4d;
+
+        To4DMesh(vertex_buffer_3d, indices_3d, vertex_buffer_4d, indices_4d);
+
+#if 0
         size_t last_vertex_idx = vertex_buffer->shape(1) - 1;
         vertex_buffer->setBlock(0, 0, *vertex_buffer_3d);
         (*vertex_buffer)(Col(vertex_buffer->shape(1) - 1)) = Vec({0,10,0,0.1}).T();
@@ -545,16 +577,16 @@ inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
         for(auto & idx: indices) idx.push_back(last_vertex_idx);
         (*vertex_buffer) *= 2e-3;
         // std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
-
-        *vertex_buffer = target_rot.apply(*vertex_buffer);
-        (*vertex_buffer)(Row(dim-1)) += target_dist;
+#endif
+        *vertex_buffer_4d = target_rot.apply(*vertex_buffer_4d);
+        (*vertex_buffer_4d)(Row(dim-1)) += target_dist;
 
         auto texture = loadMeshTexture(model);
 
-        for(auto & idx: indices)
+        for(auto & idx: indices_4d)
         {
             buffer->push_back(Hittable(
-                RigidBody::createPolygonPrimitive(vertex_buffer, idx),
+                RigidBody::createPolygonPrimitive(vertex_buffer_4d, idx),
                 Material::choose(Material::LAMBERTIAN,
                 texture.at(idx.at(0)))));
         }
