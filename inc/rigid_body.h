@@ -52,6 +52,10 @@ class RigidBody
         };
         using HitRecordPtr = std::shared_ptr<HitRecord>;
         virtual HitRecordPtr hit(const Ray& ray) const = 0;
+        virtual void multiHit(const Ray& ray, std::vector<HitRecordPtr>& records) const
+        {
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        };
         // virtual Vec center() const = 0;
         virtual std::string str() const {return "";};
         virtual AABB aabb() const = 0;

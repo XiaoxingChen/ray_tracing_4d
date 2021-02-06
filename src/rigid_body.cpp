@@ -1,6 +1,8 @@
 #include "rigid_body.h"
 #include "rotation.h"
 #include "axis_aligned_bounding_box.h"
+#include "bounding_volume_hierarchy.h"
+
 #include <memory>
 
 
@@ -229,15 +231,13 @@ public:
         return hitPrimitivePolygon(ray, p_vertex_buffer_, indices_);
     }
 
+    virtual void multiHit(const Ray& ray, std::vector<HitRecordPtr>& records) const
+    {
+        records.push_back(hitPrimitivePolygon(ray, p_vertex_buffer_, indices_));
+    }
+
     size_t dim() const { return indices_.size(); }
 
-    // virtual Vec center() const
-    // {
-    //     Vec center(indices_.size());
-    //     for(auto & idx : indices_) center += (*p_vertex_buffer_)(Col(idx));
-    //     center *= (1./ indices_.size());
-    //     return center;
-    // }
     virtual AABB aabb() const
     {
         AABB box(dim());
@@ -251,6 +251,46 @@ private:
     std::shared_ptr<Mat> p_vertex_buffer_;
     std::vector<size_t> indices_;
     // UnitVec norm_;
+};
+
+class Prism: public RigidBody
+{
+public:
+#if 0
+    Prism(const Vec& p, const Rotation& r, FloatType h,
+        std::shared_ptr<Mat>& vertex_buffer,
+        const Matrix<uint16_t> index_buffer):
+        position_(p), orientation_(r),
+        half_h_(0.5 * h),
+        p_vertex_buffer_(vertex_buffer),
+        index_buffer_(index_buffer)
+    {
+        // todo, nullptr
+        std::shared_ptr<bvh::Node>(new bvh::Node(dim(), nullptr, {0, buffer->size()}));
+    }
+#endif
+    size_t dim() const { return position_.size(); }
+
+    virtual HitRecordPtr hit(const Ray& ray) const
+    {
+        Ray local_ray(ray.origin() - position_, orientation_.inv().apply(ray.direction()));
+        return nullptr;
+    }
+
+    virtual AABB aabb() const
+    {
+        return tree_root_->boundingBox();
+    }
+
+private:
+    Vec position_;
+    Rotation orientation_;
+    FloatType half_h_;
+    // todo , store hittable buffer or (vertex + index) buffer?
+    std::shared_ptr<Mat> p_vertex_buffer_;
+    Matrix<uint16_t> index_buffer_;
+    std::shared_ptr<bvh::Node> tree_root_;
+
 };
 
 #if 1

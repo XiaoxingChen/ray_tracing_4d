@@ -52,14 +52,25 @@ public:
 
     }
 
-    Hittable::HitRecordPtr hit(Ray& ray)
+    Hittable::HitRecordPtr hit(Ray& ray) const
+    {
+        return closeHit(ray);
+    }
+
+    Hittable::HitRecordPtr closeHit(Ray& ray) const
     {
         //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         // std::cout << "max: " << aabb_.max().T().str()
         //     << ", min: " << aabb_.min().T().str() << std::endl;
         if(!aabb_.hit(ray)) return nullptr;
         // std::cout << __FILE__ << ":" << __LINE__ << std::endl;
-        return is_leaf_ ? hitLeaf(ray) : hitInternalNode(ray);
+        return is_leaf_ ? closeHitLeaf(ray) : closeHitInternalNode(ray);
+    }
+
+    void multiHit(const Ray& ray, size_t& hit_count) const
+    {
+        if(!aabb_.hit(ray)) return;
+        return is_leaf_ ? multiHitLeaf(ray, hit_count) : multiHitInternalNode(ray, hit_count);
     }
 
     void split(size_t max_hittable_num=4, bool verbose=true, size_t children_num=2)
@@ -90,7 +101,7 @@ public:
     }
 
 private:
-    Hittable::HitRecordPtr hitLeaf(Ray& ray)
+    Hittable::HitRecordPtr closeHitLeaf(Ray& ray) const
     {
         Hittable::HitRecordPtr result = nullptr;
         // std::cout << __FILE__ << ":" << __LINE__ << std::endl;
@@ -113,7 +124,7 @@ private:
         return result;
     }
 
-    Hittable::HitRecordPtr hitInternalNode(Ray& ray)
+    Hittable::HitRecordPtr closeHitInternalNode(Ray& ray) const
     {
         Hittable::HitRecordPtr result(nullptr);
         for(auto & child: children_)
@@ -125,6 +136,26 @@ private:
         }
         // std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         return result;
+    }
+
+    void multiHitLeaf(const Ray& ray, size_t& hit_count) const
+    {
+        for(size_t i = hittable_range_[0]; i < hittable_range_[1]; i++)
+        {
+            std::vector<RigidBody::HitRecordPtr> p_rigid_records;
+            hittable_buffer_->at(i).rigidBody().multiHit(ray, p_rigid_records);
+            hit_count += p_rigid_records.size();
+        }
+    }
+
+    void multiHitInternalNode(const Ray& ray, size_t& hit_count) const
+    {
+        Hittable::HitRecordPtr result(nullptr);
+        for(auto & child: children_)
+        {
+            std::vector<RigidBody::HitRecordPtr> p_rigid_records;
+            child->multiHit(ray, hit_count);
+        }
     }
 
 private:

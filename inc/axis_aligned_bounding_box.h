@@ -3,6 +3,7 @@
 
 #include "ray.h"
 #include <algorithm>
+#include <limits>
 
 
 namespace rtc
@@ -88,11 +89,21 @@ class AxisAlignedBoundingBox
         FloatType t_out = INFINITY;
         for(int i = 0; i < vertex_min.size(); i++)
         {
+            if(abs(ray.direction()(i)) < std::numeric_limits<FloatType>::min())
+            {
+                if(vertex_min(i) < ray.origin()(i) && ray.origin()(i) < vertex_max(i))
+                    continue;
+
+                t_in = 1;
+                t_out = -1;
+                break;
+            }
+
             FloatType t0 = (vertex_min(i) - ray.origin()(i)) / ray.direction()(i);
             FloatType t1 = (vertex_max(i) - ray.origin()(i)) / ray.direction()(i);
+
             t_in = std::max(t_in, std::min(t0, t1));
             t_out = std::min(t_out, std::max(t0, t1));
-            // std::cout << "t_in this: " << std::min(t0, t1) << std::endl;
         }
         return {t_in, t_out};
     }

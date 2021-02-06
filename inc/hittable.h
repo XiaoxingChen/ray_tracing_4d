@@ -48,7 +48,7 @@ class Hittable
         const Material& material() const { return *material_; }
 
         struct HitRecord {
-            HitRecord(Pixel attenuation_, const Ray& scattered_, FloatType hit_t_)
+            HitRecord(const Pixel& attenuation_, const Ray& scattered_, FloatType hit_t_)
             :attenuation(attenuation_), scattered(scattered_), hit_t(hit_t_) {}
             Pixel attenuation;
             Ray scattered;
