@@ -77,6 +77,24 @@ class Dielectric :public Material
         float_t ref_idx_;
 };
 
+// class TextureBuffer;
+// using TextureBufferPtr = std::shared_ptr<TextureBuffer>;
+class GltfTexture :public Material
+{
+    public:
+        GltfTexture(TextureBufferPtr& tex_buffer, const std::vector<size_t>& indices)
+            :tex_buffer_(tex_buffer){}
+
+        virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const
+        {
+            Vec reflected = reflect(ray_in.direction(), hit_n);
+            return Ray(hit_p, reflected);
+        }
+    private:
+        TextureBufferPtr tex_buffer_;
+        std::vector<size_t> vertex_indices_;
+};
+
 MaterialPtr Material::choose(Types type, const Pixel& albedo, float_t fuzz)
 {
     if(type == Material::METAL)

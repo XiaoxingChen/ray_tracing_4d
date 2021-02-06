@@ -59,7 +59,7 @@ public:
     Matrix():shape_({0,0}), data_(), major_(ROW) {}
 
     Matrix(const Shape& _shape, const std::vector<DType>& data={}, bool major=ROW)
-        :shape_(_shape), data_(_shape[0] * _shape[1], 0), major_(major)
+        :shape_(_shape), data_(_shape[0] * _shape[1], DType()), major_(major)
     {
         if(data.size() == 0)  return;
         if(shape(0) * shape(1) != data.size())
@@ -162,12 +162,14 @@ public:
 
     ThisType dot(const ThisType& rhs) const { return matmul(rhs); }
 
-    ThisType matmul(const ThisType& rhs) const
+    template<typename RhsDType>
+    auto matmul(const Matrix<RhsDType>& rhs) const -> Matrix<decltype(DType() * RhsDType())>
     {
+        using ReturnType = Matrix<decltype(DType() * RhsDType())>;
         const ThisType& lhs(*this);
         if(lhs.shape(1) != rhs.shape(0))
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        ThisType ret(ThisType::zeros({lhs.shape(0), rhs.shape(1)}));
+        ReturnType ret({lhs.shape(0), rhs.shape(1)});
         ret.traverse([&](size_t i, size_t j)
             {
                 for(int k = 0; k < lhs.shape(1); k++)

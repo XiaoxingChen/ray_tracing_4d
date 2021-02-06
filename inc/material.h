@@ -54,6 +54,19 @@ inline float_t schlick(float_t cosine, float_t ref_idx) {
     return r0 + (1-r0)*pow((1 - cosine),5);
 }
 
+struct TextureBuffer
+{
+    // shape = {2, vertex_num}
+    Mat tex_coord;
+
+    // shape = {h, w}
+    Matrix<Pixel> base_texture;
+    // shape = {h, w}
+    Matrix<Pixel> metallic_roughness_texture;
+};
+
+using TextureBufferPtr = std::shared_ptr<TextureBuffer>;
+
 
 } // namespace rtc
 #endif // _MATERIAL_H_

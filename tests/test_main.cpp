@@ -7,6 +7,7 @@
 #include "test_material.h"
 #include "test_rotation.h"
 #include "test_bvh.h"
+#include "test_interp.h"
 
 
 

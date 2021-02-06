@@ -205,7 +205,7 @@ inline std::shared_ptr<rtc::Mat> loadMeshAttributes(
         : accessor.type == TINYGLTF_TYPE_VEC2 ? 2 : -1;
 
     ret = std::make_shared<Mat>(Shape({data_width, accessor.count}));
-    size_t byteStride = bufferView.byteStride > 0 ? bufferView.byteStride : 3 * sizeof(float);
+    size_t byteStride = bufferView.byteStride > 0 ? bufferView.byteStride : data_width * sizeof(float);
 
     for (size_t i = 0; i < accessor.count; ++i)
     {
@@ -223,7 +223,7 @@ inline std::vector<rtc::Pixel> loadMeshTexture(
     if (model.textures.size() == 0)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
-    tinygltf::Texture &tex = model.textures[0];
+    tinygltf::Texture &tex = model.textures[1];
 
     if (tex.source < 0)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -243,6 +243,9 @@ inline std::vector<rtc::Pixel> loadMeshTexture(
         image.component == TINYGLTF_TYPE_VEC3 ? 3 :
         image.component == TINYGLTF_TYPE_VEC4 ? 4 : 0;
 
+    std::cout << "pixel channel: " << pixel_stride
+    << ", image w: " << image.width << ", h: " << image.height
+    << std::endl;
 
     if (image.bits != 8)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -255,9 +258,19 @@ inline std::vector<rtc::Pixel> loadMeshTexture(
         size_t idx_u = (*p_tex_coord)(0, i) * image.width;
         size_t idx_v = (*p_tex_coord)(1, i) * image.height;
         size_t start_i = (image.width * idx_v + idx_u) * pixel_stride;
-        for(size_t j : {0,1,2})
+        for(size_t j = 0; j < rtc::Pixel::size(); j++)
             ret.at(i)(j) = image.image.at(start_i + j) / 255.;
     }
+    std::cout << "Texture loading finished..." << std::endl;
+
+    // for(size_t i = 0; i < 10; i++)
+    // {
+    //     std::cout << ret.at(i).str() << "\n";
+    // }
+
+    // float blue_sum = 0;
+    // for(auto & px: ret) blue_sum += px(2);
+    // std::cout << "blue sum: " << blue_sum << "\n";
 
     return ret;
 }

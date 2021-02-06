@@ -284,6 +284,8 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
 
+    auto texture = loadMeshTexture(model);
+
     // indices.resize(50);
     for(auto & idx: indices)
     {
@@ -291,7 +293,8 @@ inline AcceleratedHitManager gltf3DBoomBox()
         // std::cout << std::endl;
         buffer->push_back(Hittable(
             RigidBody::createPolygonPrimitive(vertex_buffer, idx),
-            Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
+            Material::choose(Material::LAMBERTIAN, texture.at(idx.at(0)))
+            ));
     }
 
     AcceleratedHitManager manager;

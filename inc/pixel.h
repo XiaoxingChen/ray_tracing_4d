@@ -10,36 +10,58 @@
 namespace rtc
 {
 
-class Pixel: public LinearData<Pixel, FloatType>
+template<typename DType>
+inline int quantizeToU8(DType val)
+{
+    return val < 0 ? 0 : val > 1 ? 255 : val * 255.99;
+}
+
+template<typename DeriveType>
+class RGBA_F32
 {
 public:
-    static const size_t NChannel = 3;
-    using InitialType = std::array<FloatType, NChannel>;
-    using ThisType = Pixel;
-    Pixel(const InitialType& v): data_(v){}
-    Pixel(){ traverse([&](size_t i){(*this)(i) = 0;}); }
+    using DType = float;
+    DeriveType* deriveThis() {return reinterpret_cast<DeriveType*>(this);}
+    const DeriveType* deriveThis() const {return reinterpret_cast<const DeriveType*>(this);}
+    const DType& at(size_t i) const {return (*deriveThis())(i);}
 
-    const FloatType& operator () (size_t i) const { return data_.at(i); }
-    FloatType& operator () (size_t i) { return data_.at(i); }
+    const FloatType & r() const {return (*deriveThis())(0);}
+    const FloatType & g() const {return (*deriveThis())(1);}
+    const FloatType & b() const {return (*deriveThis())(2);}
+    const FloatType & a() const {return deriveThis()->size() > 2 ? (*deriveThis())(3) : 0.;}
 
-    const FloatType & r() const {return (*this)(0);}
-    const FloatType & g() const {return (*this)(1);}
-    const FloatType & b() const {return (*this)(2);}
-
-    int rU8() const {return r() < 0 ? 0 : r() > 1 ? 255 : r() * 255.99;}
-    int gU8() const {return g() < 0 ? 0 : g() > 1 ? 255 : g() * 255.99;}
-    int bU8() const {return b() < 0 ? 0 : b() > 1 ? 255 : b() * 255.99;}
-
-    static Pixel black() {return Pixel();}
-    static Pixel white() {return Pixel({1,1,1});}
-    size_t size() const {return data_.size();}
-
-private:
-    std::array<FloatType, NChannel> data_;
-
+    int rU8() const { return quantizeToU8<DType>(r()); }
+    int gU8() const { return quantizeToU8<DType>(g()); }
+    int bU8() const { return quantizeToU8<DType>(b()); }
+    int aU8() const { return quantizeToU8<DType>(a()); }
 };
 
-inline Pixel operator * (const FloatType& scalar, const Pixel& rhs ) {return rhs * scalar;}
+template<size_t NChannel>
+class PixelF32: public LinearData<PixelF32<NChannel>, float>, public RGBA_F32<PixelF32<NChannel>>
+{
+public:
+    // static const size_t NChannel = 3;
+    using InitialType = std::array<FloatType, NChannel>;
+    using ThisType = PixelF32;
+    using DType = float;
+    using BaseType0 = LinearData<PixelF32<NChannel>, float>;
+    PixelF32(const InitialType& v): data_(v){}
+    PixelF32(){ BaseType0::traverse([&](size_t i){(*this)(i) = 0;}); }
+
+    const DType& operator () (size_t i) const { return data_.at(i); }
+    DType& operator () (size_t i) { return data_.at(i); }
+
+    static ThisType black() {return ThisType();}
+    static ThisType white() {return ThisType() + 1;}
+    static constexpr size_t size() {return NChannel;}
+
+private:
+    std::array<DType, NChannel> data_;
+};
+
+using Pixel = PixelF32<3>;
+using Pixel4 = PixelF32<4>;
+
 
 } // namespace rtc
 

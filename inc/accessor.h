@@ -36,7 +36,7 @@ public:
     DType norm() const { DType sum; traverse([&, this](size_t i) { DType v = at(i); sum += v * v;}); return sqrt(sum);}
     DeriveType& normalize() { return (*deriveThis()) *= (1./DeriveType::norm()); }
     DeriveType normalized() const { return DeriveType(*deriveThis()).normalize(); }
-    std::string str() const { std::string ret; traverse([&](size_t i) {ret += to_string(at(i));}); return ret; }
+    std::string str() const { std::string ret; traverse([&](size_t i) {ret += to_string(at(i)) + " ";}); return ret; }
 
     // obj to obj
     DeriveType& operator += (const DeriveType& rhs) { traverse([&](size_t i) {at(i) += rhs(i);}); return *deriveThis(); }
@@ -67,6 +67,8 @@ public:
 
 };
 
+template<typename DeriveType, typename DType> inline DeriveType operator + (const DType& scalar, const LinearData<DeriveType, DType>& rhs ) {return rhs + scalar;}
+template<typename DeriveType, typename DType> inline DeriveType operator * (const DType& scalar, const LinearData<DeriveType, DType>& rhs ) {return rhs * scalar;}
 
 } // namespace rtc
 
