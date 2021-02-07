@@ -38,6 +38,32 @@ inline bool validIntersect(const Vec& x)
     return sum_k < 1 + eps();
 }
 
+//
+// triangle: triangle in N-Dimensional space triangle, shape = {N, 3}
+// hit_p: hit point in N-Dimensional space triangle, size = N
+// triangle_3d: triangle in 2-Dimensional space triangle, shape = {2, 3}
+// hit_p_3d: hit point in 2-Dimensional space triangle, size = 2
+inline void putTriangleInPlane(
+    const Mat& triangle, const Vec& hit_p,
+    Mat& triangle_2d, Vec& hit_p_2d)
+{
+    triangle_2d = Mat({2,3});
+    Vec v_ab(triangle(Col(1)) - triangle(Col(0)));
+    Vec v_ac(triangle(Col(2)) - triangle(Col(0)));
+    Vec dir_ab(v_ab.normalized());
+    FloatType l_ab = v_ab.norm();
+    // Bx
+    triangle_2d(0, 1) = l_ab;
+    // Cx, Cy
+    triangle_2d(0, 2) = dir_ab.dot(v_ac);
+    triangle_2d(1, 2) = (v_ac - triangle_2d(0, 2)* dir_ab).norm();
+
+    hit_p_2d = Vec(2);
+    Vec v_ap(hit_p - triangle(Col(0)));
+    hit_p_2d(0) = dir_ab.dot(v_ap);
+    hit_p_2d(1) = (v_ap - hit_p_2d(0)* dir_ab).norm();
+}
+
 } // namespace rtc
 
 

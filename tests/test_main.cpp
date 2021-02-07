@@ -20,6 +20,7 @@ int main(int argc, char const *argv[])
   testRay();
   testLinearAlgebra();
   testRotation();
+  testInterpolation();
   testRigidBody();
   testPrimitiveGeometry();
   testRandomFactory();

@@ -31,22 +31,21 @@ DType bilinearUnitSquare(const Vector<PType>& pos, const Matrix<DType>& square)
 //
 // https://codeplea.com/triangular-interpolation
 //
-// PType: should be either float or double
-// DType: can be any type that overloaded with DType::operator*(PType scalar)
-//      for example: PixelRGB, Complex, Quaternion
+// DType: should be either float or double
 // v: vertex matrix with shape {2, 3}, dim is the dimension of space
-template<typename PType, typename DType>
-DType triangular(const Vector<PType>& pos, const Matrix<PType>& v, const Vector<DType>& val)
+// val: shape {N, 3}
+template<typename DType>
+Matrix<DType> triangular(const Vector<DType>& pos, const Matrix<DType>& v, const Matrix<DType>& val)
 {
-    Vector<PType> weight(3);
+    Vector<DType> weight(3);
     constexpr size_t X = 0;
     constexpr size_t Y = 1;
-    PType dom = (v(Y,1) - v(Y,2)) * (v(X,0) - v(X,2)) + (v(X,2) - v(X,1)) * (v(Y,0) - v(Y,2));
-    weight(0) = (v(Y,1) - v(Y,2)) * (pos(X) - v(X,2)) + (v(X,2) - v(X,1)) * (pos(Y) - v(Y,2)) / dom;
-    weight(1) = (v(Y,2) - v(Y,0)) * (pos(X) - v(X,2)) + (v(X,0) - v(X,2)) * (pos(Y) - v(Y,2)) / dom;
-    weight(2) = 0 - weight(0) - weight(1);
+    DType dom = (v(Y,1) - v(Y,2)) * (v(X,0) - v(X,2)) + (v(X,2) - v(X,1)) * (v(Y,0) - v(Y,2));
+    weight(0) = ((v(Y,1) - v(Y,2)) * (pos(X) - v(X,2)) + (v(X,2) - v(X,1)) * (pos(Y) - v(Y,2))) / dom;
+    weight(1) = ((v(Y,2) - v(Y,0)) * (pos(X) - v(X,2)) + (v(X,0) - v(X,2)) * (pos(Y) - v(Y,2))) / dom;
+    weight(2) = 1 - weight(0) - weight(1);
 
-    return weight.T().matmul(val)(0,0);
+    return val.matmul(weight);
 }
 
 

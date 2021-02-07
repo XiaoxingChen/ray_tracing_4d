@@ -284,22 +284,28 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
 
-    auto texture = loadMeshTexture(model);
+    // auto texture =
 
-    // indices.resize(50);
+
+    auto p_texture_buffer = std::make_shared<TextureBuffer>();
+    p_texture_buffer->tex_coord = *loadMeshAttributes(model, 0, "TEXCOORD_0");
+    p_texture_buffer->base_texture = *loadMeshTexture(model);
+
+    // indices = std::vector<std::vector<size_t>>(indices.begin() + 500, indices.begin() + 2000);
+    // indices.resize(2500);
     for(auto & idx: indices)
     {
         // for(auto & xyz: idx) std::cout << xyz <<  " ";
         // std::cout << std::endl;
         buffer->push_back(Hittable(
             RigidBody::createPolygonPrimitive(vertex_buffer, idx),
-            Material::choose(Material::LAMBERTIAN, texture.at(idx.at(0)))
+            std::shared_ptr<Material>(new GltfTexture(p_texture_buffer, idx, vertex_buffer))
             ));
     }
 
     AcceleratedHitManager manager;
     auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
-    root->split(1, /*verbose*/ false);
+    root->split(1, /*verbose*/ true);
     manager.setRoot(root);
 
     return manager;
@@ -325,7 +331,7 @@ inline AcceleratedHitManager gltf3DDuck()
     (*vertex_buffer)(Row(2)) += 3;
     // (*vertex_buffer)(Row(1)) += 13;
 
-    auto texture = loadMeshTexture(model);
+    // auto texture = loadMeshTexture(model);
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
 
@@ -336,7 +342,9 @@ inline AcceleratedHitManager gltf3DDuck()
         buffer->push_back(Hittable(
             RigidBody::createPolygonPrimitive(vertex_buffer, idx),
             Material::choose(Material::LAMBERTIAN,
-            texture.at(idx.at(0)))));
+            // texture.at(idx.at(0)))
+            Pixel({0.8, 0.6, 0.2}))
+            ));
     }
 
     AcceleratedHitManager manager;
@@ -584,14 +592,16 @@ inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
         *vertex_buffer_4d = target_rot.apply(*vertex_buffer_4d);
         (*vertex_buffer_4d)(Row(dim-1)) += target_dist;
 
-        auto texture = loadMeshTexture(model);
+        // auto texture = loadMeshTexture(model);
 
         for(auto & idx: indices_4d)
         {
             buffer->push_back(Hittable(
                 RigidBody::createPolygonPrimitive(vertex_buffer_4d, idx),
                 Material::choose(Material::LAMBERTIAN,
-                texture.at(idx.at(0)))));
+                // texture.at(idx.at(0)))
+                Pixel({0.8, 0.6, 0.3}))
+                ));
         }
     }
 

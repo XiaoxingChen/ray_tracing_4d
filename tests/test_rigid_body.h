@@ -3,6 +3,8 @@
 
 #include "rigid_body.h"
 #include "primitive_geometry.h"
+#include <iostream>
+
 
 
 using namespace rtc;
@@ -114,12 +116,23 @@ inline void testIntersectEquationXD(size_t dim)
     }
 }
 
+inline void testPutTriangleInPlane()
+{
+    Mat triangle({3,3}, {0.804559827, 0.804559827, 0.785871685, -0.0360073522, -0.186628193, -0.0360073522, 5.50387716, 5.50387716, 5.48705053});
+    Vec hit_p({0.803415656, -0.17609112, 5.50284719});
+
+    Mat triangle_2d;
+    Vec hit_p_2d;
+    putTriangleInPlane(triangle, hit_p, triangle_2d, hit_p_2d);
+}
+
 
 inline void testPrimitiveGeometry()
 {
     testIntersectEquation2D();
     for(size_t dim = 2; dim < 5; dim++)
         testIntersectEquationXD(dim);
+    testPutTriangleInPlane();
 }
 
 #endif // _TEST_REGID_BODY_

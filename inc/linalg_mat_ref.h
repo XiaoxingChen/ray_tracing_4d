@@ -27,7 +27,7 @@ public:
         bool major, bool owner_major,
         const Shape& offset,
         DataPtr p_owner_data)
-    :Mat({0,0}, {}, major),
+    :BaseType({0,0}, {}, major),
         owner_shape_(owner_shape), owner_major_(owner_major),
         ref_offset_(offset),
         p_owner_data_(p_owner_data)
@@ -50,7 +50,7 @@ public:
             indexConvert2D(ref_ij[0], ref_ij[1], owner_major_, owner_shape_[0], owner_shape_[1]));
     }
 
-    virtual DType& operator () (size_t i, size_t j) override { return const_cast<FloatType&>(static_cast<const ThisType&>(*this)(i,j)); }
+    virtual DType& operator () (size_t i, size_t j) override { return const_cast<DType&>(static_cast<const ThisType&>(*this)(i,j)); }
     virtual const MatrixRef<DType> operator () (const Block& s) const override
     {
         return Matrix<DType>::operator () (s);
@@ -121,7 +121,7 @@ const MatrixRef<DType> Matrix<DType>::operator () (const Block& s) const
 template <typename DType>
 MatrixRef<DType> Matrix<DType>::operator () (const Block& s)
 {
-    return static_cast<const Mat&>(*this)(s);
+    return static_cast<const Matrix<DType>&>(*this)(s);
 }
 
 using MatRef = MatrixRef<FloatType>;

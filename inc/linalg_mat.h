@@ -75,7 +75,11 @@ public:
 
     virtual void operator = (const ThisType& rhs)
     {
-        if(this->shape() == Shape{0,0}) shape_ = rhs.shape();
+        if(this->shape() == Shape{0,0})
+        {
+            shape_ = rhs.shape();
+            dataVectorPtr()->resize(shape(0) * shape(1));
+        }
         traverse([&](size_t i, size_t j){ (*this)(i,j) = rhs(i,j); });
     }
 

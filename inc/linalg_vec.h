@@ -25,6 +25,7 @@ public:
     using ThisType = Vector<DType>;
     using BaseType = Matrix<DType>;
 
+    Vector(): BaseType(){}
     Vector(size_t size): BaseType({size, 1}){}
     Vector(const std::vector<FloatType>& v): BaseType({v.size(), 1}, v){}
 

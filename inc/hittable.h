@@ -91,7 +91,7 @@ class HitManager
                 return nullptr;
             }
             auto ret = std::make_shared<Hittable::HitRecord>(
-                nearest_obj->material().attenuation(),
+                nearest_obj->material().attenuation(nearest_hit->p),
                 nearest_obj->material().scatter(ray, nearest_hit->p, nearest_hit->n),
                 nearest_hit->t);
             return ret;

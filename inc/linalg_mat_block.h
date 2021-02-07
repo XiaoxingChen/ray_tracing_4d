@@ -6,6 +6,7 @@
 namespace rtc
 {
 
+
 class Block
 {
 public:
@@ -14,7 +15,8 @@ public:
     Block(size_t row, size_t col)
         :row01_col01_({row, 0, col, 0}) {}
 
-    std::array<size_t, 4> getBlock(const Mat& mat) const
+    template<typename DType>
+    std::array<size_t, 4> getBlock(const Matrix<DType>& mat) const
     {
         std::array<size_t, 4> ret(row01_col01_);
         if(0 == ret[1]) ret[1] = mat.shape(0);

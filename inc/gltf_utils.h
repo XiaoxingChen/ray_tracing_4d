@@ -217,13 +217,13 @@ inline std::shared_ptr<rtc::Mat> loadMeshAttributes(
 
 }
 
-inline std::vector<rtc::Pixel> loadMeshTexture(
+inline std::shared_ptr<Matrix<Pixel>> loadMeshTexture(
     tinygltf::Model& model)
 {
     if (model.textures.size() == 0)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
-    tinygltf::Texture &tex = model.textures[1];
+    tinygltf::Texture &tex = model.textures[0];
 
     if (tex.source < 0)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -250,6 +250,12 @@ inline std::vector<rtc::Pixel> loadMeshTexture(
     if (image.bits != 8)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
+    auto ret = std::shared_ptr<Matrix<Pixel>>(new Matrix<Pixel>({(size_t)image.height, (size_t)image.width}));
+    ret->traverse([&](size_t i, size_t j){
+        for(size_t k = 0; k < 3; k++)
+            (*ret)(i,j)(k) = image.image.at((i * image.width + j) * pixel_stride + k) / 255.;
+        });
+#if 0
     auto p_tex_coord = loadMeshAttributes(model, 0, "TEXCOORD_0");
     auto ret = std::vector<rtc::Pixel>(p_tex_coord->shape(1));
 
@@ -261,6 +267,7 @@ inline std::vector<rtc::Pixel> loadMeshTexture(
         for(size_t j = 0; j < rtc::Pixel::size(); j++)
             ret.at(i)(j) = image.image.at(start_i + j) / 255.;
     }
+#endif
     std::cout << "Texture loading finished..." << std::endl;
 
     // for(size_t i = 0; i < 10; i++)
