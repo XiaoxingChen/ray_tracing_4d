@@ -73,12 +73,39 @@ public:
         (*this) = rhs;
     }
 
+    Matrix(ThisType&& rhs)
+        :shape_({0,0}), data_(0), major_(ROW)
+    {
+        (*this) = std::move(rhs);
+    }
+
+    virtual void operator = (ThisType&& rhs)
+    {
+        if(rhs.shape() == rhs.ownerShape() && rhs.majorAxis() == rhs.ownerMajor()) // not MatrixRef<DType>
+        {
+            shape_.swap(rhs.shape_);
+            data_.swap(rhs.data_);
+            major_ = rhs.major_;
+            return;
+        }
+        if(rhs.dataVectorPtr()->size() == rhs.shape(0) * rhs.shape(1)) // transposed MatrixRef<DType>
+        {
+            shape_.swap(rhs.shape_);
+            data_.swap(*rhs.dataVectorPtr());
+            major_ = rhs.major_;
+            return ;
+        }
+
+        (*this) = rhs;
+    }
+
     virtual void operator = (const ThisType& rhs)
     {
         if(this->shape() == Shape{0,0})
         {
             shape_ = rhs.shape();
             dataVectorPtr()->resize(shape(0) * shape(1));
+            major_ = rhs.majorAxis();
         }
         traverse([&](size_t i, size_t j){ (*this)(i,j) = rhs(i,j); });
     }

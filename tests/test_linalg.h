@@ -155,6 +155,14 @@ inline void testMatRef()
 
 }
 
+inline void testRvalueReference()
+{
+    Mat a = Mat::ones({100, 100});
+    Mat b = std::move(a);
+    if(a.shape() != Shape({0,0}))
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+}
+
 inline void testComplexBase()
 {
     Complex a({1,2});
@@ -200,6 +208,7 @@ inline void testLinearAlgebra()
     testQRcalcMatQ();
     testQRSolve();
     testComplexBase();
+    testRvalueReference();
 
 }
 

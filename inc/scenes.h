@@ -288,8 +288,8 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
 
     auto p_texture_buffer = std::make_shared<TextureBuffer>();
-    p_texture_buffer->tex_coord = *loadMeshAttributes(model, 0, "TEXCOORD_0");
-    p_texture_buffer->base_texture = *loadMeshTexture(model);
+    p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
+    p_texture_buffer->base_texture = std::move(*loadMeshTexture(model));
 
     // indices = std::vector<std::vector<size_t>>(indices.begin() + 500, indices.begin() + 2000);
     // indices.resize(2500);
