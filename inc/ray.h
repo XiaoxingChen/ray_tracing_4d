@@ -29,7 +29,7 @@ class Ray
     const Vec& origin() const       { return origin_; }
     Vec& origin()       { return origin_; }
 
-    const UnitVecIn& direction() const    { return direction_; }
+    const UnitVec& direction() const    { return direction_; }
     void setDirection(UnitVecIn direction)    { direction_ = direction; checkDimension(); }
 
     Vec operator() (FloatType t) const { return origin() + direction() * t; }

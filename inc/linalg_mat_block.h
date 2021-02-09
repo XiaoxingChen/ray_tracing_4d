@@ -6,14 +6,26 @@
 namespace rtc
 {
 
+struct Indexer
+{
+    Indexer(int from_end_)
+    :from_end(from_end_){}
+
+    int from_end;
+    Indexer operator - (int i)
+    { return Indexer(from_end - i); }
+};
+
+inline Indexer end()
+{
+    return Indexer(0);
+}
 
 class Block
 {
 public:
     Block(const std::array<size_t, 2>& row, const std::array<size_t, 2>& col)
         :row01_col01_({row[0], row[1], col[0], col[1]}) {}
-    Block(size_t row, size_t col)
-        :row01_col01_({row, 0, col, 0}) {}
 
     template<typename DType>
     std::array<size_t, 4> getBlock(const Matrix<DType>& mat) const
@@ -34,18 +46,16 @@ protected:
 //     return Mat::setBlock(row01_col01[0], row01_col01[2], rhs);
 // }
 
-class Row: public Block
+inline Block Row(size_t idx)
 {
-public:
-    Row(size_t idx): Block({idx, idx + 1}, {0,0}) {}
-};
+    return Block({idx, idx + 1}, {0,0});
+}
 
-class Col: public Block
+
+inline Block Col(size_t idx)
 {
-public:
-    Col(size_t idx): Block({0,0}, {idx, idx + 1}) {}
-};
-
+    return Block({0,0}, {idx, idx + 1});
+}
 
 } // namespace rtc
 #endif // _LINALG_MAT_BLOCK_H_

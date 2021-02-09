@@ -38,7 +38,7 @@ public:
 
     virtual bool ownerMajor() const override { return owner_major_; }
     virtual Shape refOffset() const override { return ref_offset_; }
-    virtual Shape ownerShape() const {return owner_shape_;}
+    virtual Shape ownerShape() const override {return owner_shape_;}
 
     virtual DataPtr dataVectorPtr() override { return p_owner_data_; }
     virtual const DataPtr dataVectorPtr() const override { return p_owner_data_; }
@@ -64,7 +64,7 @@ public:
     //
     // All overloaded operators except assignment (operator=)
     // are inherited by derived classes.
-    virtual void operator = (const Matrix<DType>& rhs)
+    virtual void operator = (const Matrix<DType>& rhs) override
     {
         if(BaseType::shape() != rhs.shape())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
