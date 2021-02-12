@@ -53,6 +53,9 @@ public:
     bool square() const {return shape(0) == shape(1);}
     bool majorAxis() const {return major_;}
     bool& majorAxis() {return major_;}
+    virtual ThisType& owner() { return *this; }
+    virtual const ThisType& owner() const { return *this; }
+    virtual Shape absOffset() const { return Shape({0,0}); }
 
     //
     // constructors
@@ -81,17 +84,17 @@ public:
 
     virtual void operator = (ThisType&& rhs)
     {
-        if(rhs.shape() == rhs.ownerShape() && rhs.majorAxis() == rhs.ownerMajor()) // not MatrixRef<DType>
+        if(&rhs.owner() == &rhs) // not MatrixRef<DType>
         {
             shape_.swap(rhs.shape_);
             data_.swap(rhs.data_);
             major_ = rhs.major_;
             return;
         }
-        if(rhs.dataVectorPtr()->size() == rhs.shape(0) * rhs.shape(1)) // transposed MatrixRef<DType>
+        if(rhs.owner().shape(0) * rhs.owner().shape(1) == rhs.shape(0) * rhs.shape(1)) // transposed MatrixRef<DType>
         {
             shape_.swap(rhs.shape_);
-            data_.swap(*rhs.dataVectorPtr());
+            data_.swap(rhs.owner().data_);
             major_ = rhs.major_;
             return ;
         }
@@ -104,7 +107,7 @@ public:
         if(this->shape() == Shape{0,0})
         {
             shape_ = rhs.shape();
-            dataVectorPtr()->resize(shape(0) * shape(1));
+            data_.resize(shape(0) * shape(1));
             major_ = rhs.majorAxis();
         }
         traverse([&](size_t i, size_t j){ (*this)(i,j) = rhs(i,j); });
@@ -225,17 +228,10 @@ public:
     virtual const MatrixRef<DType> operator () (const Block& s) const;
     virtual MatrixRef<DType> operator () (const Block& s);
 
-protected:
-    virtual DataPtr dataVectorPtr() { return &data_; }
-    virtual const DataPtr dataVectorPtr() const { return &data_; }
-    virtual bool ownerMajor() const {return majorAxis();}
-    virtual Shape ownerShape() const {return shape();}
-    virtual Shape refOffset() const { return Shape({0,0}); }
 
 protected:
     Shape shape_;
-    // mutable for MatrixRef
-    mutable std::vector<DType> data_;
+    std::vector<DType> data_;
     bool major_;
 };
 
@@ -249,6 +245,20 @@ inline size_t indexConvert2D(size_t i, size_t j, bool major, size_t shape_i, siz
 {
     if(major == Mat::ROW) return (i * shape_j + j);
     return (j * shape_i + i);
+}
+
+inline std::array<size_t,2> updateOffset(
+    Shape& abs_offset, const Shape& inc_offset, bool same_major)
+{
+    if(same_major)
+    {
+        abs_offset[0] += inc_offset[0];
+        abs_offset[1] += inc_offset[1];
+    }else
+    {
+        abs_offset[0] += inc_offset[1];
+        abs_offset[1] += inc_offset[0];
+    }
 }
 
 template <typename DType>

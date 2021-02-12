@@ -152,6 +152,13 @@ inline void testMatRef()
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
+    {
+        Mat vs(Mat::ones({2, 3}));
+        MatRef vst = vs.T();
+        auto b = vst(Block({1,},{}));
+        std::cout << b(0,1) << std::endl;
+    }
+
 
 }
 
