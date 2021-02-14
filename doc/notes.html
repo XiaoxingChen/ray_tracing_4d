@@ -81,11 +81,14 @@ Vec v = Vec::ones(3);</pre>
             </tr>
             <tr><td><code class="md">mat(2,8)</code></td><td><code class="md">mat[2,8]</code></td></tr>
             <tr><td><code class="md">mat(2,end()-1)</code></td><td><code class="md">mat[2,-1]</code></td></tr>
-            <tr><td><code class="md">mat(row(3))</code></td><td><code class="md">mat[3]</code></td></tr>
-            <tr><td><code class="md">mat(col(3))</code></td><td><code class="md">mat[:,3]</code></td></tr>
             <tr><td><code class="md">mat(block({3,5},{6,9}))</code></td><td><code class="md">mat[3:5, 6:9]</code></td></tr>
             <tr><td><code class="md">mat(block({3,},{}))</code></td><td><code class="md">mat[3:, :]</code></td></tr>
             <tr><td><code class="md">mat(block({0,end() - 3},{}))</code></td><td><code class="md">mat[:-3, :]</code></td></tr>
+
+            <tr><td><code class="md">mat(row(3)).asVector()</code></td><td><code class="md">mat[3]</code></td></tr>
+            <tr><td><code class="md">mat(row(end())).asVector()</code></td><td><code class="md">mat[-1]</code></td></tr>
+            <tr><td><code class="md">mat(col(3)).asVector()</code></td><td><code class="md">mat[:,3]</code></td></tr>
+
         </table>
 
 

@@ -155,11 +155,28 @@ inline void testMatRef()
     {
         Mat vs(Mat::ones({2, 3}));
         MatRef vst = vs.T();
-        auto b = vst(Block({1,},{}));
-        std::cout << b(0,1) << std::endl;
+        auto b = vst(Block({1,},{0, end()}));
+        if((b(0,1) - 1 )> eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
+    if(1){
+        Mat vs(Mat::ones({2, 3}));
+        auto block = vs(Row(0));
+        auto v = block.asVector();
+        if((v(2) - 1 )> eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
 
+    {
+        Mat vs(Mat::ones({2, 3}));
+        vs(Col(1)) = Vec({5,6});
+        auto v = vs(Row(0)).asVector();
+        if(v.T().shape() != Shape({3,1}))
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        if(v(1) != 5)
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
 }
 
 inline void testRvalueReference()

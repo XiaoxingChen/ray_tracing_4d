@@ -27,7 +27,7 @@ public:
 
     Vector(): BaseType(){}
     Vector(size_t size): BaseType({size, 1}){}
-    Vector(const std::vector<FloatType>& v): BaseType({v.size(), 1}, v){}
+    Vector(const std::vector<DType>& v): BaseType({v.size(), 1}, v){}
 
     Vector(const BaseType& mat)
         : BaseType(mat.shape(1) == 1 ? mat : mat.T())
@@ -39,14 +39,14 @@ public:
     size_t size() const { return BaseType::shape(0); }
 
 
-    FloatType& operator () (size_t i) { return BaseType::operator()(i, 0); }
-    const FloatType& operator () (size_t i) const { return BaseType::operator()(i, 0); }
+    virtual DType& operator () (size_t i) { return BaseType::operator()(i, 0); }
+    virtual const DType& operator () (size_t i) const { return BaseType::operator()(i, 0); }
 
-    FloatType dot(const ThisType& rhs) const
+    DType dot(const ThisType& rhs) const
     {
         if(size() != rhs.size())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        FloatType sum(0);
+        DType sum(0);
         for(int i = 0; i < size(); i++) sum += (*this)(i) * rhs(i);
         return sum;
     }
@@ -54,9 +54,9 @@ public:
     static ThisType zeros(size_t n) { return ThisType(n); }
     static ThisType ones(size_t n) { return ThisType(n) + 1; }
 
-    operator std::vector<FloatType> () const
+    operator std::vector<DType> () const
     {
-        std::vector<FloatType> ret;
+        std::vector<DType> ret;
         for(size_t i = 0; i < size(); i++) ret.push_back((*this)(i));
         return ret;
     }

@@ -8,6 +8,9 @@ namespace rtc
 {
 
 template<typename DType>
+class VectorRef;
+
+template<typename DType>
 class MatrixRef: public Matrix<DType>
 {
 public:
@@ -61,6 +64,9 @@ public:
     }
 
     void operator = (const ThisType& rhs) { (*this) = static_cast<const BaseType&>(rhs); }
+
+    const VectorRef<DType> asVector() const;
+    VectorRef<DType> asVector();
 
 protected:
     BaseType& owner_;
