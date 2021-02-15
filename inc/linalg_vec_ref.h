@@ -65,6 +65,9 @@ public:
 
     virtual DType& operator () (size_t i, size_t j) override { return const_cast<DType&>(static_cast<const ThisType&>(*this)(i,j)); }
 
+    virtual const Shape& absOffset() const override { return abs_offset_; }
+    virtual Base2Type& owner() override { return owner_; }
+    virtual const Base2Type& owner() const override { return owner_; }
 
 private:
     Base2Type& owner_;
@@ -79,7 +82,7 @@ const VectorRef<DType> MatrixRef<DType>::asVector() const
 
     using ReturnType = VectorRef<DType>;
     return static_cast<const ReturnType>(ReturnType(
-            const_cast<BaseType&>(owner()),
+            const_cast<ThisType&>(*this),
             /*offset*/ {0, 0},
             /*shape*/ BaseType::shape(),
             /*transpose*/ false));

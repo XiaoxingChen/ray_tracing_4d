@@ -35,9 +35,10 @@ public:
 
     virtual BaseType& owner() override { return owner_; }
     virtual const BaseType& owner() const override { return owner_; }
+    virtual const Shape& absOffset() const override { return abs_offset_; }
     virtual const DType& operator () (size_t i, size_t j) const override
     {
-        Shape ref_ij = abs_offset_;
+        Shape ref_ij = absOffset();
         updateOffset(ref_ij, {i,j}, owner().majorAxis() == BaseType::majorAxis());
         return owner_(ref_ij[0], ref_ij[1]);
     }

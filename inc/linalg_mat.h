@@ -55,7 +55,7 @@ public:
     bool& majorAxis() {return major_;}
     virtual ThisType& owner() { return *this; }
     virtual const ThisType& owner() const { return *this; }
-    virtual Shape absOffset() const { return Shape({0,0}); }
+    virtual const Shape& absOffset() const { static Shape zero({0,0});  return zero; }
 
     //
     // constructors
@@ -166,6 +166,7 @@ public:
     ThisType operator -() const        { return ThisType(*this) *= -1;}
 
     DType det() const;
+    ThisType inv() const;
     DType trace() const
     {
         if(!square()) throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -216,7 +217,7 @@ public:
     {
         std::string ret;
         traverse([&](size_t i, size_t j){
-            ret += (rtc::to_string((*this)(i,j), 6) + (j == shape(1) - 1 ? "\n" : " ")); });
+            ret += (rtc::to_string((*this)(i,j), 10) + (j == shape(1) - 1 ? "\n" : " ")); });
         return ret;
     }
 
