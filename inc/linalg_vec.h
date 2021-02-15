@@ -37,6 +37,12 @@ public:
     }
 
     size_t size() const { return BaseType::shape(0); }
+    DType sum() const
+    {
+        DType sum(0);
+        for(int i = 0; i < size(); i++) sum += (*this)(i);
+        return sum;
+    }
 
 
     virtual DType& operator () (size_t i) { return BaseType::operator()(i, 0); }

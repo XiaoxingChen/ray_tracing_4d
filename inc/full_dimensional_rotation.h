@@ -20,6 +20,10 @@ public:
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
+    FullDimensionalRotation(size_t dim): matrix_(Mat::Identity(dim))
+    {
+    }
+
     ThisType operator*(const ThisType& rhs) const { return ThisType(matrix_.matmul(rhs.matrix_)); }
 
     Mat apply(const Mat& vector) const { return matrix_.matmul(vector); }
