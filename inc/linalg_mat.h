@@ -217,7 +217,7 @@ public:
     {
         std::string ret;
         traverse([&](size_t i, size_t j){
-            ret += (rtc::to_string((*this)(i,j), 10) + (j == shape(1) - 1 ? "\n" : " ")); });
+            ret += (rtc::to_string((*this)(i,j), 6) + (j == shape(1) - 1 ? "\n" : " ")); });
         return ret;
     }
 

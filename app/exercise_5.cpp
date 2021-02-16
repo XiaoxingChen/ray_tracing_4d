@@ -20,9 +20,9 @@ int main(int argc, char const *argv[])
     Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({500, 500}), Vec({640, 480}));
     // Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({250, 250}), Vec({320, 240}));
     // auto scene = scene::rectangle3D_002();
-    // auto scene = scene::gltf3DBox();
+    auto scene = scene::gltf3DBox();
     // auto scene = scene::gltf3DSphere();
-    auto scene = scene::gltf3DBoomBox();
+    // auto scene = scene::gltf3DBoomBox();
     // auto scene = scene::gltf3DDuck();
 
     auto render = RenderSample(3);

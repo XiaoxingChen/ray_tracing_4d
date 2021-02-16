@@ -195,11 +195,19 @@ inline AcceleratedHitManager gltf3DBox()
     size_t dim = 3;
     loadModel(model, "assets/box/box.gltf");
 
-    std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
+    std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
 
     std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
 
-    std::cout << "Vertices: \n" << vertex_buffer->str();
+    std::cout << "Vertices: \n" << vertex_buffer->T().str();
+
+    for(auto & ids: indices)
+    {
+        break;
+        for(auto & id: ids)
+            std::cout << id << " ";
+        std::cout << std::endl;
+    }
 
     Rotation r(Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.9));
     *vertex_buffer = r.apply(*vertex_buffer);

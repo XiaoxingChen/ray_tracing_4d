@@ -97,11 +97,70 @@ inline void testBuildTree2()
     tree.build(4, true);
 }
 
+inline void testMultiHit()
+{
+    Mat vertex_buffer({3, 24},{
+    -0.5, -0.5, 0.5,
+    0.5, -0.5, 0.5,
+    -0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5,
+    0.5, -0.5, 0.5,
+    -0.5, -0.5, 0.5,
+    0.5, -0.5, -0.5,
+    -0.5, -0.5, -0.5,
+    0.5, 0.5, 0.5,
+    0.5, -0.5, 0.5,
+    0.5, 0.5, -0.5,
+    0.5, -0.5, -0.5,
+    -0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5,
+    -0.5, 0.5, -0.5,
+    0.5, 0.5, -0.5,
+    -0.5, -0.5, 0.5,
+    -0.5, 0.5, 0.5,
+    -0.5, -0.5, -0.5,
+    -0.5, 0.5, -0.5,
+    -0.5, -0.5, -0.5,
+    -0.5, 0.5, -0.5,
+    0.5, -0.5, -0.5,
+    0.5, 0.5, -0.5}, Mat::COL);
+
+    Matrix<size_t> index_buffer({3,12},{
+        0 , 1 , 2 ,
+        3 , 2 , 1 ,
+        4 , 5 , 6 ,
+        7 , 6 , 5 ,
+        8 , 9 , 10,
+        11, 10, 9 ,
+        12, 13, 14,
+        15, 14, 13,
+        16, 17, 18,
+        19, 18, 17,
+        20, 21, 22,
+        23, 22, 21}, Mat::COL);
+
+    bvh2::PrimitiveMeshTree tree(vertex_buffer, index_buffer);
+    tree.build(1, false);
+
+    if(1){
+        Ray ray({-3, 0.1, 0}, {1,0,0});
+        auto hit_cnt = tree.multiHit(ray);
+        if(hit_cnt != 2)
+        {
+            std::cout << "hit_cnt: " << hit_cnt << std::endl;
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        }
+    }
+
+
+}
+
 void testBvh()
 {
     testSort();
     testBuildTree();
     testBuildTree2();
+    testMultiHit();
 }
 
 #endif // _TEST_BVH_H
