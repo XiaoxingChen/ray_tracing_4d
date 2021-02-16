@@ -30,6 +30,8 @@ class RigidBody
             float_t t; //hit t
             Vec p; //hit point
             UnitVec n; //normal vector
+            size_t prim_idx;
+            Vec prim_coord_hit_p;
         };
         RigidBody(){}
 
@@ -63,7 +65,7 @@ class RigidBody
         static RigidBodyPtr choose(Types type, size_t dimension, const std::vector<FloatType>& args);
         static RigidBodyPtr choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);
         static RigidBodyPtr createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& primitives, const std::vector<std::vector<size_t>>& indices);
-        static RigidBodyPtr createPolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, const std::vector<size_t>& indices );
+        static RigidBodyPtr createPolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx=0);
 };
 
 inline RigidBody::HitRecordPtr hitPrimitivePolygon(

@@ -32,7 +32,7 @@ inline HitManager simple2D_001()
 
     return manager;
 }
-
+#if 0
 inline HitManager simple3D_001()
 {
     HitManager manager;
@@ -271,7 +271,7 @@ inline AcceleratedHitManager gltf3DSphere()
     return manager;
 
 }
-
+#endif
 inline AcceleratedHitManager gltf3DBoomBox()
 {
     tinygltf::Model model;
@@ -292,34 +292,48 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
 
-    // auto texture =
-
 
     auto p_texture_buffer = std::make_shared<TextureBuffer>();
     p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
     p_texture_buffer->base_texture = std::move(*loadMeshTexture(model));
 
+    std::shared_ptr<Matrix<size_t>> vertex_index_buffer;
+    {
+        Matrix<size_t> vertex_index_buffer_({dim, indices.size()});
+        vertex_index_buffer_.traverse([&](auto i, auto j){
+            vertex_index_buffer_(i,j) = indices.at(j).at(i);
+        });
+
+        vertex_index_buffer.reset(new Matrix<size_t>(std::move(vertex_index_buffer_)));
+    }
+
+    std::cout << "vertex_index_buffer shape: " << vertex_index_buffer->shape(1) << std::endl;
+
+    auto p_texture = std::shared_ptr<Material>(
+        new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
+
     // indices = std::vector<std::vector<size_t>>(indices.begin() + 500, indices.begin() + 2000);
     // indices.resize(2500);
-    for(auto & idx: indices)
+    // for(auto & idx: indices)
+    for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
     {
         // for(auto & xyz: idx) std::cout << xyz <<  " ";
         // std::cout << std::endl;
         buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
-            std::shared_ptr<Material>(new GltfTexture(p_texture_buffer, idx, vertex_buffer))
+            RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
+            p_texture
             ));
     }
 
     AcceleratedHitManager manager;
     auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
-    root->split(1, /*verbose*/ true);
+    root->split(1, /*verbose*/ false);
     manager.setRoot(root);
 
     return manager;
 
 }
-
+#if 0
 inline AcceleratedHitManager gltf3DDuck()
 {
     tinygltf::Model model;
@@ -400,7 +414,7 @@ inline AcceleratedHitManager rectangle3D_002()
 
     return manager;
 }
-
+#endif
 inline HitManager simple4D_001()
 {
     HitManager manager;
@@ -426,7 +440,7 @@ inline HitManager simple4D_001()
 
     return manager;
 }
-
+#if 0
 inline AcceleratedHitManager gltf4DBox()
 {
     tinygltf::Model model;
@@ -466,7 +480,7 @@ inline AcceleratedHitManager gltf4DBox()
     return manager;
 
 }
-
+#endif
 inline void To4DMesh(
     std::shared_ptr<Mat>& vertex_3d,
     const std::vector<std::vector<size_t>>& index_3d,
@@ -490,7 +504,7 @@ inline void To4DMesh(
     }
 
 }
-
+#if 0
 inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
@@ -621,6 +635,7 @@ inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
     return manager;
 
 }
+#endif
 
 } // namespace scene
 } // namespace rtc

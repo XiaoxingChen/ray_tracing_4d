@@ -36,17 +36,17 @@ inline std::shared_ptr<Mat> createTriangleBand(
 inline void testSort()
 {
     size_t dim = 3;
-    Matrix<size_t> index_buffer;
+    std::shared_ptr<Matrix<size_t>> index_buffer = std::make_shared<Matrix<size_t>>();
 
     size_t triangle_num = 40;
-    auto vertex_buffer = createTriangleBand(40, index_buffer);
+    auto vertex_buffer = createTriangleBand(40, *index_buffer);
     // std::cout << index_buffer.T().str() << std::endl;
     HittableBufferPtr hittable_buffer = std::make_shared<HittableBuffer>();
-    for(size_t i = 0; i < index_buffer.shape(1); i++)
+    for(size_t i = 0; i < index_buffer->shape(1); i++)
     {
         hittable_buffer->push_back(
             Hittable(
-                RigidBody::createPolygonPrimitive(vertex_buffer, index_buffer(Col(i)).asVector()),
+                RigidBody::createPolygonPrimitive(vertex_buffer, index_buffer, i),
                 Material::choose(Material::METAL)));
     }
 
@@ -63,16 +63,16 @@ inline void testSort()
 inline void testBuildTree()
 {
     size_t dim = 3;
-    Matrix<size_t> index_buffer;
+    std::shared_ptr<Matrix<size_t>> index_buffer = std::make_shared<Matrix<size_t>>();
 
     size_t triangle_num = 40;
-    auto vertex_buffer = createTriangleBand(40, index_buffer);
+    auto vertex_buffer = createTriangleBand(40, *index_buffer);
     HittableBufferPtr hittable_buffer = std::make_shared<HittableBuffer>();
-    for(size_t i = 0; i < index_buffer.shape(1); i++)
+    for(size_t i = 0; i < index_buffer->shape(1); i++)
     {
         hittable_buffer->push_back(
             Hittable(
-                RigidBody::createPolygonPrimitive(vertex_buffer, index_buffer(Col(i)).asVector()),
+                RigidBody::createPolygonPrimitive(vertex_buffer, index_buffer, i),
                 Material::choose(Material::METAL)));
     }
 

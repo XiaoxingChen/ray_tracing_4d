@@ -113,7 +113,7 @@ private:
             if(!p_record) continue;
 
             result = std::make_shared<Hittable::HitRecord>(
-                hittable.material().attenuation(p_record->p),
+                hittable.material().attenuation(*p_record),
                 hittable.material().scatter(ray, p_record->p, p_record->n),
                 p_record->t);
 

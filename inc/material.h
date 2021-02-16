@@ -10,6 +10,7 @@
 #include "primitive_geometry.h"
 #include "interpolation.h"
 #include <iostream>
+#include "rigid_body.h"
 
 
 namespace rtc
@@ -23,7 +24,8 @@ public:
     Material(const Pixel::InitialType& albedo):albedo_(albedo){}
 
     // const Pixel& attenuation() const { return albedo_; }
-    virtual const Pixel& attenuation(const Vec& hit_p) const
+    // virtual const Pixel& attenuation(const Vec& hit_p) const
+    virtual const Pixel& attenuation(const RigidBody::HitRecord& record) const
     {
         return albedo_;
     }
@@ -80,7 +82,7 @@ class GltfTexture :public Material
     public:
         GltfTexture(
             TextureBufferPtr& tex_buffer,
-            const std::vector<size_t>& indices,
+            std::shared_ptr<Matrix<size_t>>& indices,
             std::shared_ptr<Mat>& vertex_buffer)
             :tex_buffer_(tex_buffer),
             vertex_indices_(indices),
@@ -91,20 +93,22 @@ class GltfTexture :public Material
             return Ray(hit_p, hit_n + 0.3 * random::unitSphere(hit_p.size()));
         }
 
-        virtual const Pixel& attenuation(const Vec& hit_p) const override
+        virtual const Pixel& attenuation(const RigidBody::HitRecord& record) const override
         {
             // Triangle A B C, put A to (0,0), put B to (AB.norm(), 0)
-            Mat triangle({hit_p.size(), 3});
+            Mat triangle({record.p.size(), 3});
             Mat tex_coord({2,3});
+            // std::cout << "record.prim_idx: " << record.prim_idx << std::endl;
             for(size_t i = 0; i < 3; i++)
             {
-                triangle(Col(i)) = (*vertex_buffer_)(Col(vertex_indices_.at(i)));
-                tex_coord(Col(i)) = tex_buffer_->tex_coord(Col(vertex_indices_.at(i)));
+                size_t vertex_idx = (*vertex_indices_)(i, record.prim_idx);
+                triangle(Col(i)) = (*vertex_buffer_)(Col(vertex_idx));
+                tex_coord(Col(i)) = tex_buffer_->tex_coord(Col(vertex_idx));
             }
 
             Mat triangle_2d;
             Vec hit_p_2d;
-            putTriangleInPlane(triangle, hit_p, triangle_2d, hit_p_2d);
+            putTriangleInPlane(triangle, record.p, triangle_2d, hit_p_2d);
 
             auto hit_p_tex_coord = interp::triangular(hit_p_2d, triangle_2d, tex_coord);
             // auto hit_p_tex_coord = tex_coord(Col(0));
@@ -115,7 +119,7 @@ class GltfTexture :public Material
         }
     private:
         TextureBufferPtr tex_buffer_;
-        std::vector<size_t> vertex_indices_;
+        std::shared_ptr<Matrix<size_t>> vertex_indices_;
         std::shared_ptr<Mat> vertex_buffer_;
 };
 

@@ -221,27 +221,38 @@ private:
 class PolygonPrimitive: public RigidBody
 {
 public:
-    PolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, std::vector<size_t> indices)
-        :p_vertex_buffer_(vertex_buffer), indices_(indices)
+    PolygonPrimitive(std::shared_ptr<Mat>& vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx)
+        :p_vertex_buffer_(vertex_buffer), p_vertex_index_buffer_(indices), prim_idx_(prim_idx)
         // , norm_(indices.size())
         {   }
 
+    std::vector<size_t> indices() const
+    {
+        return (*p_vertex_index_buffer_)(Col(prim_idx_)).asVector();
+    }
+
     virtual HitRecordPtr hit(const Ray& ray) const
     {
-        return hitPrimitivePolygon(ray, p_vertex_buffer_, indices_);
+        auto p_record = hitPrimitivePolygon(ray, p_vertex_buffer_, indices());
+        if(p_record)
+        {
+            p_record->prim_idx = prim_idx_;
+            p_record->prim_coord_hit_p = p_record->p;
+        }
+        return p_record;
     }
 
     virtual void multiHit(const Ray& ray, std::vector<HitRecordPtr>& records) const
     {
-        records.push_back(hitPrimitivePolygon(ray, p_vertex_buffer_, indices_));
+        records.push_back(hitPrimitivePolygon(ray, p_vertex_buffer_, indices()));
     }
 
-    size_t dim() const { return indices_.size(); }
+    size_t dim() const { return indices().size(); }
 
     virtual AABB aabb() const
     {
         AABB box(dim());
-        for(auto & idx: indices_)
+        for(auto & idx: indices())
         {
             box.extend((*p_vertex_buffer_)(Col(idx)));
         }
@@ -249,8 +260,8 @@ public:
     }
 private:
     std::shared_ptr<Mat> p_vertex_buffer_;
-    std::vector<size_t> indices_;
-    // UnitVec norm_;
+    std::shared_ptr<Matrix<size_t>> p_vertex_index_buffer_;
+    size_t prim_idx_;
 };
 
 //
@@ -344,9 +355,10 @@ private:
 
     RigidBodyPtr RigidBody::createPolygonPrimitive(
         std::shared_ptr<Mat> vertex_buffer,
-        const std::vector<size_t>& indices )
+        std::shared_ptr<Matrix<size_t>>& indices,
+        size_t prim_idx)
     {
-        return std::make_shared<PolygonPrimitive>(vertex_buffer, indices);
+        return std::make_shared<PolygonPrimitive>(vertex_buffer, indices, prim_idx);
     }
 
 } // namespace rtc
