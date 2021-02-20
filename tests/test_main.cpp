@@ -8,10 +8,7 @@
 #include "test_rotation.h"
 #include "test_bvh.h"
 #include "test_interp.h"
-
-
-
-
+#include "test_rigid_transform.h"
 
 
 int main(int argc, char const *argv[])
@@ -26,6 +23,7 @@ int main(int argc, char const *argv[])
   testRandomFactory();
   testMaterial();
   testBvh();
+  testRigidTransform();
   std::cout << "done" << std::endl;
   return 0;
 }

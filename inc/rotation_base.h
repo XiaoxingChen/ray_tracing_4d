@@ -6,34 +6,32 @@
 namespace rtc
 {
 
-inline Mat rodrigues2D(FloatType angle)
+template<typename DType>
+inline Matrix<DType> rodrigues2D(DType angle)
 {
-    FloatType c = cos(angle);
-    FloatType s = sin(angle);
-    return Mat({2,2}, {c, s, -s, c});
+    DType c = cos(angle);
+    DType s = sin(angle);
+    return Matrix<DType>({2,2}, {c, s, -s, c});
 }
 
-inline Mat rodrigues3D(UnitVecIn axis, FloatType angle)
+template<typename DType>
+inline Matrix<DType> rodrigues3D(const Vector<DType>& axis_in, DType angle)
 {
-    FloatType c = cos(angle);
-    FloatType s = sin(angle);
-    FloatType c1 = 1. - c;
-    FloatType itheta = angle ? (1./angle) : 0.;
-    const FloatType & rx = axis(0);
-    const FloatType & ry = axis(1);
-    const FloatType & rz = axis(2);
+    Vector<DType> axis = axis_in.normalized();
+    DType c = cos(angle);
+    DType s = sin(angle);
+    DType c1 = 1. - c;
+    DType itheta = angle ? (1./angle) : 0.;
+    const DType & rx = axis(0);
+    const DType & ry = axis(1);
+    const DType & rz = axis(2);
 
-    Mat rrt({3,3},{
-        rx*rx, rx*ry, rx*rz,
-        rx*ry, ry*ry, ry*rz,
-        rx*rz, ry*rz, rz*rz});
-
-    Mat r_x({3,3},{
+    Matrix<DType> r_x({3,3},{
         0,  -rz,  ry,
         rz,   0, -rx,
         -ry, rx,   0});
 
-    return Mat::Identity(3) * c + rrt * c1 + r_x * s;
+    return Matrix<DType>::Identity(3) * c + (axis.matmul(axis.T())) * c1 + r_x * s;
 }
 
 inline void matrixToAxisAngle3D(const Mat& R, UnitVec& axis, FloatType& angle)

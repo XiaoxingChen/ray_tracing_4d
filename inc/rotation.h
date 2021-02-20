@@ -10,7 +10,7 @@ namespace rtc
 {
 
 
-using Rotation = FullDimensionalRotation;
+using Rotation = FullDimensionalRotation<FloatType>;
 // using Rotation = LowDimensionalRotation;
 } // namespace rtc
 
