@@ -22,8 +22,9 @@ int main(int argc, char const *argv[])
     // auto scene = scene::rectangle3D_002();
     // auto scene = scene::gltf3DBox();
     // auto scene = scene::gltf3DSphere();
-    auto scene = scene::gltf3DBoomBox();
+    // auto scene = scene::gltf3DBoomBox();
     // auto scene = scene::gltf3DDuck();
+    auto scene = scene::simple3DPrism();
 
     auto render = RenderSample(3);
     render.setOutputFilename("exercise_5");
@@ -31,12 +32,12 @@ int main(int argc, char const *argv[])
         .setMode(RenderSample::eMULTITHREADING)
         // .setMode(RenderSample::eSINGLE_RAY)
         // .setMode(RenderSample::eNAIVE)
-        .setRecursionDepth(2)
+        .setRecursionDepth(5)
         .enableRayStack(true)
         .setSampleNum(1)
         .setScene(&scene)
-        .setTestRay(cam.pixelRay({493, 304}))
-        // .setTestRay(Ray(Vec({0.8857144713,1.0000002384,14.2857179642}), Vec({0.0617306866,-0.0696959719,0.9956564903})))
+        .setTestRay(cam.pixelRay({294, 269}))
+        // .setTestRay(Ray(Vec({-0.032410,0.209743,2.759068}), Vec({0.997053,0.075776,-0.011965})))
         .run();
 
     return 0;

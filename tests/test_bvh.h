@@ -88,18 +88,18 @@ inline void testBuildTree2()
 {
     std::cout << "testBuildTree2()" << std::endl;
     size_t dim = 3;
-    Matrix<size_t> index_buffer;
+    std::shared_ptr<Matrix<size_t>> index_buffer(new Matrix<size_t>);
 
     size_t triangle_num = 40;
-    auto vertex_buffer = createTriangleBand(40, index_buffer);
+    auto vertex_buffer = createTriangleBand(40, *index_buffer);
 
-    bvh2::PrimitiveMeshTree tree(*vertex_buffer, index_buffer);
+    bvh2::PrimitiveMeshTree tree(vertex_buffer, index_buffer);
     tree.build(4, true);
 }
 
 inline void testMultiHit()
 {
-    Mat vertex_buffer({3, 24},{
+    std::shared_ptr<Mat> vertex_buffer(new Mat({3, 24},{
     -0.5, -0.5, 0.5,
     0.5, -0.5, 0.5,
     -0.5, 0.5, 0.5,
@@ -123,9 +123,9 @@ inline void testMultiHit()
     -0.5, -0.5, -0.5,
     -0.5, 0.5, -0.5,
     0.5, -0.5, -0.5,
-    0.5, 0.5, -0.5}, Mat::COL);
+    0.5, 0.5, -0.5}, Mat::COL));
 
-    Matrix<size_t> index_buffer({3,12},{
+    std::shared_ptr<Matrix<size_t>> index_buffer( new Matrix<size_t>({3,12},{
         0 , 1 , 2 ,
         3 , 2 , 1 ,
         4 , 5 , 6 ,
@@ -137,7 +137,7 @@ inline void testMultiHit()
         16, 17, 18,
         19, 18, 17,
         20, 21, 22,
-        23, 22, 21}, Mat::COL);
+        23, 22, 21}, Mat::COL));
 
     bvh2::PrimitiveMeshTree tree(vertex_buffer, index_buffer);
     tree.build(1, false);

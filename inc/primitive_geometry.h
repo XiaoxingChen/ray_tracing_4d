@@ -64,6 +64,16 @@ inline void putTriangleInPlane(
     hit_p_2d(1) = (v_ap - hit_p_2d(0)* dir_ab).norm();
 }
 
+template<typename DType>
+inline Vector<DType> primitiveNorm(
+    const Matrix<DType>& prim, const Ray& ray)
+{
+    Matrix<DType> vs = prim(Block({},{1, end()})) - prim(Block({},{0, end() - 1}));
+    Vector<DType> norm = orthogonalComplement(vs);
+    if(norm.dot(ray.direction()) > 0) norm *= -1;
+    return norm.normalized();
+}
+
 } // namespace rtc
 
 

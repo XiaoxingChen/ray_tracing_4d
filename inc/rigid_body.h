@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 #include "primitive_geometry.h"
-// #include "hittable.h"
 
 namespace rtc
 {
@@ -66,6 +65,7 @@ class RigidBody
         static RigidBodyPtr choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);
         static RigidBodyPtr createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& primitives, const std::vector<std::vector<size_t>>& indices);
         static RigidBodyPtr createPolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx=0);
+        static RigidBodyPtr createPrism(const Vec& p, const Rotation& r, FloatType h, std::shared_ptr<Mat>& vertex_buffer, std::shared_ptr<Matrix<size_t>>& vertex_index_buffer);
 };
 
 inline RigidBody::HitRecordPtr hitPrimitivePolygon(
@@ -94,6 +94,20 @@ inline RigidBody::HitRecordPtr hitPrimitivePolygon(
     auto ret = std::make_shared<RigidBody::HitRecord>(
         intersection_t, ray(intersection_t), norm);
 
+    return ret;
+}
+
+template<typename DType>
+Matrix<DType> rigidBodyTransform(const Vector<DType>& p, const Rotation& r, const Matrix<DType> vs)
+{
+    if(vs.shape(0) != r.dim())
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    if(vs.shape(0) != p.size())
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    Matrix<DType> ret = r.apply(vs);
+    for(size_t i = 0; i < vs.shape(1); i++)
+        ret(Col(i)) += p;
     return ret;
 }
 

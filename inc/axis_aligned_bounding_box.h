@@ -59,6 +59,15 @@ class AxisAlignedBoundingBox
         return *this;
     }
 
+    bool in(const ThisType& rhs) const
+    {
+        for(size_t i = 0; i < dim(); i++)
+        {
+            if(min()(i) < rhs.min()(i) || max()(i) > rhs.max()(i)) return false;
+        }
+        return true;
+    }
+
     void checkDimension(const char* file, uint32_t line) const
     {
         if(min_.size() != max_.size())

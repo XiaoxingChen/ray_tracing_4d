@@ -188,7 +188,7 @@ inline AcceleratedHitManager gltf3DTriangle()
     return manager;
 
 }
-
+#endif
 inline AcceleratedHitManager gltf3DBox()
 {
     tinygltf::Model model;
@@ -197,27 +197,21 @@ inline AcceleratedHitManager gltf3DBox()
 
     std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
 
-    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+    auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
+
 
     std::cout << "Vertices: \n" << vertex_buffer->T().str();
 
-    for(auto & ids: indices)
-    {
-        break;
-        for(auto & id: ids)
-            std::cout << id << " ";
-        std::cout << std::endl;
-    }
 
     Rotation r(Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.9));
     *vertex_buffer = r.apply(*vertex_buffer);
     (*vertex_buffer)(Row(2)) += 3;
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
-    for(auto & idx: indices)
+    for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
     {
         buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
+            RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
             Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
     }
 
@@ -229,7 +223,7 @@ inline AcceleratedHitManager gltf3DBox()
     return manager;
 
 }
-
+#if 0
 inline AcceleratedHitManager gltf3DSphere()
 {
     tinygltf::Model model;
@@ -280,7 +274,7 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
     std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
 
-    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+    auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
     (*vertex_buffer) *= 100.;
     std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
 
@@ -297,28 +291,79 @@ inline AcceleratedHitManager gltf3DBoomBox()
     p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
     p_texture_buffer->base_texture = std::move(*loadMeshTexture(model));
 
-    std::shared_ptr<Matrix<size_t>> vertex_index_buffer;
-    {
-        Matrix<size_t> vertex_index_buffer_({dim, indices.size()});
-        vertex_index_buffer_.traverse([&](auto i, auto j){
-            vertex_index_buffer_(i,j) = indices.at(j).at(i);
-        });
-
-        vertex_index_buffer.reset(new Matrix<size_t>(std::move(vertex_index_buffer_)));
-    }
-
     std::cout << "vertex_index_buffer shape: " << vertex_index_buffer->shape(1) << std::endl;
 
     auto p_texture = std::shared_ptr<Material>(
         new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
 
-    // indices = std::vector<std::vector<size_t>>(indices.begin() + 500, indices.begin() + 2000);
-    // indices.resize(2500);
-    // for(auto & idx: indices)
     for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
     {
-        // for(auto & xyz: idx) std::cout << xyz <<  " ";
-        // std::cout << std::endl;
+        buffer->push_back(Hittable(
+            RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
+            p_texture
+            ));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1, /*verbose*/ false);
+    manager.setRoot(root);
+
+    return manager;
+
+}
+
+inline AcceleratedHitManager simple3DPrism()
+{
+    size_t dim = 3;
+    // auto vertex_buffer = std::shared_ptr<Mat>(new Mat({2,4},{1,1, 1,0, 0,0, 0,1}, Mat::COL));
+    // auto vertex_index_buffer = std::shared_ptr<Matrix<size_t>>(new Matrix<size_t>({2,4},{0,1, 1,2, 2,3, 3,0}, Mat::COL));
+
+    // auto vertex_buffer = std::shared_ptr<Mat>(new Mat({2,3},{.5,.5, .5,-.5, -.5,-.5}, Mat::COL));
+    // auto vertex_index_buffer = std::shared_ptr<Matrix<size_t>>(new Matrix<size_t>({2,3},{0,1, 1,2, 2,0}, Mat::COL));
+
+    auto vertex_buffer = std::shared_ptr<Mat>(new Mat({2,8},{0,0, 0,1, 1,1, 1,0, .8,0, .8,.5, .2,.5, .2,0}, Mat::COL));
+    auto vertex_index_buffer = std::shared_ptr<Matrix<size_t>>(new Matrix<size_t>({2,8},{0,1, 1,2, 2,3, 3,4, 4,5, 5,6, 6,7, 7,0}, Mat::COL));
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    buffer->push_back(Hittable(
+            RigidBody::createPrism(Vec({-.5, 0, 3}), Rotation::fromAxisAngle(Vec({1,1,1}), -.5*M_PI_2), 1.0, vertex_buffer, vertex_index_buffer),
+            Material::choose(Material::METAL, Pixel({0.5, 0.3, 0.3}))
+            ));
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1, /*verbose*/ false);
+    manager.setRoot(root);
+
+    return manager;
+}
+
+inline AcceleratedHitManager gltf3DDuck()
+{
+    tinygltf::Model model;
+    size_t dim = 3;
+    loadModel(model, "build/assets/Duck.gltf");
+
+    std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
+
+    auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
+    (*vertex_buffer) *= 5e-3;
+    std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
+
+    (*vertex_buffer)(Row(2)) += 3;
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+
+    auto p_texture_buffer = std::make_shared<TextureBuffer>();
+    p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
+    p_texture_buffer->base_texture = std::move(*loadMeshTexture(model));
+
+    auto p_texture = std::shared_ptr<Material>(
+        new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
+
+    for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
+    {
         buffer->push_back(Hittable(
             RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
             p_texture
@@ -334,50 +379,6 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
 }
 #if 0
-inline AcceleratedHitManager gltf3DDuck()
-{
-    tinygltf::Model model;
-    size_t dim = 3;
-    loadModel(model, "build/assets/Duck.gltf");
-
-    std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
-
-    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
-    (*vertex_buffer) *= 5e-3;
-    std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
-
-    // Rotation r(Rotation::fromPlaneAngle(Vec({0,1,0}), Vec({1,0,0}), M_PI));
-    // r = Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,0,1}), -M_PI/6) * r;
-    // *vertex_buffer = r.apply(*vertex_buffer);
-
-    (*vertex_buffer)(Row(2)) += 3;
-    // (*vertex_buffer)(Row(1)) += 13;
-
-    // auto texture = loadMeshTexture(model);
-
-    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
-
-    // indices.resize(50);
-    // for(size_t i = 0; i < indices.size(); i++)
-    for(auto & idx: indices)
-    {
-        buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
-            Material::choose(Material::LAMBERTIAN,
-            // texture.at(idx.at(0)))
-            Pixel({0.8, 0.6, 0.2}))
-            ));
-    }
-
-    AcceleratedHitManager manager;
-    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
-    root->split(1, /*verbose*/ false);
-    manager.setRoot(root);
-
-    return manager;
-
-}
-
 inline AcceleratedHitManager rectangle3D_001()
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();

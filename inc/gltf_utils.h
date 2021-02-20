@@ -98,11 +98,11 @@ inline void printVertices(tinygltf::Model& model)
     }
 }
 
-inline std::vector<std::vector<size_t>> loadMeshIndices(
+inline Matrix<size_t> loadMeshIndices(
     tinygltf::Model& model,
     size_t mesh_idx)
 {
-    std::vector<std::vector<size_t>> ret;
+
     auto & mesh(model.meshes.at(mesh_idx));
     std::cout << "mesh : " << mesh.name << std::endl;
     auto& primitive = mesh.primitives.at(0);
@@ -120,9 +120,13 @@ inline std::vector<std::vector<size_t>> loadMeshIndices(
 
     const uint16_t* indices = reinterpret_cast<const uint16_t*>(&buffer.data[bufferView.byteOffset + accessor.byteOffset]);
 
+    Matrix<size_t> ret({3, accessor.count / 3});
     for (size_t i = 0; i < accessor.count; i+=3)
     {
-        ret.push_back({indices[i], indices[i+1], indices[i+2]});
+        // ret.push_back({indices[i], indices[i+1], indices[i+2]});
+        ret(0, i / 3) = indices[i];
+        ret(1, i / 3) = indices[i + 1];
+        ret(2, i / 3) = indices[i + 2];
     }
     return ret;
 }

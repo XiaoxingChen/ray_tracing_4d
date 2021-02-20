@@ -11,6 +11,14 @@ namespace rtc
 namespace bvh2
 {
 
+enum HitType
+{
+    eCloseHit = 0,
+    eMultiHit = 1,
+    eAnyHit = 2,
+    eHitTypeNum
+};
+
 struct Node
 {
     Node(size_t dim): aabb(dim), is_leaf(false){}
@@ -20,7 +28,7 @@ struct Node
     bool is_leaf;
 };
 
-Mat getPrimitive(const Mat& vertex_buffer, const Matrix<size_t>& vertex_index_buffer, size_t primitive_index)
+inline Mat getPrimitive(const Mat& vertex_buffer, const Matrix<size_t>& vertex_index_buffer, size_t primitive_index)
 {
     size_t dim = vertex_buffer.shape(0);
     size_t vertex_per_primitive = vertex_index_buffer.shape(0);
@@ -37,23 +45,26 @@ class PrimitiveMeshTree
 {
 public:
     void build(size_t primitive_per_leaf=4, bool verbose=true);
-    size_t dim() const { return position_.size(); }
+    size_t dim() const { return vertex_buffer_->shape(0); }
 
-    PrimitiveMeshTree(const Mat& vertex_buffer, const Matrix<size_t>& vertex_index_buffer)
-        :position_(vertex_buffer.shape(0)), orientation_(vertex_buffer.shape(0)),
-        vertex_buffer_(vertex_buffer), vertex_index_buffer_(vertex_index_buffer)
+    PrimitiveMeshTree(
+        std::shared_ptr<Mat>& vertex_buffer,
+        std::shared_ptr<Matrix<size_t>>& vertex_index_buffer)
+        :vertex_buffer_(vertex_buffer), vertex_index_buffer_(vertex_index_buffer)
         {}
 
-    Mat primitive(size_t idx) const { return getPrimitive(vertex_buffer_, vertex_index_buffer_, idx); }
+    Mat primitive(size_t idx) const { return getPrimitive(*vertex_buffer_, *vertex_index_buffer_, idx); }
 
     size_t multiHit(const Ray& ray) const;
+    std::vector<RigidBody::HitRecord> hit(const Ray& ray, HitType hit_type) const;
+
+    // const AABB& aabb() const { return node_buffer_.at(0).aabb; }
+    const Mat & vertexBuffer() const { return *vertex_buffer_; }
 
 private:
-    Vec position_;
-    Rotation orientation_;
 
-    Mat vertex_buffer_;
-    Matrix<size_t> vertex_index_buffer_;
+    std::shared_ptr<Mat> vertex_buffer_;
+    std::shared_ptr<Matrix<size_t>> vertex_index_buffer_;
     std::vector<bvh2::Node> node_buffer_;
 
 };
@@ -64,7 +75,7 @@ struct RangeNode
     std::array<size_t, 2> range;
 };
 
-size_t treeNodeRequirement(size_t leaf_num, size_t child_num=2)
+inline size_t treeNodeRequirement(size_t leaf_num, size_t child_num=2)
 {
     size_t height = static_cast<size_t>(1. + log(leaf_num) / log(child_num)) + 1;
     if(child_num != 2)
@@ -72,9 +83,23 @@ size_t treeNodeRequirement(size_t leaf_num, size_t child_num=2)
     return (1 << height);
 }
 
+inline bool verifyTree(const std::vector<bvh2::Node>& node_buffer, size_t node_idx)
+{
+    if(node_buffer.at(node_idx).is_leaf)
+        return true;
+    for(auto & child_idx: node_buffer.at(node_idx).children_index_buffer)
+    {
+        if(!node_buffer.at(child_idx).aabb.in(node_buffer.at(node_idx).aabb))
+            return false;
+        if(!verifyTree(node_buffer, child_idx))
+            return false;
+    }
+    return true;
+}
+
 inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
 {
-    std::vector<size_t> primitive_index_buffer(vertex_index_buffer_.shape(1));
+    std::vector<size_t> primitive_index_buffer(vertex_index_buffer_->shape(1));
     for(size_t i = 0; i < primitive_index_buffer.size(); i++) primitive_index_buffer.at(i) = i;
 
     {
@@ -100,8 +125,9 @@ inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
         // eliminate leaf node
         if(target.range[1] - target.range[0] <= primitive_per_leaf)
         {
-            for(size_t prim_idx = target.range[0]; prim_idx < target.range[1]; prim_idx++)
+            for(size_t sorted_idx = target.range[0]; sorted_idx < target.range[1]; sorted_idx++)
             {
+                auto prim_idx = primitive_index_buffer.at(sorted_idx);
                 target_node.primitive_index_buffer.push_back(prim_idx);
                 target_node.aabb.extend( primitive(prim_idx) );
             }
@@ -138,7 +164,7 @@ inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
                 Mat prim1 = primitive(prim_idx1);
                 Mat prim2 = primitive(prim_idx2);
 
-                return prim1(Col(target_axis)).asVector().sum() < prim2(Col(target_axis)).asVector().sum();
+                return prim1(Row(target_axis)).asVector().sum() < prim2(Row(target_axis)).asVector().sum();
             });
 
         // create children
@@ -153,17 +179,26 @@ inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
         node_buffer_.push_back(Node(dim()));
 
     }
+
+    if(!verifyTree(node_buffer_, 0))
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 }
 
 inline size_t PrimitiveMeshTree::multiHit(const Ray& ray) const
 {
+    auto records = hit(ray, eMultiHit);
+    return records.size();
+}
+inline std::vector<RigidBody::HitRecord> PrimitiveMeshTree::hit(const Ray& ray_in, HitType hit_type) const
+{
+    std::vector<RigidBody::HitRecord> records;
+    Ray ray(ray_in);
     std::stack<size_t> node_idx_stk;
 
     if(!node_buffer_.at(0).aabb.hit(ray))
-        return 0;
+        return records;
     node_idx_stk.push(0);
 
-    size_t hit_cnt = 0;
     while(! node_idx_stk.empty())
     {
         const Node& target_node = node_buffer_.at(node_idx_stk.top());
@@ -175,9 +210,21 @@ inline size_t PrimitiveMeshTree::multiHit(const Ray& ray) const
         {
             for(const auto& prim_idx: target_node.primitive_index_buffer)
             {
-                if(validIntersect (
-                    intersectEquation( primitive(prim_idx), ray)))
-                    hit_cnt++;
+                auto result = intersectEquation( primitive(prim_idx), ray);
+                auto hit_t = result(0);
+                if(!validIntersect (result) || !ray.valid(hit_t))
+                    continue;
+
+                RigidBody::HitRecord record(dim());
+                record.t = hit_t;
+                record.prim_idx = prim_idx;
+                record.prim_coord_hit_p = ray(hit_t);
+                record.n = primitiveNorm(primitive(prim_idx), ray);
+                records.push_back(record);
+                if(hit_type == eAnyHit)
+                    return records;
+                else if(hit_type == eCloseHit)
+                    ray.tMax() = hit_t;
             }
             continue;
         }
@@ -192,7 +239,7 @@ inline size_t PrimitiveMeshTree::multiHit(const Ray& ray) const
 
     }
 
-    return hit_cnt;
+    return records;
 }
 
 
