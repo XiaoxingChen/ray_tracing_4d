@@ -26,6 +26,7 @@ inline Mat orthogonalComplement(const Mat& vs)
             adjoint_mat(Block({i, },{})) = vs(Block({i+1,},{}));
 
         ret(i, 0) = adjoint_mat.det();
+        if((i % 2) == 1) ret(i, 0) *= -1;
     }
     return ret;
 

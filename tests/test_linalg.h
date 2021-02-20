@@ -42,6 +42,14 @@ inline void testOrthogonalComplement()
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
+    {
+        Mat in({3,2},{-0.16224509,0.16913061, 0.08134538,  0., -0.06551123,  0.});
+        Mat expected({3,1},{0., -0.01107995, -0.01375799});
+
+        if((orthogonalComplement(in) - expected).norm() > eps())
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    }
+
     if(0){
         Mat in({1,3},{1,0,0});
         Mat complement = orthogonalComplement(in);

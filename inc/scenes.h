@@ -223,7 +223,7 @@ inline AcceleratedHitManager gltf3DBox()
     return manager;
 
 }
-#if 0
+#if 1
 inline AcceleratedHitManager gltf3DSphere()
 {
     tinygltf::Model model;
@@ -236,7 +236,7 @@ inline AcceleratedHitManager gltf3DSphere()
     //     std::cout << (*vertex_buffer)(Col(i)).T().str();
     // }
 
-    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
+    auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
 
     // std::cout << "Vertices: \n" << vertex_buffer->str();
 
@@ -248,13 +248,13 @@ inline AcceleratedHitManager gltf3DSphere()
 
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
-    for(auto & idx: indices)
+    for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
     {
         // for(auto & xyz: idx) std::cout << xyz <<  " ";
         // std::cout << std::endl;
         buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
-            Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
+            RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
+            Material::choose(Material::METAL, Pixel({0.3, 0.3, 0.6}))));
     }
 
     AcceleratedHitManager manager;

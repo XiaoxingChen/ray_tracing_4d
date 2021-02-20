@@ -87,9 +87,8 @@ inline RigidBody::HitRecordPtr hitPrimitivePolygon(
 
     if(!ray.valid(intersection_t)) return nullptr;
 
-    Mat norm_complement(mat_a(Block({}, {1, dim})) - mat_a(Block({}, {0, dim-1})));
 
-    Vec norm = orthogonalComplement(norm_complement);
+    Vec norm = primitiveNorm(mat_a, ray);
 
     auto ret = std::make_shared<RigidBody::HitRecord>(
         intersection_t, ray(intersection_t), norm);

@@ -100,7 +100,7 @@ class AxisAlignedBoundingBox
         {
             if(abs(ray.direction()(i)) < std::numeric_limits<FloatType>::min())
             {
-                if(vertex_min(i) < ray.origin()(i) && ray.origin()(i) < vertex_max(i))
+                if(vertex_min(i) < ray.origin()(i) + eps() && ray.origin()(i) < vertex_max(i) + eps())
                     continue;
 
                 t_in = 1;
