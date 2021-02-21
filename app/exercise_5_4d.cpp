@@ -18,10 +18,11 @@ using namespace rtc;
 int main(int argc, char const *argv[])
 {
     size_t dim = 4;
-    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 15}), Vec({640, 480, 1}));
-    auto scene = scene::simple4D_001();
+    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 50}), Vec({640, 480, 10}));
+    // auto scene = scene::simple4D_001();
     // auto scene = scene::gltfTetrahedronInBox(dim);
     // auto scene = scene::gltf4DBox();
+    auto scene = scene::gltf4DBoxPrism();
 
     auto render = RenderSample(dim);
     render.setOutputFilename("exercise_5_4d");
@@ -29,7 +30,7 @@ int main(int argc, char const *argv[])
         .setMode(RenderSample::eMULTITHREADING)
         // .setMode(RenderSample::eSINGLE_RAY)
         // .setMode(RenderSample::eNAIVE)
-        .setRecursionDepth(2)
+        .setRecursionDepth(5)
         .enableRayStack(true)
         .setSampleNum(1)
         .setScene(&scene)

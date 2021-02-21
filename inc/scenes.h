@@ -439,37 +439,35 @@ inline HitManager simple4D_001()
 
     return manager;
 }
-#if 0
+
 inline AcceleratedHitManager gltf4DBox()
 {
     tinygltf::Model model;
     size_t dim = 4;
     loadModel(model, "assets/box/box.gltf");
 
-    std::shared_ptr<Mat> vertex_buffer_3d = loadMeshVertices(model, 0);
+    std::shared_ptr<Mat> vertex_buffer_3d = loadMeshAttributes(model, 0, "POSITION");
     std::shared_ptr<Mat> vertex_buffer = std::make_shared<Mat>(Shape({4, vertex_buffer_3d->shape(1) + 1}));
     vertex_buffer->setBlock(0,0, *vertex_buffer_3d);
     (*vertex_buffer)(vertex_buffer->shape(0) - 1, vertex_buffer->shape(1) - 1) = .1;
 
     size_t last_vertex_idx = vertex_buffer->shape(1) - 1;
 
-    std::vector<std::vector<size_t>> indices = loadMeshIndices(model, 0);
-    for(auto & idx: indices)
-        idx.push_back(last_vertex_idx);
+    auto indices_3d = loadMeshIndices(model, 0);
+    auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(Shape{dim, indices_3d.shape(1)});
+    vertex_index_buffer->setBlock(0,0, indices_3d);
+    (*vertex_index_buffer)(Row(end()-1)) *= 0;
+    (*vertex_index_buffer)(Row(end()-1)) += last_vertex_idx;
 
     // std::cout << "Vertices: \n" << vertex_buffer->str();
 
     Rotation r(Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), M_PI_4));
-    *vertex_buffer = r.apply(*vertex_buffer);
-    (*vertex_buffer)(Row(dim - 1)) += 5;
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
-    for(auto & idx: indices)
-    {
-        buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, idx),
-            Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
-    }
+
+    buffer->push_back(Hittable(
+        RigidBody::createPrimitiveMesh(Vec({0,0,0,5}),r, vertex_buffer, vertex_index_buffer),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
 
     AcceleratedHitManager manager;
     auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
@@ -479,7 +477,33 @@ inline AcceleratedHitManager gltf4DBox()
     return manager;
 
 }
-#endif
+
+inline AcceleratedHitManager gltf4DBoxPrism()
+{
+    tinygltf::Model model;
+    size_t dim = 4;
+    // loadModel(model, "assets/box/box.gltf");
+    loadModel(model, "assets/sphere/sphere.gltf");
+
+    std::shared_ptr<Mat> vertex_buffer_3d = loadMeshAttributes(model, 0, "POSITION");
+    auto vertex_index_buffer_3d = std::make_shared<Matrix<size_t>>(loadMeshIndices(model, 0));
+
+    Rotation r(Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), 1*M_PI_4));
+
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    buffer->push_back(Hittable(
+        RigidBody::createPrism(Vec({0, 0, 0, 6}), r, 3.0, vertex_buffer_3d, vertex_index_buffer_3d),
+        Material::choose(Material::METAL, Pixel({0.5, 0.3, 0.3}))
+        ));
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+}
+
 inline void To4DMesh(
     std::shared_ptr<Mat>& vertex_3d,
     const std::vector<std::vector<size_t>>& index_3d,
