@@ -18,7 +18,7 @@ using namespace rtc;
 int main(int argc, char const *argv[])
 {
     size_t dim = 4;
-    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 50}), Vec({640, 480, 10}));
+    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 50}), Vec({640, 480, 16}));
     // auto scene = scene::simple4D_001();
     // auto scene = scene::gltfTetrahedronInBox(dim);
     // auto scene = scene::gltf4DBox();
@@ -34,7 +34,8 @@ int main(int argc, char const *argv[])
         .enableRayStack(true)
         .setSampleNum(1)
         .setScene(&scene)
-        .setTestRay(cam.pixelRay({493, 304, 1}))
+        // .setTestRay(cam.pixelRay({493, 304, 1}))
+        .setTestRay(Ray(Vec::zeros(dim), Vec({0.055599,-0.105241,-0.009928,0.992842})))
         .run();
 
     return 0;

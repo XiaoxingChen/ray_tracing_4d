@@ -117,7 +117,15 @@ private:
                 hittable.material().scatter(ray, p_record->p, p_record->n),
                 p_record->t);
 
-            //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+            #if 0
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+                std::cout << "ray ori: " << ray.origin().T().str() << "\n"
+                << "ray dir: " << ray.direction().T().str() << "\n";
+                exit(-1);
+            }
+            #endif
 
             ray.tMax() = p_record->t;
         }

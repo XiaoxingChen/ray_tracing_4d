@@ -49,6 +49,7 @@ public:
 
     // const AABB& aabb() const { return node_buffer_.at(0).aabb; }
     const Mat & vertexBuffer() const { return *vertex_buffer_; }
+    const size_t primitiveSize() const { return vertex_index_buffer_->shape(1); }
 
 private:
 

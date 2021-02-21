@@ -265,7 +265,7 @@ Prism::Prism(const Vec& p, const Rotation& r, FloatType h,
         tree_(vertex_buffer, vertex_index_buffer),
         aabb_(p.size())
 {
-    tree_.build(1, true);
+    tree_.build(1, false);
 
     Mat vertices_full_dim({dim(), vertex_buffer->shape(1) * 2});
     vertices_full_dim(Block({end() - 1, end()}, {0, vertex_buffer->shape(1)})) += half_h_;
@@ -353,7 +353,7 @@ RigidBody::HitRecordPtr Prism::hit(const Ray& ray) const
 
             result->t = h_hit_t_min;
             result->prim_coord_hit_p = local_ray(result->t) + 1e-3 * local_norm;
-            result->prim_idx = tree_.vertexBuffer().shape(1);
+            result->prim_idx = tree_.primitiveSize();
             result->p = orientation_.apply(result->prim_coord_hit_p) + position_;
             // std::cout << "longitudinal hit" << std::endl;
             return result;

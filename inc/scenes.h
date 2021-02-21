@@ -7,6 +7,7 @@
 #include "bounding_volume_hierarchy.h"
 #include "gltf_utils.h"
 #include "primitive_mesh_tree.h"
+#include "rigid_transform.h"
 
 namespace rtc
 {
@@ -478,23 +479,65 @@ inline AcceleratedHitManager gltf4DBox()
 
 }
 
-inline AcceleratedHitManager gltf4DBoxPrism()
+inline Hittable loadTexturelessPrism4D(
+    const RigidTrans& pose, const std::string& gltf_path, FloatType height=1.)
 {
     tinygltf::Model model;
     size_t dim = 4;
-    // loadModel(model, "assets/box/box.gltf");
-    loadModel(model, "assets/sphere/sphere.gltf");
+    loadModel(model, gltf_path);
 
     std::shared_ptr<Mat> vertex_buffer_3d = loadMeshAttributes(model, 0, "POSITION");
     auto vertex_index_buffer_3d = std::make_shared<Matrix<size_t>>(loadMeshIndices(model, 0));
 
-    Rotation r(Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), 1*M_PI_4));
+    return Hittable(
+        RigidBody::createPrism(pose.translation(), pose.rotation(), height, vertex_buffer_3d, vertex_index_buffer_3d),
+        Material::choose(Material::METAL, Pixel({0.8, 0.8, 0.8})));
+}
+
+inline Hittable loadPrism4D(
+    const RigidTrans& pose, const std::string& gltf_path, FloatType scale=1.0, FloatType height=1.)
+{
+    tinygltf::Model model;
+    size_t dim = 4;
+    loadModel(model, gltf_path);
+
+    std::shared_ptr<Mat> vertex_buffer_3d = loadMeshAttributes(model, 0, "POSITION");
+    (*vertex_buffer_3d) *= scale;
+    auto vertex_index_buffer_3d = std::make_shared<Matrix<size_t>>(loadMeshIndices(model, 0));
+
+    auto p_texture_buffer = std::make_shared<TextureBuffer>();
+    p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
+    p_texture_buffer->base_texture = std::move(*loadMeshTexture(model));
+    p_texture_buffer->normal = std::move(*loadMeshAttributes(model, 0, "NORMAL"));
+
+    auto p_texture = std::shared_ptr<Material>(
+        new GltfTexture(p_texture_buffer, vertex_index_buffer_3d, vertex_buffer_3d));
+
+    return Hittable(
+        RigidBody::createPrism(pose.translation(), pose.rotation(), height, vertex_buffer_3d, vertex_index_buffer_3d),
+        p_texture);
+}
+
+inline AcceleratedHitManager gltf4DBoxPrism()
+{
+    size_t dim = 4;
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
-    buffer->push_back(Hittable(
-        RigidBody::createPrism(Vec({0, 0, 0, 6}), r, 3.0, vertex_buffer_3d, vertex_index_buffer_3d),
-        Material::choose(Material::METAL, Pixel({0.5, 0.3, 0.3}))
-        ));
+    #if 0
+    buffer->push_back(loadTexturelessPrism4D(
+        RigidTrans(
+            Vec({0,0,0,6}), Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), 1*M_PI_4)),
+            "assets/sphere/sphere.gltf", 3));
+
+    buffer->push_back(loadPrism4D(
+        RigidTrans(
+            Vec({0,-1,0,10}), Rotation::fromPlaneAngle(Vec({0,0,0,1}), Vec({0,0,0,1}), 1*M_PI_4)),
+            "build/assets/Duck.gltf", 3e-2, 3));
+    #endif
+    buffer->push_back(loadPrism4D(
+        RigidTrans(
+            Vec({0,-1,0,10}), Rotation::fromPlaneAngle(Vec({1,0,0,0}), Vec({0,0,0,1}), 1.5*M_PI_4)),
+            "build/assets/BoomBox.gltf", 200., 0.1));
 
     AcceleratedHitManager manager;
     auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));

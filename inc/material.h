@@ -98,6 +98,8 @@ class GltfTexture :public Material
         {
             if(tex_buffer_->base_texture.shape() == Shape({1,1}))
                 return tex_buffer_->base_texture(0,0);
+            if(record.prim_idx >= vertex_indices_->shape(1))
+                return tex_buffer_->base_texture(0,0);
             // Triangle A B C, put A to (0,0), put B to (AB.norm(), 0)
 
             Mat triangle = getPrimitive(*vertex_buffer_, *vertex_indices_, record.prim_idx);
@@ -105,9 +107,22 @@ class GltfTexture :public Material
 
             Mat triangle_2d;
             Vec hit_p_2d;
-            putTriangleInPlane(triangle, record.p, triangle_2d, hit_p_2d);
+            Vec hit_p_3d({record.prim_coord_hit_p(0), record.prim_coord_hit_p(1), record.prim_coord_hit_p(2)});
+            putTriangleInPlane(triangle, hit_p_3d, triangle_2d, hit_p_2d);
 
             auto hit_p_tex_coord = interp::triangular(hit_p_2d, triangle_2d, tex_coord);
+            if(hit_p_tex_coord(1,0) > 1. || hit_p_tex_coord(1,0) < 0 ||
+                hit_p_tex_coord(0,0) > 1. || hit_p_tex_coord(0,0) < 0)
+            {
+                std::cout << "============== debug info ==============\n"
+                << "hit_p_tex_coord: " << hit_p_tex_coord.T().str()
+                << "prim idx: " << record.prim_idx << "/" << vertex_indices_->shape(1) << "\n"
+                << "triangle: \n" << triangle.str() << "\n"
+                << "prim_coord hit p: \n" << record.prim_coord_hit_p.str() << "\n"
+                << "tri_2d: \n" << triangle_2d.str() << "\n"
+                << "hit_p_2d: \n" << hit_p_2d.str() << "\n";
+                throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+            }
             // auto hit_p_tex_coord = tex_coord(Col(0));
             size_t u = hit_p_tex_coord(1,0) * tex_buffer_->base_texture.shape(1);
             size_t v = hit_p_tex_coord(0,0) * tex_buffer_->base_texture.shape(0);
