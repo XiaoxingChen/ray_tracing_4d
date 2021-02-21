@@ -36,7 +36,8 @@ int main(int argc, char const *argv[])
         .enableRayStack(true)
         .setSampleNum(1)
         .setScene(&scene)
-        .setTestRay(cam.pixelRay({320, 240}))
+        // .setTestRay(cam.pixelRay({320, 240}))
+        .setTestRay(cam.pixelRay({370, 225}))
         // .setTestRay(Ray(Vec({-0.032410,0.209743,2.759068}), Vec({0.997053,0.075776,-0.011965})))
         .run();
 

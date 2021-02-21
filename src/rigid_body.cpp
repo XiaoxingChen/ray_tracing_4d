@@ -3,6 +3,7 @@
 #include "axis_aligned_bounding_box.h"
 #include "bounding_volume_hierarchy.h"
 #include "primitive_mesh_tree.h"
+#include "rigid_transform.h"
 
 #include <memory>
 
@@ -146,77 +147,40 @@ public:
     PrimitiveMesh(
         const Vec& position,
         const Rotation& orientation,
-        const Mat& vertices,
-        const std::vector<std::vector<size_t>>& indices)
-        :position_(position), orientation_(orientation),
-        vertices_global_frame_(orientation.apply(vertices)),
-        indices_(indices)
-        // , aabb_(position.size())
+        std::shared_ptr<Mat>& vertices,
+        std::shared_ptr<Matrix<size_t>>& indices)
+        :pose_(position, orientation),
+        tree_(vertices, indices), aabb_(position.size())
     {
-        for(size_t i = 0; i < vertices_global_frame_.shape(1); i++)
-        {
-            vertices_global_frame_(Col(i)) = vertices_global_frame_(Col(i)) + position_;
-        }
-        // aabb_.extend(vertices_global_frame_);
+        auto global_frame_vertices = pose_.apply(*vertices);
+        aabb_.extend(global_frame_vertices);
+        tree_.build(1, /* verbose */ false);
     }
 
     virtual HitRecordPtr hit(const Ray& ray) const
     {
-        // if(!aabb_.hit(ray)) return nullptr;
-
-        FloatType min_t = ray.tMax();
-        int closest_prim_idx = -1;
-        for(size_t prim_idx = 0; prim_idx < indices_.size(); prim_idx++)
-        {
-            auto & vertex_indices(indices_.at(prim_idx));
-            if(position_.size() != vertex_indices.size())
-                throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-            Mat mat_a({position_.size(), position_.size()});
-            for(size_t i = 0; i < position_.size(); i++)
-            {
-                mat_a(Col(i)) = vertices_global_frame_(Col(vertex_indices.at(i)));
-            }
-            Vec result = intersectEquation(mat_a, ray);
-            if(!validIntersect(result)) continue;
-
-            FloatType intersection_t = result(0);
-
-            if(intersection_t < ray.tMin()) continue;
-            if (intersection_t >= min_t) continue;
-
-            min_t = intersection_t;
-            closest_prim_idx = prim_idx;
-        }
-        if(closest_prim_idx < 0)
+        Ray local_ray(pose_.inv().apply(ray.origin()), pose_.rotation().inv().apply(ray.direction()));
+        auto results = tree_.hit(local_ray, bvh2::eCloseHit);
+        if(results.empty())
             return nullptr;
-
-        auto ret = std::make_shared<HitRecord>(position_.size());
-        Mat norm_complement({position_.size(), position_.size() - 1});
-        for(size_t i = 0; i < position_.size() - 1; i++)
-        {
-            norm_complement(Col(i)) =
-                vertices_global_frame_(Col(indices_.at(closest_prim_idx).at(i + 1)))
-                - vertices_global_frame_(Col(indices_.at(closest_prim_idx).at(i)));
-        }
-        ret->p = ray(min_t);
-        ret->t = min_t;
-        ret->n = orthogonalComplement(norm_complement);
+        auto ret = std::make_shared<HitRecord>(results.front());
+        ret->p = pose_.apply(results.front().prim_coord_hit_p);
+        ret->n = pose_.rotation().apply(results.front().n);
         return ret;
     }
 
     // virtual Vec center() const { return position_; }
     virtual AABB aabb() const
     {
-        AABB box(position_.size());
-        box.extend(vertices_global_frame_);
-        return box;
+        return aabb_;
     }
+
+    size_t dim() const { return pose_.dim(); }
 private:
-    Vec position_;
-    Rotation orientation_;
-    Mat vertices_global_frame_;
-    std::vector<std::vector<size_t>> indices_;
-    // AxisAlignedBoundingBox aabb_;
+
+    RigidTrans pose_;
+    bvh2::PrimitiveMeshTree tree_;
+    AxisAlignedBoundingBox aabb_;
 };
 
 class PolygonPrimitive: public RigidBody
@@ -440,7 +404,11 @@ RigidBody::HitRecordPtr Prism::hit(const Ray& ray) const
         return std::make_shared<Sphere>();
     }
 
-    RigidBodyPtr RigidBody::createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& vertices, const std::vector<std::vector<size_t>>& indices)
+    RigidBodyPtr RigidBody::createPrimitiveMesh(
+        const Vec& position,
+        const Rotation& orientation,
+        std::shared_ptr<Mat>& vertices,
+        std::shared_ptr<Matrix<size_t>>& indices)
     {
         return std::make_shared<PrimitiveMesh>(position, orientation, vertices, indices);
     }

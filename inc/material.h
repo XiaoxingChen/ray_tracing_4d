@@ -71,6 +71,7 @@ struct TextureBuffer
 
     // shape = {h, w}
     Matrix<Pixel> base_texture;
+    Mat normal;
     // shape = {h, w}
     // Matrix<Pixel> metallic_roughness_texture;
 };
@@ -90,21 +91,17 @@ class GltfTexture :public Material
 
         virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const override
         {
-            return Ray(hit_p, hit_n + 0.3 * random::unitSphere(hit_p.size()));
+            return Ray(hit_p, reflect(ray_in.direction(), hit_n) + 0. * random::unitSphere(hit_p.size()));
         }
 
         virtual const Pixel& attenuation(const RigidBody::HitRecord& record) const override
         {
+            if(tex_buffer_->base_texture.shape() == Shape({1,1}))
+                return tex_buffer_->base_texture(0,0);
             // Triangle A B C, put A to (0,0), put B to (AB.norm(), 0)
-            Mat triangle({record.p.size(), 3});
-            Mat tex_coord({2,3});
-            // std::cout << "record.prim_idx: " << record.prim_idx << std::endl;
-            for(size_t i = 0; i < 3; i++)
-            {
-                size_t vertex_idx = (*vertex_indices_)(i, record.prim_idx);
-                triangle(Col(i)) = (*vertex_buffer_)(Col(vertex_idx));
-                tex_coord(Col(i)) = tex_buffer_->tex_coord(Col(vertex_idx));
-            }
+
+            Mat triangle = getPrimitive(*vertex_buffer_, *vertex_indices_, record.prim_idx);
+            Mat tex_coord = getPrimitive(tex_buffer_->tex_coord, *vertex_indices_, record.prim_idx);
 
             Mat triangle_2d;
             Vec hit_p_2d;

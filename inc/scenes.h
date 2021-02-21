@@ -6,6 +6,7 @@
 #include "hittable.h"
 #include "bounding_volume_hierarchy.h"
 #include "gltf_utils.h"
+#include "primitive_mesh_tree.h"
 
 namespace rtc
 {
@@ -226,35 +227,32 @@ inline AcceleratedHitManager gltf3DBox()
 #if 1
 inline AcceleratedHitManager gltf3DSphere()
 {
-    tinygltf::Model model;
-    size_t dim = 3;
-    loadModel(model, "assets/sphere/sphere.gltf");
-
-    std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
-    // for(size_t i = 0; i < 20; i++)
-    // {
-    //     std::cout << (*vertex_buffer)(Col(i)).T().str();
-    // }
-
-    auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
-
-    // std::cout << "Vertices: \n" << vertex_buffer->str();
-
-    // Rotation r(Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.));
-    // *vertex_buffer = r.apply(*vertex_buffer);
-    (*vertex_buffer)(Row(2)) += 3;
-    // indices.resize(15);
-
-
-
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
-    for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
+    size_t dim = 3;
+
     {
-        // for(auto & xyz: idx) std::cout << xyz <<  " ";
-        // std::cout << std::endl;
+        tinygltf::Model model;
+
+        loadModel(model, "assets/sphere/sphere.gltf");
+
+        std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
+        auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
+        auto p_texture_buffer = std::make_shared<TextureBuffer>();
+        p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
+        p_texture_buffer->base_texture = Matrix<Pixel>({1,1});
+        p_texture_buffer->base_texture(0,0) = Pixel({0.3, 0.3, 0.6});
+        p_texture_buffer->normal = std::move(*loadMeshAttributes(model, 0, "NORMAL"));
+
+        auto p_texture = std::shared_ptr<Material>(
+            new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
+
         buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
-            Material::choose(Material::METAL, Pixel({0.3, 0.3, 0.6}))));
+            RigidBody::createPrimitiveMesh(Vec({-1.2,0,4}), Rotation::Identity(dim) , vertex_buffer, vertex_index_buffer),
+            p_texture));
+
+        buffer->push_back(Hittable(
+            RigidBody::createPrimitiveMesh(Vec({1.2,0,4}), Rotation::Identity(dim) , vertex_buffer, vertex_index_buffer),
+            p_texture));
     }
 
     AcceleratedHitManager manager;

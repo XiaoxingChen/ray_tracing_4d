@@ -43,6 +43,9 @@ public:
 
     static ThisType Identity(size_t dim) { return ThisType(Translation::zeros(dim), Rotation::Identity(dim)); }
 
+    const Rotation& rotation() const {return rotation_;}
+    const Translation& translation() const {return translation_;}
+
 private:
     Translation translation_;
     Rotation rotation_;

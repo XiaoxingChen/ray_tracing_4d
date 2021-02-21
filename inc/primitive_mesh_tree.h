@@ -3,6 +3,7 @@
 
 #include "bounding_volume_hierarchy.h"
 #include <stack>
+#include "primitive_geometry.h"
 
 
 namespace rtc
@@ -28,18 +29,6 @@ struct Node
     bool is_leaf;
 };
 
-inline Mat getPrimitive(const Mat& vertex_buffer, const Matrix<size_t>& vertex_index_buffer, size_t primitive_index)
-{
-    size_t dim = vertex_buffer.shape(0);
-    size_t vertex_per_primitive = vertex_index_buffer.shape(0);
-    Mat ret({dim, vertex_per_primitive});
-    for(size_t i = 0; i < vertex_per_primitive; i++)
-    {
-        size_t vertex_index = vertex_index_buffer(i, primitive_index);
-        ret(Col(i)) = vertex_buffer(Col(vertex_index));
-    }
-    return ret;
-}
 
 class PrimitiveMeshTree
 {
@@ -220,11 +209,22 @@ inline std::vector<RigidBody::HitRecord> PrimitiveMeshTree::hit(const Ray& ray_i
                 record.prim_idx = prim_idx;
                 record.prim_coord_hit_p = ray(hit_t);
                 record.n = primitiveNorm(primitive(prim_idx), ray);
-                records.push_back(record);
+
                 if(hit_type == eAnyHit)
+                {
+                    records.push_back(record);
                     return records;
-                else if(hit_type == eCloseHit)
+                }
+                if(hit_type == eCloseHit)
+                {
+                    if(records.empty()) records.push_back(record);
+                    if(records.front().t > record.t) records.front() = record;
                     ray.tMax() = hit_t;
+                }else if(hit_type == eMultiHit)
+                {
+                    records.push_back(record);
+                }
+
             }
             continue;
         }

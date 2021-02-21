@@ -74,6 +74,23 @@ inline Vector<DType> primitiveNorm(
     return norm.normalized();
 }
 
+template<typename DType>
+inline Matrix<DType> getPrimitive(
+    const Matrix<DType>& vertex_buffer,
+    const Matrix<size_t>& vertex_index_buffer,
+    size_t primitive_index)
+{
+    size_t dim = vertex_buffer.shape(0);
+    size_t vertex_per_primitive = vertex_index_buffer.shape(0);
+    Matrix<DType> ret({dim, vertex_per_primitive});
+    for(size_t i = 0; i < vertex_per_primitive; i++)
+    {
+        size_t vertex_index = vertex_index_buffer(i, primitive_index);
+        ret(Col(i)) = vertex_buffer(Col(vertex_index));
+    }
+    return ret;
+}
+
 } // namespace rtc
 
 

@@ -63,7 +63,7 @@ class RigidBody
 
         static RigidBodyPtr choose(Types type, size_t dimension, const std::vector<FloatType>& args);
         static RigidBodyPtr choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);
-        static RigidBodyPtr createPrimitiveMesh(VecIn position, const Rotation& orientation, const Mat& primitives, const std::vector<std::vector<size_t>>& indices);
+        static RigidBodyPtr createPrimitiveMesh(const Vec& position, const Rotation& orientation, std::shared_ptr<Mat>& vertices, std::shared_ptr<Matrix<size_t>>& indices);
         static RigidBodyPtr createPolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx=0);
         static RigidBodyPtr createPrism(const Vec& p, const Rotation& r, FloatType h, std::shared_ptr<Mat>& vertex_buffer, std::shared_ptr<Matrix<size_t>>& vertex_index_buffer);
 };
