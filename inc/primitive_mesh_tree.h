@@ -4,6 +4,7 @@
 #include "bounding_volume_hierarchy.h"
 #include <stack>
 #include "primitive_geometry.h"
+#include <chrono>
 
 
 namespace rtc
@@ -103,7 +104,7 @@ inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
     stk.push({node_buffer_.size(), {0, primitive_index_buffer.size()}});
     node_buffer_.push_back(Node(dim()));
 
-
+    auto t_start = std::chrono::system_clock::now();
     while (!stk.empty())
     {
         auto target = stk.top();
@@ -146,6 +147,9 @@ inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
 
         //
         // sort along the target axis
+        size_t mid = (target.range[1] + target.range[0]) / 2;
+
+        #if 0
         std::sort(
             primitive_index_buffer.begin() + target.range[0],
             primitive_index_buffer.begin() + target.range[1],
@@ -157,8 +161,22 @@ inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
                 return prim1(Row(target_axis)).asVector().sum() < prim2(Row(target_axis)).asVector().sum();
             });
 
+        #else
+        std::nth_element(
+            primitive_index_buffer.begin() + target.range[0],
+            primitive_index_buffer.begin() + mid,
+            primitive_index_buffer.begin() + target.range[1],
+            [&](const size_t& prim_idx1, const size_t& prim_idx2)
+            {
+                Mat prim1 = primitive(prim_idx1);
+                Mat prim2 = primitive(prim_idx2);
+
+                return prim1(Row(target_axis)).asVector().sum() < prim2(Row(target_axis)).asVector().sum();
+            }
+        );
+        #endif
+
         // create children
-        size_t mid = (target.range[1] + target.range[0]) / 2;
 
         stk.push({node_buffer_.size(), {target.range[0], mid}});
         target_node.children_index_buffer.push_back(node_buffer_.size());
@@ -169,7 +187,8 @@ inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
         node_buffer_.push_back(Node(dim()));
 
     }
-
+    auto t_end = std::chrono::system_clock::now();
+    std::cout << "build tree t_cost(s): " << std::chrono::duration<double>(t_end - t_start).count() << std::endl;
     if(!verifyTree(node_buffer_, 0))
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 }
