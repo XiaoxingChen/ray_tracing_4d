@@ -100,5 +100,23 @@ inline std::vector<size_t> argSort(const Vec& v)
     return indices;
 }
 
+template <typename DType>
+inline Matrix<DType> hstack(const Matrix<DType>& lhs, const Matrix<DType>& rhs)
+{
+    if(lhs.shape(0) != rhs.shape(0))
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    Matrix<DType> ret({lhs.shape(0), lhs.shape(1) + rhs.shape(1)});
+    ret.setBlock(0,0,lhs);
+    ret.setBlock(0,lhs.shape(1),rhs);
+    return ret;
+}
+
+template <typename DType>
+inline Matrix<DType> vstack(const Matrix<DType>& lhs, const Matrix<DType>& rhs)
+{
+    return hstack(lhs.T(), rhs.T()).T();
+}
+
 } // namespace rtc
 #endif // _LINALG_UTILS_H

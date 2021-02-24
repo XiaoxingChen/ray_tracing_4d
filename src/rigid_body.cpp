@@ -267,11 +267,10 @@ Prism::Prism(const Vec& p, const Rotation& r, FloatType h,
 {
     tree_.build(1, false);
 
-    Mat vertices_full_dim({dim(), vertex_buffer->shape(1) * 2});
-    vertices_full_dim(Block({end() - 1, end()}, {0, vertex_buffer->shape(1)})) += half_h_;
-    vertices_full_dim(Block({end() - 1, end()}, {vertex_buffer->shape(1), end()})) -= half_h_;
-    vertices_full_dim.setBlock(0, 0, *vertex_buffer);
-    vertices_full_dim.setBlock(0, vertex_buffer->shape(1), *vertex_buffer);
+    size_t vector_num = vertex_buffer->shape(1);
+    Mat vertices_full_dim = hstack(
+        vstack(*vertex_buffer, Mat::zeros({1, vector_num}) += half_h_),
+        vstack(*vertex_buffer, Mat::zeros({1, vector_num}) -= half_h_));
 
     auto trans_v = rigidBodyTransform(position_, orientation_, vertices_full_dim);
     aabb_.extend(trans_v);
