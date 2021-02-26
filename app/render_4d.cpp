@@ -25,7 +25,7 @@ int main(int argc, char const *argv[])
     auto scene = scene::gltf4DBoxPrism();
 
     auto render = RenderSample(dim);
-    render.setOutputFilename("exercise_5_4d");
+    render.setOutputFilename("image_4d");
     render.setCamera(cam)
         .setMode(RenderSample::eMULTITHREADING)
         // .setMode(RenderSample::eSINGLE_RAY)

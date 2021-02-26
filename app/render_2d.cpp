@@ -66,6 +66,6 @@ int main(int argc, char const *argv[])
         img.insert(img.end(), img0.begin(), img0.begin() + nx);
     }
 
-    writeToPPM("exercise_5_2d.ppm", nx, height_repeat, img);
+    writeToPPM("image_2d.ppm", nx, height_repeat, img);
     return 0;
 }
