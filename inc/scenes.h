@@ -347,10 +347,9 @@ inline AcceleratedHitManager gltf3DDuck()
     std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
 
     auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
-    (*vertex_buffer) *= 5e-3;
+    (*vertex_buffer) *= 3e-2;
     std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
 
-    (*vertex_buffer)(Row(2)) += 3;
 
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
 
@@ -361,13 +360,14 @@ inline AcceleratedHitManager gltf3DDuck()
     auto p_texture = std::shared_ptr<Material>(
         new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
 
-    for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
-    {
-        buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
-            p_texture
-            ));
-    }
+    auto r = Rotation::fromAxisAngle(Vec({1,0,0}), M_PI);
+    r = Rotation::fromAxisAngle(Vec({0,1,0}), 3.3 * M_PI_4) * r;
+
+    buffer->push_back(Hittable(
+        RigidBody::createPrimitiveMesh(
+            Vec({0,1.5,10}), r, vertex_buffer, vertex_index_buffer),
+        p_texture));
+
 
     AcceleratedHitManager manager;
     auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
