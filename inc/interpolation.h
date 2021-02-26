@@ -23,9 +23,9 @@ namespace interp
 template<typename PType, typename DType>
 DType bilinearUnitSquare(const Vector<PType>& pos, const Matrix<DType>& square)
 {
-    Vector<PType> vx(2, {1 - pos(0), pos(0)});
-    Vector<PType> vy(2, {1 - pos(1), pos(1)});
-    return vx.T().matmul(square).matmul(vy);
+    Vector<PType> vx({1 - pos(0), pos(0)});
+    Vector<PType> vy({1 - pos(1), pos(1)});
+    return vx.T().matmul(square).matmul(vy)(0,0);
 }
 
 //

@@ -18,11 +18,12 @@ using namespace rtc;
 int main(int argc, char const *argv[])
 {
     size_t dim = 4;
-    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 50}), Vec({640, 480, 1}));
+    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 50}), Vec({640, 480, 32}));
     // auto scene = scene::simple4D_001();
     // auto scene = scene::gltfTetrahedronInBox(dim);
     // auto scene = scene::gltf4DBox();
-    auto scene = scene::gltf4DBoxPrism();
+    // auto scene = scene::gltf4DBoxPrism();
+    auto scene = scene::simple4D_002();
 
     auto render = RenderSample(dim);
     render.setOutputFilename("image_4d");

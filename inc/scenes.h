@@ -92,7 +92,7 @@ inline HitManager simple3D_002()
 
     return manager;
 }
-
+#endif
 inline AcceleratedHitManager simple3D_003()
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
@@ -124,6 +124,24 @@ inline AcceleratedHitManager simple3D_003()
     return manager;
 }
 
+inline AcceleratedHitManager simple3D_005()
+{
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+
+    size_t dim = 3;
+
+    buffer->push_back(Hittable(
+        RigidBody::choose(RigidBody::SPHERE, Vec({0,0,4}), Rotation::Identity(dim), {1}),
+        Material::choose(Material::METAL), "iron ball"));
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+}
+#if 0
 inline AcceleratedHitManager simple3D_004()
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
@@ -437,6 +455,23 @@ inline HitManager simple4D_001()
     manager.addHittables(
         RigidBody::choose(RigidBody::RECTANGLE, rec_pos, rec_ori, {1,-1,1,0.0002}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.2, 0.6, 0.2})));
+
+    return manager;
+}
+inline AcceleratedHitManager simple4D_002()
+{
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+
+    size_t dim = 4;
+
+    buffer->push_back(Hittable(
+        RigidBody::choose(RigidBody::SPHERE, Vec({0,0,0,4}), Rotation::Identity(dim), {1}),
+        Material::choose(Material::METAL), "iron ball"));
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
 
     return manager;
 }

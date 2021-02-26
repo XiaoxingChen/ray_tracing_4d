@@ -22,8 +22,9 @@ int main(int argc, char const *argv[])
     // auto scene = scene::rectangle3D_002();
     // auto scene = scene::gltf3DBox();
     // auto scene = scene::gltf3DSphere();
+    auto scene = scene::simple3D_005();
     // auto scene = scene::gltf3DBoomBox();
-    auto scene = scene::gltf3DDuck();
+    // auto scene = scene::gltf3DDuck();
     // auto scene = scene::simple3DPrism();
 
     auto render = RenderSample(3);
@@ -34,7 +35,7 @@ int main(int argc, char const *argv[])
         // .setMode(RenderSample::eNAIVE)
         .setRecursionDepth(5)
         .enableRayStack(true)
-        .setSampleNum(20)
+        .setSampleNum(1)
         .setScene(&scene)
         // .setTestRay(cam.pixelRay({320, 240}))
         .setTestRay(cam.pixelRay({269, 129}))

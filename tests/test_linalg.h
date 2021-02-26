@@ -28,6 +28,15 @@ inline void testPixel()
     if(img.back().rU8() != 0xff)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
+    {
+        auto img = loadImage("assets/sky_box/star_night.jpeg");
+        if(img.shape() != Shape({630,1200}))
+        {
+            std::cout << img.shape(0) << "," << img.shape(1) << std::endl;
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        }
+
+    }
 }
 
 inline void testOrthogonalComplement()

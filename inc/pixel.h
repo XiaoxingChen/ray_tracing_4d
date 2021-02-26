@@ -3,8 +3,10 @@
 
 #include <array>
 #include <cmath>
+#include <string>
 #include "base_type.h"
 #include "accessor.h"
+#include "stb_image.h"
 
 
 namespace rtc
@@ -61,6 +63,26 @@ private:
 
 using Pixel = PixelF32<3>;
 using Pixel4 = PixelF32<4>;
+
+inline Matrix<Pixel> loadImage(const std::string& filename)
+{
+    int width, height, n;
+    size_t ch = 3;
+    uint8_t* data = stbi_load(filename.c_str(), &width, &height, &n, ch);
+    if(!data)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+
+    Matrix<Pixel> ret({ (size_t)height, (size_t)width});
+    ret.traverse([&](auto i, auto j)
+    {
+        for(size_t k = 0; k < ch; k++)
+        {
+            ret(i,j)(k) = data[i * width * ch + j * ch + k] / 255.;
+        }
+    });
+    stbi_image_free(data);
+    return ret;
+}
 
 
 } // namespace rtc
