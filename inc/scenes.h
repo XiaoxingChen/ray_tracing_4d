@@ -259,7 +259,7 @@ inline AcceleratedHitManager gltf3DSphere()
         auto p_texture_buffer = std::make_shared<TextureBuffer>();
         p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
         p_texture_buffer->base_texture = Matrix<Pixel>({1,1});
-        p_texture_buffer->base_texture(0,0) = Pixel({0.3, 0.3, 0.6});
+        p_texture_buffer->base_texture(0,0) = Pixel({0.8, 0.8, 0.8});
         p_texture_buffer->normal = std::move(*loadMeshAttributes(model, 0, "NORMAL"));
 
         auto p_texture = std::shared_ptr<Material>(

@@ -3,7 +3,7 @@
 #include "axis_aligned_bounding_box.h"
 #include "bounding_volume_hierarchy.h"
 #include "primitive_mesh_tree.h"
-#include "rigid_transform.h"
+// #include "rigid_transform.h"
 
 #include <memory>
 
@@ -50,6 +50,10 @@ namespace rtc
             {
                 return AABB(center_ - radius_, center_ + radius_);
             }
+
+            virtual size_t dim() const override { return center_.size(); }
+
+            virtual RigidTrans pose() const override { return RigidTrans(center_, Rotation::Identity(dim())); }
 
         private:
             Vec center_;
@@ -135,6 +139,8 @@ namespace rtc
                 return box;
             }
 
+            virtual size_t dim() const override { return center_.size(); }
+
         private:
             Vec center_;
             Vec radius_;
@@ -175,7 +181,9 @@ public:
         return aabb_;
     }
 
-    size_t dim() const { return pose_.dim(); }
+    virtual size_t dim() const override { return pose_.dim(); }
+
+    virtual RigidTrans pose() const override { return pose_; }
 private:
 
     RigidTrans pose_;
@@ -212,7 +220,7 @@ public:
         records.push_back(hitPrimitivePolygon(ray, p_vertex_buffer_, indices()));
     }
 
-    size_t dim() const { return indices().size(); }
+    virtual size_t dim() const override { return indices().size(); }
 
     virtual AABB aabb() const
     {
@@ -242,11 +250,13 @@ public:
         std::shared_ptr<Mat>& vertex_buffer,
         std::shared_ptr<Matrix<size_t>>& vertex_index_buffer);
 
-    size_t dim() const { return position_.size(); }
+    virtual size_t dim() const override { return position_.size(); }
 
     virtual RigidBody::HitRecordPtr hit(const Ray& ray) const;
 
     virtual AABB aabb() const { return aabb_; }
+
+    virtual RigidTrans pose() const override { return RigidTrans(position_, orientation_); }
 
 private:
     Vec position_;

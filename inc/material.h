@@ -91,7 +91,20 @@ class GltfTexture :public Material
 
         virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const override
         {
-            return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere(record.p.size()));
+            // if(record.prim_idx >= vertex_indices_->shape(1))
+                return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere(record.p.size()));
+
+            Mat triangle = getPrimitive(*vertex_buffer_, *vertex_indices_, record.prim_idx);
+            Mat normal = getPrimitive(tex_buffer_->normal, *vertex_indices_, record.prim_idx);
+
+            Mat triangle_2d;
+            Vec hit_p_2d;
+            Vec hit_p_3d({record.prim_coord_hit_p(0), record.prim_coord_hit_p(1), record.prim_coord_hit_p(2)});
+            putTriangleInPlane(triangle, hit_p_3d, triangle_2d, hit_p_2d);
+
+            auto prim_coord_hit_n = interp::triangular(hit_p_2d, triangle_2d, normal);
+            //TODO: currently return local frame ray.
+            return Ray(record.prim_coord_hit_p, reflect(ray_in.direction(), prim_coord_hit_n) + 0. * random::unitSphere(record.p.size()));
         }
 
         virtual const Pixel& attenuation(const RigidBody::HitRecord& record) const override

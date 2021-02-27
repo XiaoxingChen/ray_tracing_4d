@@ -2,6 +2,7 @@
 #define __RIGID_BODY_H__
 #include "ray.h"
 #include "rotation.h"
+#include "rigid_transform.h"
 
 #include <memory>
 #include <string>
@@ -60,6 +61,11 @@ class RigidBody
         // virtual Vec center() const = 0;
         virtual std::string str() const {return "";};
         virtual AABB aabb() const = 0;
+        virtual size_t dim() const  = 0;
+        virtual RigidTrans pose() const {
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+            return RigidTrans::Identity(dim());
+        }
 
         static RigidBodyPtr choose(Types type, size_t dimension, const std::vector<FloatType>& args);
         static RigidBodyPtr choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);

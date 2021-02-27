@@ -138,10 +138,24 @@ Vec v = Vec::ones(3);</pre>
 struct HitRecord
 {
     size_t prim_idx;
-    FloatType hit_t;
-    Vec prim_coord_hit_p;
+    FloatType t;
+    Vec prim_coord_hit_p; //or local_p?
+    Vec prim_coord_hit_n; //or local_n?
+    //
+    //How about rigid body info?
+    // pose, scale
 };
     </pre>
+            </td>
+            <td>WIP</td>
+        </tr>
+
+        <tr>
+            <td><code class="md">Material</code> class interface</td>
+            <td></td>
+            <td>
+                <code class="md">attenuate()</code>
+                <code class="md">scatter()</code>
             </td>
             <td>WIP</td>
         </tr>

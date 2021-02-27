@@ -3,6 +3,7 @@
 // #include "vec3.h"
 #include "linalg.h"
 #include "base_type.h"
+#include "rigid_transform.h"
 
 namespace rtc{
 
@@ -44,6 +45,11 @@ class Ray
     FloatType t_min_;
     FloatType t_max_;
 };
+
+inline Ray apply(const RigidTrans& tf, const Ray& r)
+{
+    return Ray(tf.apply(r.origin()), tf.rotation().apply(r.direction()));
+}
 
 // using RayPtr = std::shared_ptr<Ray>;
 }//ray tracing
