@@ -228,6 +228,12 @@ public:
     }
     virtual const MatrixRef<DType> operator () (const Block& s) const;
     virtual MatrixRef<DType> operator () (const Block& s);
+    ThisType pow(size_t n) const
+    {
+        ThisType ret = ThisType::ones(shape());
+        for(size_t i = 0; i < n; i++) ret *= (*this);
+        return ret;
+    }
 
 
 protected:

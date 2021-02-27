@@ -9,6 +9,7 @@
 #include "test_bvh.h"
 #include "test_interp.h"
 #include "test_rigid_transform.h"
+#include "test_bazier.h"
 
 
 int main(int argc, char const *argv[])
@@ -24,6 +25,7 @@ int main(int argc, char const *argv[])
   testMaterial();
   testBvh();
   testRigidTransform();
+  testBazier();
   std::cout << "done" << std::endl;
   return 0;
 }

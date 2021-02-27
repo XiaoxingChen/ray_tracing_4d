@@ -118,5 +118,12 @@ inline Matrix<DType> vstack(const Matrix<DType>& lhs, const Matrix<DType>& rhs)
     return hstack(lhs.T(), rhs.T()).T();
 }
 
+inline size_t factorial(size_t x)
+{
+    size_t ret = 1;
+    while(x > 1) ret *= x--;
+    return ret;
+}
+
 } // namespace rtc
 #endif // _LINALG_UTILS_H
