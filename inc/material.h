@@ -31,7 +31,7 @@ public:
     }
 
     virtual Ray scatter(
-        const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const = 0;
+        const Ray& ray_in, const RigidBody::HitRecord& record) const = 0;
 
     enum Types
     {
@@ -89,9 +89,9 @@ class GltfTexture :public Material
             vertex_indices_(indices),
             vertex_buffer_(vertex_buffer) {}
 
-        virtual Ray scatter(const Ray& ray_in, const Vec& hit_p, const Vec& hit_n) const override
+        virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const override
         {
-            return Ray(hit_p, reflect(ray_in.direction(), hit_n) + 0. * random::unitSphere(hit_p.size()));
+            return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere(record.p.size()));
         }
 
         virtual const Pixel& attenuation(const RigidBody::HitRecord& record) const override

@@ -30,7 +30,7 @@ inline void testPixel()
 
     {
         auto img = loadImage("assets/sky_box/star_night.jpeg");
-        if(img.shape() != Shape({630,1200}))
+        if(img.shape() != Shape({750,499}))
         {
             std::cout << img.shape(0) << "," << img.shape(1) << std::endl;
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
