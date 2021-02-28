@@ -33,6 +33,9 @@ public:
     virtual Ray scatter(
         const Ray& ray_in, const RigidBody::HitRecord& record) const = 0;
 
+    virtual Ray localFrameScatter(
+        const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const {};
+
     enum Types
     {
         METAL,
@@ -91,7 +94,13 @@ class GltfTexture :public Material
 
         virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const override
         {
-            // if(record.prim_idx >= vertex_indices_->shape(1))
+            return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere(record.p.size()));
+        }
+
+        virtual Ray localFrameScatter(
+            const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const override
+        {
+            if(record.prim_idx >= vertex_indices_->shape(1))
                 return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere(record.p.size()));
 
             Mat triangle = getPrimitive(*vertex_buffer_, *vertex_indices_, record.prim_idx);
@@ -104,7 +113,9 @@ class GltfTexture :public Material
 
             auto prim_coord_hit_n = interp::triangular(hit_p_2d, triangle_2d, normal);
             //TODO: currently return local frame ray.
-            return Ray(record.prim_coord_hit_p, reflect(ray_in.direction(), prim_coord_hit_n) + 0. * random::unitSphere(record.p.size()));
+            auto local_ray = apply(pose.inv(), ray_in);
+            Ray reflected_local_ray(record.prim_coord_hit_p, reflect(local_ray.direction(), prim_coord_hit_n) + 0. * random::unitSphere(record.p.size()));
+            return apply(pose, reflected_local_ray);
         }
 
         virtual const Pixel& attenuation(const RigidBody::HitRecord& record) const override

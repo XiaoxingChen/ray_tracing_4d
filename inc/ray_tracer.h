@@ -12,12 +12,10 @@ namespace rtc
 
 inline Pixel skyBox(const Ray& ray)
 {
-    if(0)
-    {
-        FloatType t = 0.5 * (ray.direction()(1) + 1.);
-        return (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.});
-    }
-
+#if 1
+    FloatType t = 0.5 * (ray.direction()(1) + 1.);
+    return (1- t) * Pixel({1,1,1}) + t * Pixel({0.5, 0.7, 1.});
+#else
     static auto img = loadImage("assets/sky_box/star_night.jpeg");
     FloatType x = 0.5 * (ray.direction()(1) + 1.) * img.shape(0);
     FloatType y = 0.5 * (ray.direction()(0) + 1.) * img.shape(1);
@@ -29,6 +27,7 @@ inline Pixel skyBox(const Ray& ray)
     }
     return interp::bilinearUnitSquare(
         Vec({x - i, y - j}) , img(Block({i, i+2},{j, j+2})));
+#endif
 }
 
 inline Pixel trace(const HitManager& manager, Ray& ray, int depth, std::vector<Ray>* ray_record=nullptr)

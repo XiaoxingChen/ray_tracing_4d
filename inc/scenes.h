@@ -283,6 +283,46 @@ inline AcceleratedHitManager gltf3DSphere()
 
 }
 #endif
+
+inline AcceleratedHitManager gltf3DDroplet()
+{
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    size_t dim = 3;
+
+    {
+        tinygltf::Model model;
+
+        loadModel(model, "build/assets/droplet.gltf");
+
+        std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
+
+        // (*vertex_buffer) *= (1./15);
+
+        auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
+        auto p_texture_buffer = std::make_shared<TextureBuffer>();
+        p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
+        p_texture_buffer->base_texture = Matrix<Pixel>({1,1});
+        p_texture_buffer->base_texture(0,0) = Pixel({0.8, 0.8, 0.8});
+        p_texture_buffer->normal = std::move(*loadMeshAttributes(model, 0, "NORMAL"));
+
+        auto p_texture = std::shared_ptr<Material>(
+            new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
+
+        buffer->push_back(Hittable(
+            RigidBody::createPrimitiveMesh(Vec({-2,0,6}),
+                Rotation::fromAxisAngle(Vec({1,1,0}), M_PI_4),
+                vertex_buffer, vertex_index_buffer),
+            p_texture));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1, /*verbose*/ false);
+    manager.setRoot(root);
+
+    return manager;
+
+}
 inline AcceleratedHitManager gltf3DBoomBox()
 {
     tinygltf::Model model;
@@ -529,6 +569,27 @@ inline Hittable loadTexturelessPrism4D(
         Material::choose(Material::METAL, Pixel({0.8, 0.8, 0.8})));
 }
 
+inline Hittable loadTexturelessCavityPrism4D(
+    const RigidTrans& pose, const std::string& gltf_path, FloatType height=1.,FloatType thick_rate=0.9)
+{
+    tinygltf::Model model;
+    size_t dim = 4;
+    loadModel(model, gltf_path);
+
+    auto vertex_buffer_out = *loadMeshAttributes(model, 0, "POSITION");
+    auto vertex_buffer_in = vertex_buffer_out * thick_rate;
+    auto vertex_buffer_3d = std::make_shared<Mat>(hstack(vertex_buffer_out, vertex_buffer_in));
+
+    auto vertex_index_buffer_out = loadMeshIndices(model, 0);
+    auto vertex_index_buffer_in = vertex_index_buffer_out + vertex_buffer_out.shape(1);
+    auto vertex_index_buffer_3d =
+        std::make_shared<Matrix<size_t>>(hstack(vertex_index_buffer_out, vertex_index_buffer_in));
+
+    return Hittable(
+        RigidBody::createPrism(pose.translation(), pose.rotation(), height, vertex_buffer_3d, vertex_index_buffer_3d),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.2})));
+}
+
 inline Hittable loadPrism4D(
     const RigidTrans& pose, const std::string& gltf_path, FloatType scale=1.0, FloatType height=1.)
 {
@@ -582,6 +643,31 @@ inline AcceleratedHitManager gltf4DBoxPrism()
     return manager;
 }
 
+inline AcceleratedHitManager gltfDuckInBox4D()
+{
+    size_t dim = 4;
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+
+    RigidTrans common_pose(Vec({0,0,0,2}), Rotation::fromPlaneAngle(Vec({1,.5,0,0}), Vec({0,0,0,1}), 1.*M_PI_4));
+
+    buffer->push_back(loadTexturelessCavityPrism4D(
+        common_pose, "assets/box/box.gltf", 0.01));
+
+    RigidTrans duck_pose(Vec({0.1, 0.475, 0, 0}),
+        // Rotation::fromPlaneAngle(Vec({1,0,0,0}), Vec({0,0,1,0}), M_PI_2)*
+        Rotation::fromPlaneAngle(Vec({1,0,0,0}), Vec({0,1,0,0}), M_PI));
+
+    buffer->push_back(loadPrism4D(
+        common_pose * duck_pose, "build/assets/Duck.gltf", 4e-3, 0.01));
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+}
+
 inline void To4DMesh(
     std::shared_ptr<Mat>& vertex_3d,
     const std::vector<std::vector<size_t>>& index_3d,
@@ -605,6 +691,7 @@ inline void To4DMesh(
     }
 
 }
+
 #if 0
 inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
 {
