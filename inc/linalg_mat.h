@@ -254,7 +254,7 @@ inline size_t indexConvert2D(size_t i, size_t j, bool major, size_t shape_i, siz
     return (j * shape_i + i);
 }
 
-inline std::array<size_t,2> updateOffset(
+inline void updateOffset(
     Shape& abs_offset, const Shape& inc_offset, bool same_major)
 {
     if(same_major)

@@ -22,11 +22,12 @@ int main(int argc, char const *argv[])
     // auto scene = scene::rectangle3D_002();
     // auto scene = scene::gltf3DBox();
     // auto scene = scene::gltf3DSphere();
-    auto scene = scene::gltf3DDroplet();
+    // auto scene = scene::gltf3DDroplet();
     // auto scene = scene::simple3D_005();
     // auto scene = scene::gltf3DBoomBox();
     // auto scene = scene::gltf3DDuck();
     // auto scene = scene::simple3DPrism();
+    auto scene = scene::gltfDuckInBox3D();
 
     auto render = RenderSample(3);
     render.setOutputFilename("image_3d");
@@ -34,9 +35,9 @@ int main(int argc, char const *argv[])
         .setMode(RenderSample::eMULTITHREADING)
         // .setMode(RenderSample::eSINGLE_RAY)
         // .setMode(RenderSample::eNAIVE)
-        .setRecursionDepth(5)
+        .setRecursionDepth(4)
         .enableRayStack(true)
-        .setSampleNum(1)
+        .setSampleNum(10)
         .setScene(&scene)
         // .setTestRay(cam.pixelRay({320, 240}))
         .setTestRay(cam.pixelRay({269, 129}))

@@ -643,6 +643,62 @@ inline AcceleratedHitManager gltf4DBoxPrism()
     return manager;
 }
 
+inline AcceleratedHitManager gltfDuckInBox3D()
+{
+    size_t dim = 3;
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+
+    RigidTrans common_pose(Vec({0,0,2}), Rotation::fromPlaneAngle(Vec({1,.5,0}), Vec({0,0,1}), 0.5*M_PI_4));
+
+    {
+        auto vertex_buffer = std::shared_ptr<Mat>(new Mat({2,8},
+            {-.500,-.500, -.500,.500, .500,.500, .500,-.500,
+            -.475,-.475, -.475,.475, .475,.475, .475,-.475}, Mat::COL));
+        auto vertex_index_buffer = std::shared_ptr<Matrix<size_t>>(new Matrix<size_t>({2,8},
+            {0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4}, Mat::COL));
+
+        buffer->push_back(Hittable(
+                RigidBody::createPrism(common_pose.translation(), common_pose.rotation(), 1.0, vertex_buffer, vertex_index_buffer),
+                Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.2}))
+                ));
+    }
+
+    if(1){ //load duck
+        tinygltf::Model model;
+
+        loadModel(model, "build/assets/Duck.gltf");
+
+        RigidTrans duck_pose(Vec({0.1, 0.475, 0}),
+            Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,0}), M_PI));
+
+        std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
+        auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
+        (*vertex_buffer) *= 4e-3;
+        auto p_texture_buffer = std::make_shared<TextureBuffer>();
+        p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
+        p_texture_buffer->base_texture = std::move(*loadMeshTexture(model));
+        p_texture_buffer->normal = std::move(*loadMeshAttributes(model, 0, "NORMAL"));
+
+        auto p_texture = std::shared_ptr<Material>(
+            new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
+
+        auto duck_global_pose = common_pose * duck_pose;
+
+        buffer->push_back(Hittable(
+            RigidBody::createPrimitiveMesh(
+                duck_global_pose.translation(), duck_global_pose.rotation() ,
+                vertex_buffer, vertex_index_buffer),
+            p_texture));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
+
+    return manager;
+}
+
 inline AcceleratedHitManager gltfDuckInBox4D()
 {
     size_t dim = 4;

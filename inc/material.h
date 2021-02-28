@@ -34,7 +34,8 @@ public:
         const Ray& ray_in, const RigidBody::HitRecord& record) const = 0;
 
     virtual Ray localFrameScatter(
-        const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const {};
+        const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const
+        { throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__)); return  ray_in;};
 
     enum Types
     {
