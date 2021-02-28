@@ -650,7 +650,7 @@ inline AcceleratedHitManager gltfDuckInBox3D()
 
     RigidTrans common_pose(Vec({0,0,2}), Rotation::fromPlaneAngle(Vec({1,.5,0}), Vec({0,0,1}), 0.5*M_PI_4));
 
-    {
+    if(0){
         auto vertex_buffer = std::shared_ptr<Mat>(new Mat({2,8},
             {-.500,-.500, -.500,.500, .500,.500, .500,-.500,
             -.475,-.475, -.475,.475, .475,.475, .475,-.475}, Mat::COL));
@@ -662,8 +662,15 @@ inline AcceleratedHitManager gltfDuckInBox3D()
                 Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.2}))
                 ));
     }
+#if 1
+    {
+        buffer->push_back(Hittable(
+        RigidBody::choose(RigidBody::RECTANGLE, common_pose.translation(), common_pose.rotation(), {.5,.5,.5}),
+        Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.2}))));
+    }
+#endif
 
-    if(1){ //load duck
+    if(0){ //load duck
         tinygltf::Model model;
 
         loadModel(model, "build/assets/Duck.gltf");
@@ -704,7 +711,7 @@ inline AcceleratedHitManager gltfDuckInBox4D()
     size_t dim = 4;
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
 
-    RigidTrans common_pose(Vec({0,0,0,2}), Rotation::fromPlaneAngle(Vec({1,.5,0,0}), Vec({0,0,0,1}), 1.*M_PI_4));
+    RigidTrans common_pose(Vec({0,0,0,2}), Rotation::fromPlaneAngle(Vec({1,.5,0,0}), Vec({0,0,0,1}), .5*M_PI_4));
 
     buffer->push_back(loadTexturelessCavityPrism4D(
         common_pose, "assets/box/box.gltf", 0.01));

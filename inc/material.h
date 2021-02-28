@@ -115,7 +115,10 @@ class GltfTexture :public Material
             auto prim_coord_hit_n = interp::triangular(hit_p_2d, triangle_2d, normal);
             //TODO: currently return local frame ray.
             auto local_ray = apply(pose.inv(), ray_in);
-            Ray reflected_local_ray(record.prim_coord_hit_p, reflect(local_ray.direction(), prim_coord_hit_n) + 0. * random::unitSphere(record.p.size()));
+            FloatType metalness = 0.1;
+            Ray reflected_local_ray(
+                record.prim_coord_hit_p, 
+                metalness * reflect(local_ray.direction(), prim_coord_hit_n) + (1- metalness) * (prim_coord_hit_n + random::unitSphere(record.p.size())));
             return apply(pose, reflected_local_ray);
         }
 

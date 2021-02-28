@@ -47,8 +47,9 @@ inline Pixel trace(const HitManager& manager, Ray& ray, int depth, std::vector<R
 
         }
         else {
-            std::cout << ".";
-            return Pixel({1, 0, 0});
+            // std::cout << ".";
+            // return Pixel({1, 0, 0});
+            return Pixel({1, 1, 1});
         }
     }
     return skyBox(ray);

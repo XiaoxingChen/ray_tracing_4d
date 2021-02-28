@@ -88,11 +88,11 @@ public:
         }
         else if(mode_ == eMULTITHREADING)
         {
-            int thread_num = std::thread::hardware_concurrency() * 0.9;
+            int thread_num = std::thread::hardware_concurrency() - 1;
             ThreadPool pool(thread_num);
             std::vector< std::future<std::vector<Pixel>> > pool_results;
 
-            int step_len = 10000;
+            int step_len = 1000;
             for(int i = 0; i < ppm_coord.size(); i += step_len)
             {
                 pool_results.emplace_back(

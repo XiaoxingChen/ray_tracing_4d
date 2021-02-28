@@ -13,10 +13,15 @@ class Lambertian :public Material
     public:
         Lambertian(const Pixel& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 1. : fuzz){}
 
-        virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const
+        virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const override
         {
             Vec target = record.p + record.n + fuzz_ * random::unitSphere(record.p.size());
             return Ray(record.p, target - record.p);
+        }
+
+        virtual Ray localFrameScatter(const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const override
+        {
+            return scatter(ray_in, record);
         }
 
     private:

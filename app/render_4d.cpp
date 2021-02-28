@@ -18,7 +18,7 @@ using namespace rtc;
 int main(int argc, char const *argv[])
 {
     size_t dim = 4;
-    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 50}), Vec({640, 480, 1}));
+    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 100}), Vec({640, 480, 64}));
     // auto scene = scene::simple4D_001();
     // auto scene = scene::gltfTetrahedronInBox(dim);
     // auto scene = scene::gltf4DBox();
@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
         .setMode(RenderSample::eMULTITHREADING)
         // .setMode(RenderSample::eSINGLE_RAY)
         // .setMode(RenderSample::eNAIVE)
-        .setRecursionDepth(3)
+        .setRecursionDepth(2)
         .enableRayStack(true)
         .setSampleNum(1)
         .setScene(&scene)
