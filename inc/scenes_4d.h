@@ -245,23 +245,25 @@ inline AcceleratedHitManager gltfBoxFrame4D()
         Rotation::fromPlaneAngle(Vec({0,1,0,0}),Vec({0,0,0,1}), M_PI_2),
         Rotation::fromPlaneAngle(Vec({0,0,1,0}),Vec({0,0,0,1}), M_PI_2)};
 
+    auto frame_tf = RigidTrans(Vec({-.8,0,0,0}));
 
-    // size_t axis = 0;
-    // uint8_t i = 0;
-
-    // std::cout << (global_pose * RigidTrans(offset_table(Col(i)), rots.at(axis))).asMatrix().str() << std::endl;
     for(size_t axis = 0; axis < dim; axis++)
     {
         for(uint8_t i = 0; i < 8; i++)
         {
-            auto tf = RigidTrans(offset_table(Col(i)), Rotation::Identity(dim));
-            tf = RigidTrans(Vec::zeros(dim), rots.at(axis)) * tf;
+            auto tf = RigidTrans(offset_table(Col(i)).asVector());
+            tf = RigidTrans(rots.at(axis)) * tf;
             buffer->push_back(loadTexturelessPrism4D(
-                global_pose * tf,
-                // global_pose,
+                global_pose * frame_tf * tf,
                 "assets/box/box.gltf", cube_h, frame_width));
         }
     }
+
+    auto sphere_tf = global_pose * RigidTrans(Vec({1.2,0,0,0}));
+
+    buffer->push_back(Hittable(
+        RigidBody::choose(RigidBody::SPHERE, sphere_tf.translation(), sphere_tf.rotation(), {1}),
+        Material::choose(Material::METAL, Pixel({0.5, 0.5, 0.5})), "black ball"));
 
     AcceleratedHitManager manager;
     auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));

@@ -17,6 +17,13 @@ public:
         if(p.size() != r.dim())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
+
+    RigidTransform(const Rotation& r): translation_(Vector<DType>::zeros(r.dim())), rotation_(r)
+    {}
+
+    RigidTransform(const Translation& p): translation_(p), rotation_(Rotation::Identity(p.size()))
+    {}
+
     using ThisType = RigidTransform;
 
     ThisType operator*(const ThisType& rhs) const { return ThisType(apply(rhs.translation_) , rotation_ * rhs.rotation_); }
