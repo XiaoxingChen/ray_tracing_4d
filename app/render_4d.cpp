@@ -18,9 +18,10 @@ using namespace rtc;
 int main(int argc, char const *argv[])
 {
     size_t dim = 4;
-    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 60}), Vec({640, 480, 32}));
+    Camera cam(Vec(dim), Rotation::Identity(dim), Vec({500, 500, 60}), Vec({640, 480, 1}));
     // auto scene = scene::simple4D_001();
-    auto scene = scene::gltfBoxFrame4D();
+    // auto scene = scene::gltfBoxFrame4D();
+    auto scene = scene::gltf4DInsideDroplet();
     // auto scene = scene::gltfTetrahedronInBox(dim);
     // auto scene = scene::gltf4DBox();
     // auto scene = scene::gltf4DBoxPrism();

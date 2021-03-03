@@ -273,6 +273,58 @@ inline AcceleratedHitManager gltfBoxFrame4D()
     return manager;
 }
 
+inline AcceleratedHitManager gltf4DInsideDroplet()
+{
+    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    size_t dim = 4;
+
+    auto pose = RigidTrans(Vec({-2,0,0,6}),
+        Rotation::fromPlaneAngle(Vec({1,1,0,0}),Vec({0,0,0,1}), 0.9*M_PI_4));
+
+    {
+        tinygltf::Model model;
+
+        loadModel(model, "assets/sphere/sphere.gltf");
+        auto tf_sphere = RigidTrans(Vec({2.8,0,0}));
+        FloatType scale_sphere = 0.5;
+        auto vertex_buffer_in = *loadMeshAttributes(model, 0, "POSITION");
+        vertex_buffer_in = tf_sphere.apply(vertex_buffer_in * scale_sphere);
+        auto norm_buffer_in = *loadMeshAttributes(model, 0, "NORMAL");
+        auto vertex_index_buffer_in = loadMeshIndices(model, 0);
+
+        loadModel(model, "build/assets/droplet.gltf");
+        auto vertex_buffer_out = *loadMeshAttributes(model, 0, "POSITION");
+        auto norm_buffer_out = *loadMeshAttributes(model, 0, "NORMAL");
+        auto vertex_index_buffer_out = loadMeshIndices(model, 0);
+        vertex_index_buffer_out += vertex_buffer_in.shape(1);
+
+        auto vertex_buffer = std::make_shared<Mat>(std::move(hstack(vertex_buffer_in, vertex_buffer_out)));
+        auto norm_buffer = hstack(norm_buffer_in, norm_buffer_out);
+        auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(hstack(vertex_index_buffer_in, vertex_index_buffer_out)));
+
+        auto p_texture_buffer = std::make_shared<TextureBuffer>();
+        p_texture_buffer->base_texture = Matrix<Pixel>({1,1});
+        p_texture_buffer->base_texture(0,0) = Pixel({0.8, 0.8, 0.8});
+        p_texture_buffer->normal = std::move(norm_buffer);
+
+        auto p_texture = std::shared_ptr<Material>(
+            new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
+
+        buffer->push_back(Hittable(
+            RigidBody::createPrism(pose.translation(), pose.rotation(), 0.1,
+                vertex_buffer, vertex_index_buffer),
+            p_texture));
+    }
+
+    AcceleratedHitManager manager;
+    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    root->split(1, /*verbose*/ false);
+    manager.setRoot(root);
+
+    return manager;
+
+}
+
 } // namespace scene
 } // namespace rtc
 
