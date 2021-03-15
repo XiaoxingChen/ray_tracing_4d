@@ -38,6 +38,35 @@ This repo extends a simplest 3-dimensional ray tracing engine(CPU implementation
 </tr>
 </table>
 
+<h2>4D Objects</h2>
+<img src="https://user-images.githubusercontent.com/16934019/111184709-30a7a000-85ec-11eb-9b7a-a66c51b0505f.gif">
+<p>A 4D cube frame and a 4d sphere.</p>
+
+<h2>Installation and Run</h2>
+
+<p>clone code</p>
+
+```
+git clone https://github.com/XiaoxingChen/ray_tracing_4d
+cd ray_tracing_4d
+git submodule init
+git submodule update
+```
+
+<p>Download assets(<code>wget</code> was used, doesn't work on Windows) and render a 3D scene.
+If you use Windows, please download the assets in <code>lfs.yaml</code> and put them in <code>build/assets/</code>.</p>
+
+```
+./build.py --sync-lfs
+```
+
+<p>Render 3D, 4D scenes</p>
+
+```
+./build.py --run app/render_3d
+./build.py --run app/render_4d
+```
+
 <h2>References</h2>
 <ol>
     <li> <a href="https://miegakure.com/">Miegakure</a> </li>

@@ -178,6 +178,9 @@ def run(build_script_folder=os.path.abspath(os.path.dirname(__file__))):
         shutil.rmtree(Dir.build_root, ignore_errors=True)
         quit()
 
+    if args.sync_lfs:
+        WebDrive.sync(Dir.lfs_yaml, Dir.lfs_asset)
+
     build_target_cnt = 0
     for target in targets:
         target.updateFromArgs(args)
@@ -193,9 +196,6 @@ def run(build_script_folder=os.path.abspath(os.path.dirname(__file__))):
 
     if args.plot:
         os.system('python3 {} {}'.format(Dir.plot_script, args.plot[0]))
-
-    if args.sync_lfs:
-        WebDrive.sync(Dir.lfs_yaml, Dir.lfs_asset)
 
 
 if __name__ == "__main__":
