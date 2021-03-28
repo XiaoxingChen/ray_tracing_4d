@@ -7,6 +7,7 @@
 #include "base_type.h"
 #include "accessor.h"
 #include "stb_image.h"
+#include "stb_image_write.h"
 
 
 namespace rtc
@@ -130,6 +131,70 @@ imread(const std::string& filename)
 inline Matrix<Pixel> loadImage(const std::string& filename)
 {
     return imread<float, 3>(filename);
+}
+
+inline std::string getFileExt(const std::string& s)
+{
+   size_t i = s.rfind('.', s.length());
+   if (i != std::string::npos) {
+      return(s.substr(i+1, s.length() - i));
+   }
+
+   return("");
+}
+
+template<typename DType, size_t NChannel>
+inline typename std::enable_if<std::is_same<DType, uint8_t>::value, std::vector<uint8_t>>::type
+serialize(const Matrix<PixelType<DType, NChannel>>& img)
+{
+    std::vector<uint8_t> src_mem(NChannel * img.shape(0) * img.shape(1));
+    img.traverse([&](auto i, auto j){
+        for(size_t k = 0; k < NChannel; k++)
+        {
+            src_mem.at(i * img.shape(1) * NChannel + j * NChannel + k) = img(i,j)(k);
+        }
+    });
+    return src_mem;
+}
+
+template<typename DType, size_t NChannel>
+inline typename std::enable_if<std::is_same<DType, float>::value, std::vector<uint8_t>>::type
+serialize(const Matrix<PixelType<DType, NChannel>>& img)
+{
+    std::vector<uint8_t> src_mem(NChannel * img.shape(0) * img.shape(1));
+    img.traverse([&](auto i, auto j){
+        for(size_t k = 0; k < NChannel; k++)
+        {
+            src_mem.at(i * img.shape(1) * NChannel + j * NChannel + k) = quantizeToU8(img(i,j)(k));
+        }
+    });
+    return src_mem;
+}
+
+
+template<typename DType, size_t NChannel>
+void imwrite(const std::string& filename, const Matrix<PixelType<DType, NChannel>>& img)
+{
+    size_t height = img.shape(0);
+    size_t width = img.shape(1);
+    std::string ext = getFileExt(filename);
+
+    auto src_mem = serialize(img);
+
+    if(ext == std::string("png"))
+    {
+        stbi_write_png(filename.c_str(), img.shape(1), img.shape(0), NChannel, src_mem.data(), img.shape(1) * NChannel);
+    }else if(ext == std::string("bmp"))
+    {
+        stbi_write_bmp(filename.c_str(), img.shape(1), img.shape(0), NChannel, src_mem.data());
+    }else if(ext == std::string("jpg"))
+    {
+        stbi_write_jpg(filename.c_str(), img.shape(1), img.shape(0), NChannel, src_mem.data(), 100);
+    }else
+    {
+        std::cout << "format " << ext << " not supported" << std::endl;
+    }
+
 }
 
 } // namespace rtc

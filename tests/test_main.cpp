@@ -10,6 +10,7 @@
 #include "test_interp.h"
 #include "test_rigid_transform.h"
 #include "test_bazier.h"
+#include "test_pixel.h"
 
 
 int main(int argc, char const *argv[])
@@ -17,6 +18,7 @@ int main(int argc, char const *argv[])
   testAABB();
   testRay();
   testLinearAlgebra();
+  testPixel();
   testRotation();
   testInterpolation();
   testRigidBody();
