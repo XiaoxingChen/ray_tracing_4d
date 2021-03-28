@@ -11,6 +11,7 @@
 #include "test_rigid_transform.h"
 #include "test_bazier.h"
 #include "test_pixel.h"
+#include "test_image_processing.h"
 
 
 int main(int argc, char const *argv[])
@@ -28,6 +29,7 @@ int main(int argc, char const *argv[])
   testBvh();
   testRigidTransform();
   testBazier();
+  testImageProcessing();
   std::cout << "done" << std::endl;
   return 0;
 }
