@@ -35,8 +35,27 @@ inline void testPixel()
             std::cout << img.shape(0) << "," << img.shape(1) << std::endl;
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
         }
-
     }
+    {
+        //4,17,33
+        auto img = imread<uint8_t, 3>("assets/sky_box/star_night.jpeg");
+        auto px = img(0,0);
+        if(px != PixelType<uint8_t, 3>({4,17,33}))
+        {
+            std::cout << px.str() << std::endl;
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        }
+
+        // px = img(263,475);
+        px = img(475, 263);
+        if(px != PixelType<uint8_t, 3>({50,66,89}))
+        {
+            std::cout << (uint32_t)px(0) << "," << (uint32_t)px(1) << "," << (uint32_t)px(2) << std::endl;
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        }
+    }
+
+    //263 475 50 66 89
 }
 
 inline void testOrthogonalComplement()

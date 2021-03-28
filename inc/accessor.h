@@ -64,6 +64,15 @@ public:
     // a base class assignment operator is always hidden by the copy assignment operator of the derived class.
     void operator = (const DeriveType& rhs) { /*none sense*/ }
 
+    bool operator == (const DeriveType& rhs) const
+    {
+        bool ret(true);
+        traverse([&](size_t i) { ret &= (at(i) == rhs(i));});
+        return ret;
+    }
+
+    bool operator != (const DeriveType& rhs) const {return !((*this) == rhs);}
+
 
 };
 
