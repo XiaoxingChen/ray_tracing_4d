@@ -1,3 +1,6 @@
 [submodule "third_party/tinygltf"]
 	path = third_party/tinygltf
 	url = https://github.com/syoyo/tinygltf
+[submodule "third_party/mxm"]
+	path = third_party/mxm
+	url = https://github.com/XiaoxingChen/mxm
