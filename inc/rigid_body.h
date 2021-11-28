@@ -7,16 +7,23 @@
 #include <memory>
 #include <string>
 #include "mxm/geometry_primitive.h"
+#include "mxm/spatial_aabb.h"
+
 using namespace mxm;
 namespace rtc
 {
 
 // class HitRecordPtr;
 class AxisAlignedBoundingBox;
-using AABB = AxisAlignedBoundingBox;
+using AABB = mxm::AxisAlignedBoundingBox;
 
+template<size_t DIM>
 class RigidBody;
-using RigidBodyPtr = std::shared_ptr<RigidBody>;
+
+template<size_t DIM>
+using RigidBodyPtr = std::shared_ptr<RigidBody<DIM>>;
+
+template<size_t DIM>
 class RigidBody
 {
     public:
@@ -61,20 +68,22 @@ class RigidBody
         // virtual Vec center() const = 0;
         virtual std::string str() const {return "";};
         virtual AABB aabb() const = 0;
-        virtual size_t dim() const  = 0;
-        virtual RigidTrans pose() const {
+        constexpr size_t dim() const {return DIM;}
+        virtual RigidTransform<FloatType,DIM> pose() const {
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-            return RigidTrans::Identity(dim());
+            return RigidTransform<FloatType,DIM>::identity(dim());
         }
 
-        static RigidBodyPtr choose(Types type, size_t dimension, const std::vector<FloatType>& args);
-        static RigidBodyPtr choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args);
-        static RigidBodyPtr createPrimitiveMesh(const Vec& position, const Rotation& orientation, std::shared_ptr<Mat>& vertices, std::shared_ptr<Matrix<size_t>>& indices);
-        static RigidBodyPtr createPolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx=0);
-        static RigidBodyPtr createPrism(const Vec& p, const Rotation& r, FloatType h, std::shared_ptr<Mat>& vertex_buffer, std::shared_ptr<Matrix<size_t>>& vertex_index_buffer);
+        static RigidBodyPtr<DIM> choose(Types type, size_t dimension, const std::vector<FloatType>& args);
+        static RigidBodyPtr<DIM> choose(Types type, const Vec& position, const Rotation<FloatType,DIM>& orientation, const std::vector<FloatType>& args);
+        static RigidBodyPtr<DIM> createPrimitiveMesh(const Vec& position, const Rotation<FloatType,DIM>& orientation, std::shared_ptr<Mat>& vertices, std::shared_ptr<Matrix<size_t>>& indices);
+        static RigidBodyPtr<DIM> createPolygonPrimitive(std::shared_ptr<Mat> vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx=0);
+        static RigidBodyPtr<DIM> createPrism(const Vec& p, const Rotation<FloatType,DIM>& r, FloatType h, std::shared_ptr<Mat>& vertex_buffer, std::shared_ptr<Matrix<size_t>>& vertex_index_buffer);
 };
 
-inline RigidBody::HitRecordPtr hitPrimitivePolygon(
+template<size_t DIM>
+typename RigidBody<DIM>::HitRecordPtr
+hitPrimitivePolygon(
     const Ray& ray, std::shared_ptr<Mat> p_vertex_buffer, const std::vector<size_t>& indices)
 {
     size_t dim(indices.size());
@@ -96,14 +105,16 @@ inline RigidBody::HitRecordPtr hitPrimitivePolygon(
 
     Vec norm = primitiveNorm(mat_a, ray);
 
-    auto ret = std::make_shared<RigidBody::HitRecord>(
+    auto ret = std::make_shared<RigidBody<DIM>::HitRecord>(
         intersection_t, ray(intersection_t), norm);
 
     return ret;
 }
 
+
+#if 0
 template<typename DType>
-Matrix<DType> rigidBodyTransform(const Vector<DType>& p, const Rotation& r, const Matrix<DType> vs)
+Matrix<DType> rigidBodyTransform(const Vector<DType>& p, const Rotation<FloatType,DIM>& r, const Matrix<DType> vs)
 {
     if(vs.shape(0) != r.dim())
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -115,6 +126,7 @@ Matrix<DType> rigidBodyTransform(const Vector<DType>& p, const Rotation& r, cons
         ret(Col(i)) += p;
     return ret;
 }
+#endif
 
 } // namespace rtc
 

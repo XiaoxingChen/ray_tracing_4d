@@ -1,7 +1,7 @@
 #if !defined(_PRIMITIVE_MESH_TREE_)
 #define _PRIMITIVE_MESH_TREE_
 
-#include "bounding_volume_hierarchy.h"
+// #include "bounding_volume_hierarchy.h"
 #include <stack>
 #include "mxm/geometry_primitive.h"
 #include <chrono>

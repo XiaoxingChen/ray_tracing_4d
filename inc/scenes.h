@@ -20,16 +20,16 @@ inline HitManager simple2D_001()
     size_t dim = 2;
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({6.5, 10}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({6.5, 10}), Rotation::identity(dim), {1}),
         Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({1.5,13}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({1.5,13}), Rotation::identity(dim), {1}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({4.5,15}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({4.5,15}), Rotation::identity(dim), {1}),
         Material::choose(Material::METAL));
     manager.addHittables(
-    RigidBody::choose(RigidBody::SPHERE, Vec({-100, 30}), Rotation::Identity(dim), {100}),
+    RigidBody::choose(RigidBody::SPHERE, Vec({-100, 30}), Rotation::identity(dim), {100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     return manager;
@@ -42,16 +42,16 @@ inline HitManager simple3D_001()
     size_t dim = 3;
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0, 1, 5}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0, 1, 5}), Rotation::identity(dim), {1}),
         Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({3,-1,7}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({3,-1,7}), Rotation::identity(dim), {1}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({-3,-1,7}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({-3,-1,7}), Rotation::identity(dim), {1}),
         Material::choose(Material::METAL));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0.,-100,30}), Rotation::Identity(dim), {100}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0.,-100,30}), Rotation::identity(dim), {100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     manager.addHittables(
@@ -69,7 +69,7 @@ inline HitManager simple3D_002()
     size_t dim = 3;
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0.,-100,30}), Rotation::Identity(dim), {100}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0.,-100,30}), Rotation::identity(dim), {100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     Mat vertices({3,8}, {0,0,0, 1,0,0, 1,0,1, 0,0,1, 0,1,0, 1,1,0, 1,1,1, 0,1,1}, 1);
@@ -84,7 +84,7 @@ inline HitManager simple3D_002()
     manager.addHittables(
         RigidBody::createPrimitiveMesh(Vec({0, 0, 5}),
             Rotation::fromAxisAngle(Vec({1,0,1}), 0.5),
-            // Rotation::Identity(dim),
+            // Rotation::identity(dim),
             vertices, indices),
         // Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.2}))
             Material::choose(Material::METAL)
@@ -100,16 +100,16 @@ inline AcceleratedHitManager simple3D_003()
     size_t dim = 3;
 
     buffer->push_back(Hittable(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0, -1, 5}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0, -1, 5}), Rotation::identity(dim), {1}),
         Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})), "glass"));
     buffer->push_back(Hittable(
-        RigidBody::choose(RigidBody::SPHERE, Vec({3,1,7}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({3,1,7}), Rotation::identity(dim), {1}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4})), "ball"));
     buffer->push_back(Hittable(
-        RigidBody::choose(RigidBody::SPHERE, Vec({-3,1,7}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({-3,1,7}), Rotation::identity(dim), {1}),
         Material::choose(Material::METAL), "iron ball"));
     buffer->push_back(Hittable(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0.,100,30}), Rotation::Identity(dim), {100}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0.,100,30}), Rotation::identity(dim), {100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})), "ground"));
 
     buffer->push_back(Hittable(
@@ -131,7 +131,7 @@ inline AcceleratedHitManager simple3D_005()
     size_t dim = 3;
 
     buffer->push_back(Hittable(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0,0,4}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0,0,4}), Rotation::identity(dim), {1}),
         Material::choose(Material::METAL), "iron ball"));
 
     AcceleratedHitManager manager;
@@ -266,11 +266,11 @@ inline AcceleratedHitManager gltf3DSphere()
             new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
 
         buffer->push_back(Hittable(
-            RigidBody::createPrimitiveMesh(Vec({-1.2,0,4}), Rotation::Identity(dim) , vertex_buffer, vertex_index_buffer),
+            RigidBody::createPrimitiveMesh(Vec({-1.2,0,4}), Rotation::identity(dim) , vertex_buffer, vertex_index_buffer),
             p_texture));
 
         buffer->push_back(Hittable(
-            RigidBody::createPrimitiveMesh(Vec({1.2,0,4}), Rotation::Identity(dim) , vertex_buffer, vertex_index_buffer),
+            RigidBody::createPrimitiveMesh(Vec({1.2,0,4}), Rotation::identity(dim) , vertex_buffer, vertex_index_buffer),
             p_texture));
     }
 

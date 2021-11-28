@@ -2,7 +2,8 @@
 #define _TEST_REGID_BODY_
 
 #include "rigid_body.h"
-#include "primitive_geometry.h"
+#include "mxm/geometry_primitive.h"
+#include "mxm/string.h"
 #include <iostream>
 
 
@@ -17,7 +18,7 @@ inline void testRectangle2D(int k = 1)
     FloatType angle = M_PI * (0.25 + 0.5 * k);
     std::vector<FloatType> args{3,0, 1,1, 1,0, 0,1, angle};
 
-    auto rect = RigidBody::choose(RigidBody::RECTANGLE, dim, args);
+    auto rect = RigidBody<2>::choose(RigidBody<2>::RECTANGLE, dim, args);
     auto record = rect->hit(ray);
     if(!record)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -32,13 +33,13 @@ inline void testRectangle2D(int k = 1)
     Vec expect_p({3. - sqrt(.5), sqrt(.5)});
     if((record->p - expect_p).norm() > eps() * 10)
     {
-        std::cout << "expect: " << expect_p.str() << ", get: " << record->p.str() << std::endl;
+        std::cout << "expect: " << mxm::to_string(expect_p) << ", get: " << mxm::to_string(record->p) << std::endl;
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
     if((record->n - Vec({-sqrt(.5), sqrt(.5)})).norm() > 10 * eps())
     {
-        std::cout << record->n.str() << std::endl;
+        std::cout << mxm::to_string(record->n) << std::endl;
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 }
@@ -57,29 +58,33 @@ inline void testRectangle3D()
 
     std::vector<FloatType> args{0.,0, 15, 2,2,2, 1,0, 0,1, 0,0, 0};
 
-    auto rect = RigidBody::choose(RigidBody::RECTANGLE, dim, args);
+    auto rect = RigidBody<3>::choose(RigidBody<3>::RECTANGLE, dim, args);
     auto record = rect->hit(ray);
     if(!record)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 }
 
+template<size_t DIM>
+void testSphericalRigidBody()
+{
+    Ray ray(DIM);
+    std::vector<FloatType> args(DIM + 1, 0);
+    args.at(0) = 3;
+    args.at(args.size() - 1) = 1;
+    auto sphere4d = RigidBody<DIM>::choose(RigidBody<DIM>::SPHERE, DIM, args);
+    auto record = sphere4d->hit(ray);
+    if(!record)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+    if(record->t != 2)
+        throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+}
+
 inline void testRigidBody()
 {
-    for(size_t dim = 2; dim < 5; dim++)
-    {
-        {
-            Ray ray(dim);
-            std::vector<FloatType> args(dim + 1, 0);
-            args.at(0) = 3;
-            args.at(args.size() - 1) = 1;
-            auto sphere4d = RigidBody::choose(RigidBody::SPHERE, dim, args);
-            auto record = sphere4d->hit(ray);
-            if(!record)
-                throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-            if(record->t != 2)
-                throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-        }
-    }
+    testSphericalRigidBody<2>();
+    testSphericalRigidBody<3>();
+    testSphericalRigidBody<4>();
+
     for(int k = 0; k < 10; k++)
         testRectangle2D(k);
 
@@ -96,14 +101,14 @@ inline void testIntersectEquation2D()
     Vec expect({sqrt(0.5), .5});
     if((result - expect).norm() > eps())
     {
-        std::cout << result.T().str() << std::endl;
+        std::cout << mxm::to_string(result.T()) << std::endl;
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 }
 
 inline void testIntersectEquationXD(size_t dim)
 {
-    Mat line_seg(Mat::Identity(dim));
+    Mat line_seg(Mat::identity(dim));
     Ray ray(Vec::zeros(dim), Vec::ones(dim));
 
     Vec result(intersectEquation(line_seg, ray));
@@ -111,7 +116,7 @@ inline void testIntersectEquationXD(size_t dim)
     expect(0) = sqrt(expect(0));
     if((result - expect).norm() > eps())
     {
-        std::cout << result.T().str() << std::endl;
+        std::cout << mxm::to_string(result.T()) << std::endl;
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 }

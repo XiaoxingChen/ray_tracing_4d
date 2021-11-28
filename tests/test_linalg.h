@@ -136,7 +136,7 @@ inline void testQRSolve()
 
 inline Mat testMatRefTransposeReturn(size_t dim)
 {
-    return Mat::Identity(dim).T();
+    return Mat::identity(dim).T();
 }
 
 inline void testMatRef()
@@ -192,7 +192,7 @@ inline void testMatRef()
     }
 
     {
-        Mat mat(Mat::Identity(3));
+        Mat mat(Mat::identity(3));
         auto v = mat(Col(1));
         auto vt = v.T();
         if((vt - Vec({0,1,0})).norm() > eps())
@@ -200,7 +200,7 @@ inline void testMatRef()
     }
 
     {
-        Mat mat(Mat::Identity(3));
+        Mat mat(Mat::identity(3));
         auto b = mat(Col(1));
         auto v = b.asVector();
 
@@ -278,7 +278,7 @@ inline void testLinearAlgebra()
     if((u1 - v1 * sqrt(1./3)).norm() > eps())
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
-    if(fabs(Mat::Identity(3).det() - 1.) > eps())
+    if(fabs(Mat::identity(3).det() - 1.) > eps())
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 
     // traverse(m1, [&](size_t i, size_t j){std::cout << i << std::endl;});

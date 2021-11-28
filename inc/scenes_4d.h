@@ -22,10 +22,10 @@ inline HitManager simple4D_001()
     size_t dim = 4;
 
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({5, 0, 0, 18}), Rotation::Identity(dim), {3}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({5, 0, 0, 18}), Rotation::identity(dim), {3}),
         Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})));
     manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0.,105,0, 30}), Rotation::Identity(dim), {100}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0.,105,0, 30}), Rotation::identity(dim), {100}),
         Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
 
     Rotation rec_ori(Rotation::fromPlaneAngle(Vec({1,0,0,0}), Vec({0,0,0,1}), M_PI / 3));
@@ -48,7 +48,7 @@ inline AcceleratedHitManager simple4D_002()
     size_t dim = 4;
 
     buffer->push_back(Hittable(
-        RigidBody::choose(RigidBody::SPHERE, Vec({0,0,0,4}), Rotation::Identity(dim), {1}),
+        RigidBody::choose(RigidBody::SPHERE, Vec({0,0,0,4}), Rotation::identity(dim), {1}),
         Material::choose(Material::METAL), "iron ball"));
 
     AcceleratedHitManager manager;
@@ -240,7 +240,7 @@ inline AcceleratedHitManager gltfBoxFrame4D()
     std::cout << offset_table.str() << std::endl;
 
     std::vector<Rotation> rots{
-        Rotation::Identity(dim),
+        Rotation::identity(dim),
         Rotation::fromPlaneAngle(Vec({1,0,0,0}),Vec({0,0,0,1}), M_PI_2),
         Rotation::fromPlaneAngle(Vec({0,1,0,0}),Vec({0,0,0,1}), M_PI_2),
         Rotation::fromPlaneAngle(Vec({0,0,1,0}),Vec({0,0,0,1}), M_PI_2)};
