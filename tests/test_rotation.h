@@ -79,7 +79,7 @@ inline void rotationTestCase4()
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 }
-
+using UnitVec = Vec;
 inline void rotationTestDeterminant()
 {
     for(size_t i = 0; i < 10; i++)

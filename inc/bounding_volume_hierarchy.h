@@ -1,12 +1,13 @@
 #if !defined(_BOUNDING_VOLUME_HIERARCHY_H_)
 #define _BOUNDING_VOLUME_HIERARCHY_H_
 
-#include "axis_aligned_bounding_box.h"
+#include "mxm/spatial_aabb.h"
 #include <vector>
 #include <memory>
 #include "hittable.h"
 #include <algorithm>
 
+using namespace mxm;
 
 namespace rtc
 {
@@ -168,7 +169,7 @@ private:
     }
 
 private:
-    AABB aabb_;
+    mxm::AABB aabb_;
     std::vector<NodePtr> children_;
     bool is_leaf_;
     HittableBufferPtr hittable_buffer_;

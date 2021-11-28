@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "linalg.h"
-#include "pixel.h"
+#include "mxm/cv_pixel.h"
 #include "accessor.h"
 
 
@@ -255,7 +255,7 @@ inline void testComplexBase()
     if((a * b - expected).norm() > eps())
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 }
-
+using UnitVec = Vec;
 inline void testLinearAlgebra()
 {
     Mat m1({3,3},{1,1,1, 2,2,2, 3,3,3});

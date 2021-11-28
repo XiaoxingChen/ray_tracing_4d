@@ -1,12 +1,12 @@
 #ifndef __HISTTABLE_H__
 #define __HISTTABLE_H__
-#include "ray.h"
+#include "mxm/geometry_ray.h"
 #include <memory>
 #include <vector>
 #include "material.h"
 #include "rigid_body.h"
 // #include "bounding_volume_hierarchy.h"
-
+using namespace mxm;
 
 namespace rtc
 {

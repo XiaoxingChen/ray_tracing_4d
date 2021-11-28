@@ -4,12 +4,12 @@
 #include <string>
 // #include "vec3.h"
 #include <array>
-#include "base_type.h"
+#include "mxm/common.h"
 #include <fstream>
 #include "linalg.h"
 #include <iostream>
-#include "pixel.h"
-
+#include "mxm/cv_pixel.h"
+using namespace mxm;
 namespace rtc{
 
 using PixelCoordinates = std::vector<std::vector<size_t>>;

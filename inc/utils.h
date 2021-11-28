@@ -4,15 +4,15 @@
 #include "io.h"
 #include <vector>
 #include <iostream>
-#include "camera.h"
-#include "random_factory.h"
+#include "mxm/model_camera.h"
+#include "mxm/random.h"
 #include "ThreadPool.h"
 #include "material.h"
 #include "rigid_body.h"
 #include "hittable.h"
 #include "ray_tracer.h"
 #include "scenes.h"
-
+using namespace mxm;
 namespace rtc
 {
 std::vector<Pixel> threadFunc(

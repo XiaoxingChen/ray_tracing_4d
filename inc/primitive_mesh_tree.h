@@ -3,9 +3,9 @@
 
 #include "bounding_volume_hierarchy.h"
 #include <stack>
-#include "primitive_geometry.h"
+#include "mxm/geometry_primitive.h"
 #include <chrono>
-
+using namespace mxm;
 
 namespace rtc
 {

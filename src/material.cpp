@@ -1,9 +1,9 @@
 // #include "vec3.h"
-#include "ray.h"
+#include "mxm/geometry_ray.h"
 #include "hittable.h"
-#include "random_factory.h"
-#include "pixel.h"
-
+#include "mxm/random.h"
+#include "mxm/cv_pixel.h"
+using namespace mxm;
 namespace rtc
 {
 const float Material::DEFUALT_FUZZ = -1;
@@ -15,7 +15,7 @@ class Lambertian :public Material
 
         virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const override
         {
-            Vec target = record.p + record.n + fuzz_ * random::unitSphere(record.p.size());
+            Vec target = record.p + record.n + fuzz_ * random::unitSphere<float>(record.p.size());
             return Ray(record.p, target - record.p);
         }
 
@@ -36,7 +36,7 @@ class Metal :public Material
         virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const
         {
             Vec reflected = reflect(ray_in.direction(), record.n);
-            return Ray(record.p, reflected + fuzz_ * random::unitSphere(record.p.size()));
+            return Ray(record.p, reflected + fuzz_ * random::unitSphere<float>(record.p.size()));
         }
     private:
         float_t fuzz_;

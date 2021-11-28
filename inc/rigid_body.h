@@ -1,13 +1,13 @@
 #if !defined(__RIGID_BODY_H__)
 #define __RIGID_BODY_H__
-#include "ray.h"
-#include "rotation.h"
-#include "rigid_transform.h"
+#include "mxm/geometry_ray.h"
+#include "mxm/rotation.h"
+#include "mxm/rigid_transform.h"
 
 #include <memory>
 #include <string>
-#include "primitive_geometry.h"
-
+#include "mxm/geometry_primitive.h"
+using namespace mxm;
 namespace rtc
 {
 
@@ -29,7 +29,7 @@ class RigidBody
             HitRecord(size_t dim=3) :t(0), p(dim), n(dim){}
             float_t t; //hit t
             Vec p; //hit point
-            UnitVec n; //normal vector
+            Vec n; //normal vector
             size_t prim_idx;
             Vec prim_coord_hit_p;
         };

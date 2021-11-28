@@ -2,17 +2,17 @@
 #define _MATERIAL_H_
 
 // #include "vec3.h"
-#include "pixel.h"
-#include "linalg.h"
-#include "ray.h"
-#include "random_factory.h"
+#include "mxm/cv_pixel.h"
+#include "mxm/linalg.h"
+#include "mxm/geometry_ray.h"
+#include "mxm/random.h"
 #include <memory>
-#include "primitive_geometry.h"
-#include "interpolation.h"
+#include "mxm/geometry_primitive.h"
+#include "mxm/interpolation.h"
 #include <iostream>
 #include "rigid_body.h"
 
-
+using namespace mxm;
 namespace rtc
 {
 // class HitRecord;
@@ -50,8 +50,8 @@ private:
     Pixel albedo_;
 };
 using MaterialPtr = std::shared_ptr<Material>;
-
-inline Vec reflect(VecIn in, const UnitVec& norm)
+using UnitVec = Vec;
+inline Vec reflect(const Vec& in, const UnitVec& norm)
 { return in - norm * 2 * in.dot(norm); }
 
 inline std::shared_ptr<Vec> refract(const UnitVec& dir_in, const UnitVec& normal, float_t ni_over_nt)
@@ -95,14 +95,14 @@ class GltfTexture :public Material
 
         virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const override
         {
-            return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere(record.p.size()));
+            return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));
         }
 
         virtual Ray localFrameScatter(
             const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const override
         {
             if(record.prim_idx >= vertex_indices_->shape(1))
-                return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere(record.p.size()));
+                return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));
 
             Mat triangle = getPrimitive(*vertex_buffer_, *vertex_indices_, record.prim_idx);
             Mat normal = getPrimitive(tex_buffer_->normal, *vertex_indices_, record.prim_idx);
@@ -117,8 +117,8 @@ class GltfTexture :public Material
             auto local_ray = apply(pose.inv(), ray_in);
             FloatType metalness = 0.1;
             Ray reflected_local_ray(
-                record.prim_coord_hit_p, 
-                metalness * reflect(local_ray.direction(), prim_coord_hit_n) + (1- metalness) * (prim_coord_hit_n + random::unitSphere(record.p.size())));
+                record.prim_coord_hit_p,
+                metalness * reflect(local_ray.direction(), prim_coord_hit_n) + (1- metalness) * (prim_coord_hit_n + random::unitSphere<float>(record.p.size())));
             return apply(pose, reflected_local_ray);
         }
 

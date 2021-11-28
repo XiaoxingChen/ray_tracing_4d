@@ -1,13 +1,13 @@
 #include "rigid_body.h"
-#include "rotation.h"
-#include "axis_aligned_bounding_box.h"
+#include "mxm/rotation.h"
+#include "mxm/spatial_aabb.h"
 #include "bounding_volume_hierarchy.h"
 #include "primitive_mesh_tree.h"
 // #include "rigid_transform.h"
 
 #include <memory>
 
-
+using namespace mxm;
 
 namespace rtc
 {
@@ -393,7 +393,7 @@ RigidBody::HitRecordPtr Prism::hit(const Ray& ray) const
     }
     #endif
 
-    RigidBodyPtr RigidBody::choose(Types type, VecIn position, const Rotation& orientation, const std::vector<FloatType>& args)
+    RigidBodyPtr RigidBody::choose(Types type, const Vec& position, const Rotation& orientation, const std::vector<FloatType>& args)
     {
         if(position.size() != orientation.dim())
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));

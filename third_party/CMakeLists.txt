@@ -7,3 +7,4 @@ target_include_directories(tinygltf INTERFACE ${TINYGLTF_DIR})
 # mxm
 set(BUILD_TEST OFF)
 add_subdirectory(mxm)
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/mxm/inc)

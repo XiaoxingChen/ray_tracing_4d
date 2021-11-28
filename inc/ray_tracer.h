@@ -5,8 +5,8 @@
 #include "material.h"
 #include "rigid_body.h"
 #include <iostream>
-#include "interpolation.h"
-
+#include "mxm/interpolation.h"
+using namespace mxm;
 namespace rtc
 {
 

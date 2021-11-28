@@ -3,10 +3,11 @@
 
 #include <iostream>
 #include <map>
-#include "linalg.h"
-#include "pixel.h"
+#include "mxm/linalg.h"
+#include "mxm/cv_pixel.h"
 #include "tiny_gltf.h"
 using namespace rtc;
+using namespace mxm;
 
 inline bool loadModel(tinygltf::Model& model, const std::string& filename)
 {

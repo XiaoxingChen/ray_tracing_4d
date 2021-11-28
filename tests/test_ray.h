@@ -1,7 +1,7 @@
 #if !defined(_TEST_RAY_H_)
 #define _TEST_RAY_H_
 
-#include "ray.h"
+#include "mxm/geometry_ray.h"
 using namespace rtc;
 
 inline void testRay()

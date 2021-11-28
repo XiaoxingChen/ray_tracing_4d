@@ -7,9 +7,9 @@
 #include "bounding_volume_hierarchy.h"
 #include "gltf_utils.h"
 #include "primitive_mesh_tree.h"
-#include "rigid_transform.h"
+#include "mxm/rigid_transform.h"
 
-
+using namespace mxm;
 namespace rtc
 {
 

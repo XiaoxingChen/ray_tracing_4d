@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "linalg.h"
-#include "pixel.h"
+#include "mxm/cv_pixel.h"
 #include "accessor.h"
 
 using namespace rtc;
