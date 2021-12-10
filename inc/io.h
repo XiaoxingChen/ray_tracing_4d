@@ -6,7 +6,7 @@
 #include <array>
 #include "mxm/common.h"
 #include <fstream>
-#include "linalg.h"
+#include "mxm/linalg.h"
 #include <iostream>
 #include "mxm/cv_pixel.h"
 using namespace mxm;

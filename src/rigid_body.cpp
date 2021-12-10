@@ -24,7 +24,7 @@ namespace rtc
             Sphere(size_t dimension=3)
                 :center_({0,0,0}), radius_(2){}
 
-            virtual typename RigidBody<DIM>::HitRecordPtr hit(const Ray& ray) const
+            virtual RigidBodyHitRecordPtr hit(const Ray& ray) const override
             {
                 Vec oc = center_ - ray.origin();
 
@@ -40,15 +40,15 @@ namespace rtc
                     t += sqrt(radius_ * radius_ - dist * dist);
 
                 if (!ray.valid(t)) return nullptr;
-                return std::make_shared<typename RigidBody<DIM>::HitRecord>(t, ray(t), ray(t) - center_);
+                return std::make_shared<RigidBodyHitRecord>(t, ray(t), ray(t) - center_);
             }
-            virtual std::string str() const
+            virtual std::string str() const override
             {
                 return std::string("c: ") + std::to_string(center_(0)) + ", " + std::to_string(center_(1)) + ", " + std::to_string(center_(2));
             }
 
             // virtual Vec center() const { return center_; }
-            virtual AABB aabb() const
+            virtual AABB aabb() const override
             {
                 return AABB(center_ - radius_, center_ + radius_);
             }
@@ -74,7 +74,7 @@ namespace rtc
             Rectangle(size_t dim=3)
                 :center_(Vec::zeros(dim)), radius_(Vec::ones(dim)*.5), orientation_(Rotation<FloatType,DIM>::identity()){}
 
-            virtual typename RigidBody<DIM>::HitRecordPtr hit(const Ray& ray) const
+            virtual RigidBodyHitRecordPtr hit(const Ray& ray) const
             {
                 Ray moved_ray(
                     orientation_.inv().apply(ray.origin() - center_),
@@ -83,7 +83,7 @@ namespace rtc
                 bool hit = (t_in_out[0] < t_in_out[1]) && (ray.valid(t_in_out[0]) || ray.valid(t_in_out[1]));
                 if(!hit) return nullptr;
 
-                auto p_record = std::make_shared<typename RigidBody<DIM>::HitRecord>(ray.origin().size());
+                auto p_record = std::make_shared<RigidBodyHitRecord>(ray.origin().size());
                 #if 0
                 if(ray.valid(t_in_out[0]))
                 {
@@ -165,7 +165,7 @@ public:
         tree_.build(1, /* verbose */ false);
     }
 
-    virtual typename RigidBody<DIM>::HitRecordPtr hit(const Ray& ray) const
+    virtual RigidBodyHitRecordPtr hit(const Ray& ray) const
     {
 #if 0
         Ray local_ray(pose_.inv().apply(ray.origin()), pose_.rotation().inv().apply(ray.direction()));
@@ -214,7 +214,7 @@ public:
         return ret;
     }
 
-    virtual typename RigidBody<DIM>::HitRecordPtr hit(const Ray& ray) const
+    virtual RigidBodyHitRecordPtr hit(const Ray& ray) const
     {
         auto p_record = hitPrimitivePolygon(ray, p_vertex_buffer_, indices());
         if(p_record)
@@ -225,7 +225,7 @@ public:
         return p_record;
     }
 
-    virtual void multiHit(const Ray& ray, std::vector<typename RigidBody<DIM>::HitRecordPtr>& records) const
+    virtual void multiHit(const Ray& ray, std::vector<RigidBodyHitRecordPtr>& records) const
     {
         records.push_back(hitPrimitivePolygon(ray, p_vertex_buffer_, indices()));
     }
@@ -262,7 +262,7 @@ public:
 
     using RigidBody<DIM>::dim;
 
-    virtual typename RigidBody<DIM>::HitRecordPtr hit(const Ray& ray) const;
+    virtual RigidBodyHitRecordPtr hit(const Ray& ray) const;
 
     virtual AABB aabb() const { return aabb_; }
 
@@ -298,7 +298,7 @@ Prism<DIM>::Prism(const Vec& p, const Rotation<FloatType,DIM>& r, FloatType h,
 }
 
 template<size_t DIM>
-typename RigidBody<DIM>::HitRecordPtr
+RigidBodyHitRecordPtr
 Prism<DIM>::hit(const Ray& ray) const
 {
     size_t h_axis = dim() - 1;
@@ -356,7 +356,7 @@ Prism<DIM>::hit(const Ray& ray) const
         if(h_hit_t_min < records.at(i).t && records.at(i).t < h_hit_t_max && local_ray.valid(records.at(i).t))
         {
             Vec local_norm = Vec::zeros(dim());
-            local_norm.setBlock(0,0, records.at(i).n);
+            // local_norm.setBlock(0,0, records.at(i).n);
             result->n = orientation_.apply(local_norm);
 
             result->t = records.at(i).t;
@@ -395,7 +395,7 @@ Prism<DIM>::hit(const Ray& ray) const
         if(type == RigidBody::RECTANGLE)
         {
             Mat plane({dimension,2}, std::vector<FloatType>(args.begin() + 2*dimension, args.begin() + 4*dimension));
-            return std::make_shared<Rectangle>(
+            return std::make_shared<Rectangle<DIM>>(
                 std::vector<FloatType>(args.begin(), args.begin() + dimension), //center
                 std::vector<FloatType>(args.begin() + dimension, args.begin() + 2*dimension), //radius
                 Rotation<FloatType,DIM>::fromPlaneAngle(plane(Col(0)), plane(Col(1)), args.back())
@@ -405,6 +405,10 @@ Prism<DIM>::hit(const Ray& ray) const
 
         return std::make_shared<Sphere<DIM>>();
     }
+
+    template RigidBodyPtr<2> RigidBody<2>::choose(Types type, size_t dimension, const std::vector<FloatType>& args);
+    template RigidBodyPtr<3> RigidBody<3>::choose(Types type, size_t dimension, const std::vector<FloatType>& args);
+    template RigidBodyPtr<4> RigidBody<4>::choose(Types type, size_t dimension, const std::vector<FloatType>& args);
     #endif
 
     template<size_t DIM>
@@ -453,5 +457,9 @@ Prism<DIM>::hit(const Ray& ray) const
     {
         return std::make_shared<Prism>(p, r, h, vertex_buffer, vertex_index_buffer);
     }
+
+// template<> class RigidBody<2>;
+// template<> class RigidBody<3>;
+// template<> class RigidBody<4>;
 
 } // namespace rtc

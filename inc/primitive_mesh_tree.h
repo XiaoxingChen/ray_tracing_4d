@@ -46,7 +46,7 @@ public:
     Mat primitive(size_t idx) const { return getPrimitive(*vertex_buffer_, *vertex_index_buffer_, idx); }
 
     size_t multiHit(const Ray& ray) const;
-    std::vector<RigidBody::HitRecord> hit(const Ray& ray, HitType hit_type) const;
+    std::vector<RigidBodyHitRecord> hit(const Ray& ray, HitType hit_type) const;
 
     // const AABB& aabb() const { return node_buffer_.at(0).aabb; }
     const Mat & vertexBuffer() const { return *vertex_buffer_; }
@@ -198,9 +198,9 @@ inline size_t PrimitiveMeshTree::multiHit(const Ray& ray) const
     auto records = hit(ray, eMultiHit);
     return records.size();
 }
-inline std::vector<RigidBody::HitRecord> PrimitiveMeshTree::hit(const Ray& ray_in, HitType hit_type) const
+inline std::vector<RigidBodyHitRecord> PrimitiveMeshTree::hit(const Ray& ray_in, HitType hit_type) const
 {
-    std::vector<RigidBody::HitRecord> records;
+    std::vector<RigidBodyHitRecord> records;
     Ray ray(ray_in);
     std::stack<size_t> node_idx_stk;
 
@@ -224,7 +224,7 @@ inline std::vector<RigidBody::HitRecord> PrimitiveMeshTree::hit(const Ray& ray_i
                 if(!validIntersect (result) || !ray.valid(hit_t))
                     continue;
 
-                RigidBody::HitRecord record(dim());
+                RigidBodyHitRecord record(dim());
                 record.t = hit_t;
                 record.prim_idx = prim_idx;
                 record.prim_coord_hit_p = ray(hit_t);

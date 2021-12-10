@@ -30,14 +30,14 @@ inline void testRectangle2D(int k = 1)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
-    Vec expect_p({3. - sqrt(.5), sqrt(.5)});
+    Vec expect_p({3.f - sqrt(.5f), sqrt(.5f)});
     if((record->p - expect_p).norm() > eps() * 10)
     {
         std::cout << "expect: " << mxm::to_string(expect_p) << ", get: " << mxm::to_string(record->p) << std::endl;
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
     }
 
-    if((record->n - Vec({-sqrt(.5), sqrt(.5)})).norm() > 10 * eps())
+    if((record->n - Vec({-sqrt(.5f), sqrt(.5f)})).norm() > 10 * eps())
     {
         std::cout << mxm::to_string(record->n) << std::endl;
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -98,7 +98,7 @@ inline void testIntersectEquation2D()
     Ray ray({1,0}, {-1, 1});
 
     Vec result(intersectEquation(line_seg, ray));
-    Vec expect({sqrt(0.5), .5});
+    Vec expect({sqrt(0.5f), .5f});
     if((result - expect).norm() > eps())
     {
         std::cout << mxm::to_string(result.T()) << std::endl;

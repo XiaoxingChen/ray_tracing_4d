@@ -11,13 +11,14 @@
 #include "rigid_body.h"
 #include "hittable.h"
 #include "ray_tracer.h"
-#include "scenes.h"
+// #include "scenes.h"
 using namespace mxm;
 namespace rtc
 {
+template<size_t DIM>
 std::vector<Pixel> threadFunc(
-    const Camera& cam,
-    HitManagerPtr p_manager,
+    const Camera<float, DIM>& cam,
+    HitManagerPtr<DIM> p_manager,
     int sample_num,
     size_t recursion_depth,
     PixelCoordinates::const_iterator begin,
@@ -38,7 +39,7 @@ std::vector<Pixel> threadFunc(
             if(ray_record.size() >= recursion_depth - 1)
             {
                 for(auto & ray: ray_record)
-                    std::cout << "ori: " << ray.origin().T().str() << " dir: " << ray.direction().T().str() << std::endl;
+                    std::cout << "ori: " << mxm::to_string(ray.origin().T()) << " dir: " << mxm::to_string(ray.direction().T()) << std::endl;
                 // exit(0);
             }
         }
@@ -49,6 +50,7 @@ std::vector<Pixel> threadFunc(
     return ret;
 }
 
+template<size_t DIM>
 class RenderSample
 {
 public:
@@ -58,13 +60,13 @@ public:
         eSINGLE_RAY
     };
     RenderSample(size_t dim): cam_(dim), test_ray_(dim){}
-    using ThisType = RenderSample;
-    ThisType& setCamera(const Camera& cam) { cam_ = cam; return *this; }
+    using ThisType = RenderSample<DIM>;
+    ThisType& setCamera(const Camera<float, DIM>& cam) { cam_ = cam; return *this; }
     ThisType& setSampleNum(size_t n) { sample_num_ = n; return *this; }
     ThisType& setRecursionDepth(size_t n) { recursion_depth_ = n; return *this; }
     ThisType& setMode(Mode mode) { mode_ = mode; return *this; }
     ThisType& setOutputFilename(const std::string& filename) { output_filename_ = filename; return *this; }
-    ThisType& setScene(HitManagerPtr scene) { scene_ = scene; return *this; }
+    ThisType& setScene(HitManagerPtr<DIM> scene) { scene_ = scene; return *this; }
     // ThisType& setTargetPixel(const std::vector<size_t>& px) { target_pixel_ = px; return *this; }
     ThisType& setTestRay(const Ray& r) { test_ray_ = r; return *this; }
     ThisType& enableRayStack(bool enable) { enable_ray_stack_ = enable; return *this; }
@@ -84,7 +86,7 @@ public:
 
         if(mode_ == eNAIVE)
         {
-            img = threadFunc(cam_, scene_, sample_num_, recursion_depth_, ppm_coord.begin(), ppm_coord.end());
+            img = threadFunc<DIM>(cam_, scene_, sample_num_, recursion_depth_, ppm_coord.begin(), ppm_coord.end());
         }
         else if(mode_ == eMULTITHREADING)
         {
@@ -97,7 +99,7 @@ public:
             {
                 pool_results.emplace_back(
                     pool.enqueue(
-                        threadFunc, cam_, scene_, sample_num_, recursion_depth_, ppm_coord.begin() + i,
+                        threadFunc<DIM>, cam_, scene_, sample_num_, recursion_depth_, ppm_coord.begin() + i,
                         i + step_len >= ppm_coord.size() ? ppm_coord.end() : ppm_coord.begin() + i + step_len)
                     );
             }
@@ -119,7 +121,7 @@ public:
             auto px = trace(*scene_, ray, recursion_depth_, p_ray_stack);
             for(auto & r: ray_stack)
             {
-                std::cout << "o: " << r.origin().T().str() << "d: " << r.direction().T().str() << std::endl;
+                std::cout << "o: " << mxm::to_string( r.origin().T()) << "d: " << mxm::to_string( r.direction().T()) << std::endl;
             }
         }
 
@@ -136,14 +138,14 @@ public:
     }
 
 private:
-    Camera cam_;
+    Camera<float,DIM> cam_;
     size_t sample_num_;
     size_t recursion_depth_;
     Mode mode_;
     bool enable_ray_stack_;
     // std::vector<size_t> target_pixel_;
     Ray test_ray_;
-    HitManagerPtr scene_;
+    HitManagerPtr<DIM> scene_;
     std::string output_filename_;
 
 };

@@ -6,20 +6,20 @@
 using namespace mxm;
 namespace rtc
 {
-const float Material::DEFUALT_FUZZ = -1;
+// const float Material::DEFUALT_FUZZ = -1;
 
 class Lambertian :public Material
 {
     public:
         Lambertian(const Pixel& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 1. : fuzz){}
 
-        virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const override
+        virtual Ray scatter(const Ray& ray_in, const RigidBodyHitRecord& record) const override
         {
             Vec target = record.p + record.n + fuzz_ * random::unitSphere<float>(record.p.size());
             return Ray(record.p, target - record.p);
         }
 
-        virtual Ray localFrameScatter(const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const override
+        virtual Ray localFrameScatter(const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTrans& pose) const override
         {
             return scatter(ray_in, record);
         }
@@ -33,7 +33,7 @@ class Metal :public Material
     public:
         Metal(const Pixel& albedo, float_t fuzz):Material(albedo), fuzz_(fuzz == DEFUALT_FUZZ ? 0 : fuzz){}
 
-        virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const
+        virtual Ray scatter(const Ray& ray_in, const RigidBodyHitRecord& record) const
         {
             Vec reflected = reflect(ray_in.direction(), record.n);
             return Ray(record.p, reflected + fuzz_ * random::unitSphere<float>(record.p.size()));
@@ -47,7 +47,7 @@ class Dielectric :public Material
     public:
         Dielectric(float_t ri=1.5):Material(Pixel::white()), ref_idx_(ri){}
 
-        virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const
+        virtual Ray scatter(const Ray& ray_in, const RigidBodyHitRecord& record) const
         {
             ray_in.checkDimension(record.p.size()).checkDimension(record.n.size());
 
@@ -71,7 +71,7 @@ class Dielectric :public Material
             if(refracted)
             {
                 float_t reflect_prob = schlick(cosine, ref_idx_);
-                return Ray(record.p, (random::UnitFloat() < reflect_prob) ? reflected : *refracted);
+                return Ray(record.p, (random::uniform<float>() < reflect_prob) ? reflected : *refracted);
             }
             else
             {

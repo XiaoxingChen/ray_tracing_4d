@@ -152,7 +152,7 @@ private:
     {
         for(size_t i = hittable_range_[0]; i < hittable_range_[1]; i++)
         {
-            std::vector<RigidBody::HitRecordPtr> p_rigid_records;
+            std::vector<RigidBodyHitRecordPtr> p_rigid_records;
             hittable_buffer_->at(i).rigidBody().multiHit(ray, p_rigid_records);
             hit_count += p_rigid_records.size();
         }
@@ -163,7 +163,7 @@ private:
         Hittable::HitRecordPtr result(nullptr);
         for(auto & child: children_)
         {
-            std::vector<RigidBody::HitRecordPtr> p_rigid_records;
+            std::vector<RigidBodyHitRecordPtr> p_rigid_records;
             child->multiHit(ray, hit_count);
         }
     }

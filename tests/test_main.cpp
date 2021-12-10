@@ -4,7 +4,7 @@
 // #include "test_linalg.h"
 // #include "test_ray.h"
 // #include "test_random_factory.h"
-// #include "test_material.h"
+#include "test_material.h"
 // #include "test_rotation.h"
 // #include "test_bvh.h"
 // #include "test_interp.h"
@@ -23,9 +23,9 @@ int main(int argc, char const *argv[])
   // testRotation();
   // testInterpolation();
   testRigidBody();
-  // testPrimitiveGeometry();
+  testPrimitiveGeometry();
   // testRandomFactory();
-  // testMaterial();
+  testMaterial();
   // testBvh();
   // testRigidTransform();
   // testBazier();

@@ -25,16 +25,16 @@ public:
 
     // const Pixel& attenuation() const { return albedo_; }
     // virtual const Pixel& attenuation(const Vec& hit_p) const
-    virtual const Pixel& attenuation(const RigidBody::HitRecord& record) const
+    virtual const Pixel& attenuation(const RigidBodyHitRecord& record) const
     {
         return albedo_;
     }
 
     virtual Ray scatter(
-        const Ray& ray_in, const RigidBody::HitRecord& record) const = 0;
+        const Ray& ray_in, const RigidBodyHitRecord& record) const = 0;
 
     virtual Ray localFrameScatter(
-        const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const
+        const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTrans& pose) const
         { throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__)); return  ray_in;};
 
     enum Types
@@ -43,7 +43,7 @@ public:
         LAMBERTIAN,
         DIELECTRIC
     };
-    static const float_t DEFUALT_FUZZ;
+    static constexpr float_t DEFUALT_FUZZ = -1;
     static std::shared_ptr<Material> choose(Types type, const Pixel& albedo=Pixel({.8, .8, .8}), float_t fuzz=DEFUALT_FUZZ);
 
 private:
@@ -93,13 +93,13 @@ class GltfTexture :public Material
             vertex_indices_(indices),
             vertex_buffer_(vertex_buffer) {}
 
-        virtual Ray scatter(const Ray& ray_in, const RigidBody::HitRecord& record) const override
+        virtual Ray scatter(const Ray& ray_in, const RigidBodyHitRecord& record) const override
         {
             return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));
         }
 
         virtual Ray localFrameScatter(
-            const Ray& ray_in, const RigidBody::HitRecord& record, const RigidTrans& pose) const override
+            const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTrans& pose) const override
         {
             if(record.prim_idx >= vertex_indices_->shape(1))
                 return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));
@@ -122,7 +122,7 @@ class GltfTexture :public Material
             return apply(pose, reflected_local_ray);
         }
 
-        virtual const Pixel& attenuation(const RigidBody::HitRecord& record) const override
+        virtual const Pixel& attenuation(const RigidBodyHitRecord& record) const override
         {
             if(tex_buffer_->base_texture.shape() == Shape({1,1}))
                 return tex_buffer_->base_texture(0,0);
@@ -143,12 +143,12 @@ class GltfTexture :public Material
                 hit_p_tex_coord(0,0) > 1. || hit_p_tex_coord(0,0) < 0)
             {
                 std::cout << "============== debug info ==============\n"
-                << "hit_p_tex_coord: " << hit_p_tex_coord.T().str()
+                << "hit_p_tex_coord: " << mxm::to_string(hit_p_tex_coord.T())
                 << "prim idx: " << record.prim_idx << "/" << vertex_indices_->shape(1) << "\n"
-                << "triangle: \n" << triangle.str() << "\n"
-                << "prim_coord hit p: \n" << record.prim_coord_hit_p.str() << "\n"
-                << "tri_2d: \n" << triangle_2d.str() << "\n"
-                << "hit_p_2d: \n" << hit_p_2d.str() << "\n";
+                << "triangle: \n" << mxm::to_string(triangle) << "\n"
+                << "prim_coord hit p: \n" << mxm::to_string(record.prim_coord_hit_p) << "\n"
+                << "tri_2d: \n" << mxm::to_string(triangle_2d) << "\n"
+                << "hit_p_2d: \n" << mxm::to_string(hit_p_2d) << "\n";
                 throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
             }
             // auto hit_p_tex_coord = tex_coord(Col(0));

@@ -23,23 +23,27 @@ class RigidBody;
 template<size_t DIM>
 using RigidBodyPtr = std::shared_ptr<RigidBody<DIM>>;
 
+struct RigidBodyHitRecord
+{
+    RigidBodyHitRecord(float_t t_, const std::vector<FloatType>& p_, const std::vector<FloatType>& n_)
+    :t(t_), p(p_), n(n_){}
+    RigidBodyHitRecord(float_t t_, const Vec& p_, const Vec& n_)
+    :t(t_), p(p_), n(n_){}
+    RigidBodyHitRecord(size_t dim=3) :t(0), p(dim), n(dim){}
+    float_t t; //hit t
+    Vec p; //hit point
+    Vec n; //normal vector
+    size_t prim_idx;
+    Vec prim_coord_hit_p;
+};
+using RigidBodyHitRecordPtr = std::shared_ptr<RigidBodyHitRecord>;
+
+
 template<size_t DIM>
 class RigidBody
 {
     public:
-        struct HitRecord
-        {
-            HitRecord(float_t t_, const std::vector<FloatType>& p_, const std::vector<FloatType>& n_)
-            :t(t_), p(p_), n(n_){}
-            HitRecord(float_t t_, const Vec& p_, const Vec& n_)
-            :t(t_), p(p_), n(n_){}
-            HitRecord(size_t dim=3) :t(0), p(dim), n(dim){}
-            float_t t; //hit t
-            Vec p; //hit point
-            Vec n; //normal vector
-            size_t prim_idx;
-            Vec prim_coord_hit_p;
-        };
+        
         RigidBody(){}
 
         enum Types
@@ -59,9 +63,9 @@ class RigidBody
             CYLINDER,
             ELLIPSOID
         };
-        using HitRecordPtr = std::shared_ptr<HitRecord>;
-        virtual HitRecordPtr hit(const Ray& ray) const = 0;
-        virtual void multiHit(const Ray& ray, std::vector<HitRecordPtr>& records) const
+        
+        virtual RigidBodyHitRecordPtr hit(const Ray& ray) const = 0;
+        virtual void multiHit(const Ray& ray, std::vector<RigidBodyHitRecordPtr>& records) const
         {
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
         };
@@ -71,7 +75,7 @@ class RigidBody
         constexpr size_t dim() const {return DIM;}
         virtual RigidTransform<FloatType,DIM> pose() const {
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
-            return RigidTransform<FloatType,DIM>::identity(dim());
+            return RigidTransform<FloatType,DIM>::identity();
         }
 
         static RigidBodyPtr<DIM> choose(Types type, size_t dimension, const std::vector<FloatType>& args);

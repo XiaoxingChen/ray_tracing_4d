@@ -132,12 +132,12 @@ inline Matrix<size_t> loadMeshIndices(
     return ret;
 }
 
-inline std::shared_ptr<rtc::Mat> loadMeshVertices(
+inline std::shared_ptr<mxm::Mat> loadMeshVertices(
     tinygltf::Model& model,
     size_t mesh_idx)
 {
     std::cout << "WARNING: function deprecated, use loadMeshAttributes instead! " << std::endl;
-    std::shared_ptr<rtc::Mat> ret;
+    std::shared_ptr<mxm::Mat> ret;
     auto & mesh(model.meshes.at(mesh_idx));
     std::cout << "mesh : " << mesh.name << std::endl;
     auto& primitive = mesh.primitives.at(0);
@@ -173,13 +173,13 @@ inline std::shared_ptr<rtc::Mat> loadMeshVertices(
 
 }
 
-inline std::shared_ptr<rtc::Mat> loadMeshAttributes(
+inline std::shared_ptr<mxm::Mat> loadMeshAttributes(
     tinygltf::Model& model,
     size_t mesh_idx,
     const std::string& type)
 {
 
-    std::shared_ptr<rtc::Mat> ret;
+    std::shared_ptr<mxm::Mat> ret;
     auto & mesh(model.meshes.at(mesh_idx));
     std::cout << "load " + type << std::endl;
     auto& primitive = mesh.primitives.at(0);
