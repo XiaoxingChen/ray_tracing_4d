@@ -29,7 +29,23 @@ std::vector<Pixel> threadFunc(
     {
         auto & uv = *it;
         Pixel col;
-        auto r = cam.pixelRay(uv);
+        // auto r = cam.pixelRay(uv);
+        // Ray r(cam.pose().translation(), cam.pixelDirection(Mat<size_t>({DIM,1}, {uv})))
+        Ray r;
+        r.origin() = cam.pose().translation();
+        if(2 == DIM)
+        {
+            r.setDirection(cam.pixelDirection(Matrix<size_t>({DIM-1,1}, {uv.at(0)})));
+        }
+        else if(3 == DIM)
+        {
+            r.setDirection(cam.pixelDirection(Matrix<size_t>({DIM-1,1}, {uv.at(0), uv.at(1)}, COL)));
+        }
+        else
+        {
+            assert(false);
+        }
+
         for (int s = 0; s < sample_num; s++)
         {
             std::vector<Ray> ray_record;

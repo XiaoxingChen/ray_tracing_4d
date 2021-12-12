@@ -172,7 +172,7 @@ public:
         auto results = tree_.hit(local_ray, bvh::eClosestHit);
         if(results.empty())
             return nullptr;
-        auto ret = std::make_shared<typename RigidBody<DIM>::HitRecord>(results.front());
+        auto ret = std::make_shared<RigidBodyHitRecord>(results.front());
         ret->p = pose_.apply(results.front().prim_coord_hit_p);
         ret->n = pose_.rotation().apply(results.front().n);
         return ret;
@@ -348,7 +348,7 @@ Prism<DIM>::hit(const Ray& ray) const
     if(records.front().t > h_hit_t_max || records.back().t < h_hit_t_min)
         return nullptr;
 
-    auto result = std::make_shared<typename RigidBody<DIM>::HitRecord>(dim());
+    auto result = std::make_shared<RigidBodyHitRecord>(dim());
     for(size_t i = 0; i + 1< records.size(); i+= 2)
     {
         // records.at(i) is "in edge"
@@ -421,7 +421,7 @@ Prism<DIM>::hit(const Ray& ray) const
 
         if(type == RigidBody::RECTANGLE)
         {
-            return std::make_shared<Rectangle>(
+            return std::make_shared<Rectangle<DIM>>(
                 position, //center
                 args, //radius
                 orientation); //rotation
@@ -430,6 +430,10 @@ Prism<DIM>::hit(const Ray& ray) const
 
         return std::make_shared<Sphere<DIM>>();
     }
+
+    template RigidBodyPtr<2> RigidBody<2>::choose(Types type, const Vec& position, const Rotation<FloatType, 2>& orientation, const std::vector<FloatType>& args);
+    template RigidBodyPtr<3> RigidBody<3>::choose(Types type, const Vec& position, const Rotation<FloatType, 3>& orientation, const std::vector<FloatType>& args);
+    template RigidBodyPtr<4> RigidBody<4>::choose(Types type, const Vec& position, const Rotation<FloatType, 4>& orientation, const std::vector<FloatType>& args);
 
     template<size_t DIM>
     RigidBodyPtr<DIM> RigidBody<DIM>::createPrimitiveMesh(

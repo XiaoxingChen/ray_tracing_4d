@@ -43,7 +43,7 @@ template<size_t DIM>
 class RigidBody
 {
     public:
-        
+
         RigidBody(){}
 
         enum Types
@@ -63,7 +63,7 @@ class RigidBody
             CYLINDER,
             ELLIPSOID
         };
-        
+
         virtual RigidBodyHitRecordPtr hit(const Ray& ray) const = 0;
         virtual void multiHit(const Ray& ray, std::vector<RigidBodyHitRecordPtr>& records) const
         {
@@ -85,8 +85,7 @@ class RigidBody
         static RigidBodyPtr<DIM> createPrism(const Vec& p, const Rotation<FloatType,DIM>& r, FloatType h, std::shared_ptr<Mat>& vertex_buffer, std::shared_ptr<Matrix<size_t>>& vertex_index_buffer);
 };
 
-template<size_t DIM>
-typename RigidBody<DIM>::HitRecordPtr
+inline RigidBodyHitRecordPtr
 hitPrimitivePolygon(
     const Ray& ray, std::shared_ptr<Mat> p_vertex_buffer, const std::vector<size_t>& indices)
 {
@@ -109,7 +108,7 @@ hitPrimitivePolygon(
 
     Vec norm = primitiveNorm(mat_a, ray);
 
-    auto ret = std::make_shared<RigidBody<DIM>::HitRecord>(
+    auto ret = std::make_shared<RigidBodyHitRecord>(
         intersection_t, ray(intersection_t), norm);
 
     return ret;

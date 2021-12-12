@@ -1,30 +1,35 @@
 #include "io.h"
 #include <vector>
 #include <iostream>
-#include "camera.h"
-#include "random_factory.h"
+#include "mxm/model_camera.h"
+#include "mxm/random.h"
 #include "ThreadPool.h"
 #include "material.h"
 #include "rigid_body.h"
 #include "hittable.h"
 #include "ray_tracer.h"
-#include "scenes.h"
+#include "scenes_2d.h"
 #include "utils.h"
 
 using namespace rtc;
-
+using namespace mxm;
 
 int main(int argc, char const *argv[])
 {
+    const size_t DIM = 2;
     size_t nx = 640;
     size_t height_repeat = 300;
-    size_t dim = 2;
+
     size_t sample_num = 100;
     size_t recursion_depth = 10;
-    Camera cam(Vec(dim), Rotation::fromAngle(0.1), Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx)));
+    Camera<float, DIM> cam;
+    cam.setOrientation(Rotation<float, DIM>::fromAngle(0.1)).setFocalLength({500}).setResolution({nx});
+    // Camera<float, DIM> cam(
+    //     Vec(dim), Rotation<float, DIM>::fromAngle(0.1),
+    //     Vec(std::vector<FloatType>(1, 500)), Vec(std::vector<FloatType>(1, nx)));
     std::vector<Pixel> img;
 
-    HitManager manager = rtc::scene::simple2D_001();
+    HitManager<DIM> manager = rtc::scene::simple2D_001();
 
 
     bool multi_process = 1;
@@ -40,7 +45,7 @@ int main(int argc, char const *argv[])
         {
             pool_results.emplace_back(
                 pool.enqueue(
-                    threadFunc, cam, &manager, sample_num, recursion_depth, ppm_coord.begin() + i,
+                    threadFunc<DIM>, cam, &manager, sample_num, recursion_depth, ppm_coord.begin() + i,
                     i + step_len >= ppm_coord.size() ? ppm_coord.end() : ppm_coord.begin() + i + step_len)
                 );
         }
@@ -56,7 +61,7 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        img = threadFunc(cam, &manager, sample_num, recursion_depth, ppm_coord.begin(), ppm_coord.end());
+        img = threadFunc<DIM>(cam, &manager, sample_num, recursion_depth, ppm_coord.begin(), ppm_coord.end());
     }
 
     decltype(img) img0(img);

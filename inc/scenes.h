@@ -14,26 +14,7 @@ namespace rtc
 namespace scene
 {
 
-inline HitManager simple2D_001()
-{
-    HitManager manager;
-    size_t dim = 2;
 
-    manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({6.5, 10}), Rotation::identity(dim), {1}),
-        Material::choose(Material::DIELECTRIC, Pixel({0.5, 0.5, 0.5})));
-    manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({1.5,13}), Rotation::identity(dim), {1}),
-        Material::choose(Material::LAMBERTIAN, Pixel({0.6, 0.6, 0.4})));
-    manager.addHittables(
-        RigidBody::choose(RigidBody::SPHERE, Vec({4.5,15}), Rotation::identity(dim), {1}),
-        Material::choose(Material::METAL));
-    manager.addHittables(
-    RigidBody::choose(RigidBody::SPHERE, Vec({-100, 30}), Rotation::identity(dim), {100}),
-        Material::choose(Material::LAMBERTIAN, Pixel({0.5, 0.5, 0.8})));
-
-    return manager;
-}
 #if 0
 inline HitManager simple3D_001()
 {
