@@ -214,20 +214,20 @@ inline AcceleratedHitManager<3> gltf3DBox()
     (*vertex_buffer)(Row(2)) += 3;
 
     HittableBufferPtr<DIM> buffer = std::make_shared<HittableBuffer<DIM>>();
-    auto tree = std::make_shared<mxm::bvh::PrimitiveMeshTree>(vertex_buffer, vertex_index_buffer);
-    tree->build(1, true);
-    // for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
-    // {
-    //     buffer->push_back(Hittable<DIM>(
-    //         RigidBody<DIM>::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
-    //         Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
-    // }
+    // auto tree = std::make_shared<mxm::bvh::PrimitiveMeshTree>(vertex_buffer, vertex_index_buffer);
+    // tree->build(1, true);
+    for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
+    {
+        buffer->push_back(Hittable<DIM>(
+            RigidBody<DIM>::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
+            Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
+    }
 
     AcceleratedHitManager<DIM> manager;
-    manager.setTree(tree);
-    // auto root = std::shared_ptr<bvh::Node>(new bvh::Node(DIM, buffer, {0, buffer->size()}));
-    // root->split(1);
-    // manager.setRoot(root);
+    // manager.setTree(tree);
+    auto root = std::shared_ptr<bvh::Node<DIM>>(new bvh::Node<DIM>(DIM, buffer, {0, buffer->size()}));
+    root->split(1);
+    manager.setRoot(root);
 
     return manager;
 
@@ -386,21 +386,23 @@ inline AcceleratedHitManager simple3DPrism()
 
     return manager;
 }
+#endif //MXM_UPGRADING_FINISHED
 
-inline AcceleratedHitManager gltf3DDuck()
+
+inline AcceleratedHitManager<3> gltf3DDuck()
 {
     tinygltf::Model model;
-    size_t dim = 3;
+    const size_t DIM = 3;
     loadModel(model, "build/assets/Duck.gltf");
 
     std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
 
     auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
     (*vertex_buffer) *= 3e-2;
-    std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
+    std::cout << "vertices:" << mxm::to_string((*vertex_buffer)(Block({}, {0, 10})).T()) << std::endl;
 
 
-    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    HittableBufferPtr<DIM> buffer = std::make_shared<HittableBuffer<DIM>>();
 
     auto p_texture_buffer = std::make_shared<TextureBuffer>();
     p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
@@ -409,23 +411,24 @@ inline AcceleratedHitManager gltf3DDuck()
     auto p_texture = std::shared_ptr<Material>(
         new GltfTexture(p_texture_buffer, vertex_index_buffer, vertex_buffer));
 
-    auto r = Rotation::fromAxisAngle(Vec({1,0,0}), M_PI);
-    r = Rotation::fromAxisAngle(Vec({0,1,0}), 3.3 * M_PI_4) * r;
+    auto r = Rotation<float, DIM>::fromAxisAngle(Vec({1,0,0}), M_PI);
+    r = Rotation<float, DIM>::fromAxisAngle(Vec({0,1,0}), 3.3 * M_PI_4) * r;
 
-    buffer->push_back(Hittable(
-        RigidBody::createPrimitiveMesh(
+    buffer->push_back(Hittable<DIM>(
+        RigidBody<DIM>::createPrimitiveMesh(
             Vec({0,1.5,10}), r, vertex_buffer, vertex_index_buffer),
         p_texture));
 
 
-    AcceleratedHitManager manager;
-    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    AcceleratedHitManager<DIM> manager;
+    auto root = std::shared_ptr<bvh::Node<DIM>>(new bvh::Node<DIM>(DIM, buffer, {0, buffer->size()}));
     root->split(1, /*verbose*/ false);
     manager.setRoot(root);
 
     return manager;
 
 }
+#if MXM_UPGRADING_FINISHED
 #endif //MXM_UPGRADING_FINISHED
 #if 0
 inline AcceleratedHitManager rectangle3D_001()

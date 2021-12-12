@@ -13,26 +13,34 @@ using namespace mxm;
 namespace rtc
 {
 
-#if 0
+#if 1
+
 namespace bvh
 {
 
+template<size_t DIM>
 class Node;
+
+template<size_t DIM>
 size_t sortInLongestAxis(
-    HittableBufferPtr buffer,
+    HittableBufferPtr<DIM> buffer,
     const std::array<size_t, 2>& range,
     size_t dim,
-    bool verbose);
-using NodePtr = std::unique_ptr<Node>;
+    bool verbose=true);
+
+template<size_t DIM>
+using NodePtr = std::unique_ptr<Node<DIM>>;
+
+template<size_t DIM>
 class Node
 {
 public:
 
     Node(size_t dim,
-        HittableBufferPtr hittable_buffer,
+        HittableBufferPtr<DIM> hittable_buffer,
         const std::array<size_t, 2>& hittable_range,
         bool is_leaf=true)
-        :aabb_(dim), is_leaf_(is_leaf),
+        :aabb_(DIM), is_leaf_(is_leaf),
         hittable_buffer_(hittable_buffer),
         hittable_range_(hittable_range) { updateAABB(); }
 
@@ -42,7 +50,7 @@ public:
         hittable_buffer_(other.hittable_buffer_),
         hittable_range_(other.hittable_range_) {}
 
-    std::vector<NodePtr>& children() { return children_; }
+    std::vector<NodePtr<DIM>>& children() { return children_; }
     // std::vector<Hittable>& hittables() { return hittables_; }
     const AABB& boundingBox() const { return aabb_; }
     void updateAABB()
@@ -57,12 +65,12 @@ public:
 
     }
 
-    Hittable::HitRecordPtr hit(Ray& ray) const
+    HittableHitRecordPtr hit(Ray& ray) const
     {
         return closeHit(ray);
     }
 
-    Hittable::HitRecordPtr closeHit(Ray& ray) const
+    HittableHitRecordPtr closeHit(Ray& ray) const
     {
         //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         // std::cout << "max: " << aabb_.max().T().str()
@@ -91,7 +99,7 @@ public:
         children_.push_back(std::make_unique<Node>(*this));
         children_.push_back(std::make_unique<Node>(*this));
 
-        size_t mid = sortInLongestAxis(hittable_buffer_, hittable_range_, aabb_.dim(), verbose);
+        size_t mid = sortInLongestAxis<DIM>(hittable_buffer_, hittable_range_, aabb_.dim(), verbose);
 
         children_.front()->hittable_range_[1] = mid;
         children_.back()->hittable_range_[0] = mid;
@@ -106,9 +114,9 @@ public:
     }
 
 private:
-    Hittable::HitRecordPtr closeHitLeaf(Ray& ray) const
+    HittableHitRecordPtr closeHitLeaf(Ray& ray) const
     {
-        Hittable::HitRecordPtr result = nullptr;
+        HittableHitRecordPtr result = nullptr;
         // std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         // for(auto & hittable : hittables_)
         for(size_t i = hittable_range_[0]; i < hittable_range_[1]; i++)
@@ -117,7 +125,7 @@ private:
             auto p_record = hittable.rigidBody().hit(ray);
             if(!p_record) continue;
 
-            result = std::make_shared<Hittable::HitRecord>(
+            result = std::make_shared<HittableHitRecord>(
                 hittable.material().attenuation(*p_record),
                 // hittable.material().localFrameScatter(ray, *p_record, hittable.rigidBody().pose()),
                 hittable.material().scatter(ray, *p_record),
@@ -138,9 +146,9 @@ private:
         return result;
     }
 
-    Hittable::HitRecordPtr closeHitInternalNode(Ray& ray) const
+    HittableHitRecordPtr closeHitInternalNode(Ray& ray) const
     {
-        Hittable::HitRecordPtr result(nullptr);
+        HittableHitRecordPtr result(nullptr);
         for(auto & child: children_)
         {
             auto p_record = child->hit(ray);
@@ -164,7 +172,7 @@ private:
 
     void multiHitInternalNode(const Ray& ray, size_t& hit_count) const
     {
-        Hittable::HitRecordPtr result(nullptr);
+        HittableHitRecordPtr result(nullptr);
         for(auto & child: children_)
         {
             std::vector<RigidBodyHitRecordPtr> p_rigid_records;
@@ -174,24 +182,25 @@ private:
 
 private:
     mxm::AABB aabb_;
-    std::vector<NodePtr> children_;
+    std::vector<NodePtr<DIM>> children_;
     bool is_leaf_;
-    HittableBufferPtr hittable_buffer_;
+    HittableBufferPtr<DIM> hittable_buffer_;
     std::array<size_t, 2> hittable_range_;
 };
 
-inline size_t sortInLongestAxis(
-    HittableBufferPtr buffer,
+template<size_t DIM>
+size_t sortInLongestAxis(
+    HittableBufferPtr<DIM> buffer,
     const std::array<size_t, 2>& range,
     size_t dim,
-    bool verbose=true)
+    bool verbose)
 {
     AABB box(dim);
     for(size_t i = range[0]; i < range[1]; i++)
     {
         box.extend(buffer->at(i).rigidBody().aabb());
     }
-    size_t target_axis = argMax(box.max() - box.min());
+    size_t target_axis = argMax(box.max() - box.min()).at(0);
     if(verbose)
         std::cout << "range: [" << range[0] << "," << range[1] << "), axis: " << target_axis << std::endl;
 #if 0
@@ -212,7 +221,7 @@ inline size_t sortInLongestAxis(
     return p[0];
 #endif
     sort(buffer->begin() + range[0], buffer->begin() + range[1],
-        [&](const Hittable& h1, const Hittable& h2){
+        [&](const Hittable<DIM>& h1, const Hittable<DIM>& h2){
             return h1.rigidBody().aabb().center(target_axis)
                 < h2.rigidBody().aabb().center(target_axis);});
     return (range[0] + range[1]) / 2;
@@ -225,7 +234,8 @@ template <size_t DIM>
 class AcceleratedHitManager: public HitManager<DIM>
 {
 public:
-    // Hittable::HitRecordPtr hit(const Ray& ray) const = delete;
+    // HittableHitRecordPtr hit(const Ray& ray) const = delete;
+    #if 0
     HittableHitRecordPtr hit(Ray& ray) const {
         auto records_0 = tree_->hit(ray, mxm::bvh::eClosestHit);
         if(records_0.empty()) return nullptr;
@@ -248,9 +258,14 @@ public:
         return ret;
 
         }
+    #endif
     void setTree(std::shared_ptr<mxm::bvh::PrimitiveMeshTree> tree) { tree_ = tree; }
+
+    HittableHitRecordPtr hit(Ray& ray) const { return root_->hit(ray); }
+    void setRoot(std::shared_ptr<bvh::Node<DIM>> root) { root_ = root; }
 private:
     std::shared_ptr<mxm::bvh::PrimitiveMeshTree> tree_;
+    std::shared_ptr<bvh::Node<DIM>> root_;
 };
 
 } // namespace rtc

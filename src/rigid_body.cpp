@@ -167,14 +167,19 @@ public:
 
     virtual RigidBodyHitRecordPtr hit(const Ray& ray) const
     {
-#if 0
+#if 1
         Ray local_ray(pose_.inv().apply(ray.origin()), pose_.rotation().inv().apply(ray.direction()));
         auto results = tree_.hit(local_ray, bvh::eClosestHit);
         if(results.empty())
             return nullptr;
-        auto ret = std::make_shared<RigidBodyHitRecord>(results.front());
-        ret->p = pose_.apply(results.front().prim_coord_hit_p);
-        ret->n = pose_.rotation().apply(results.front().n);
+        auto targetPrimitive = tree_.primitive(results.front().prim_idx);
+        auto ret = std::make_shared<RigidBodyHitRecord>(DIM);
+        ret->t = results.front().t;
+        ret->prim_idx = results.front().prim_idx;
+        // [todo] to calculate hit point coordinate accurately
+        ret->prim_coord_hit_p = targetPrimitive(Col(0));
+        ret->p = pose_.apply(targetPrimitive(Col(0)));
+        ret->n = pose_.rotation().apply(primitiveNorm(targetPrimitive, ray));
         return ret;
 #else
         assert(false);
@@ -445,6 +450,10 @@ Prism<DIM>::hit(const Ray& ray) const
         return std::make_shared<PrimitiveMesh<DIM>>(position, orientation, vertices, indices);
     }
 
+    template RigidBodyPtr<2> RigidBody<2>::createPrimitiveMesh( const Vec& position, const Rotation<FloatType, 2>& orientation, std::shared_ptr<Mat>& vertices, std::shared_ptr<Matrix<size_t>>& indices);
+    template RigidBodyPtr<3> RigidBody<3>::createPrimitiveMesh( const Vec& position, const Rotation<FloatType, 3>& orientation, std::shared_ptr<Mat>& vertices, std::shared_ptr<Matrix<size_t>>& indices);
+    template RigidBodyPtr<4> RigidBody<4>::createPrimitiveMesh( const Vec& position, const Rotation<FloatType, 4>& orientation, std::shared_ptr<Mat>& vertices, std::shared_ptr<Matrix<size_t>>& indices);
+
     template<size_t DIM>
     RigidBodyPtr<DIM> RigidBody<DIM>::createPolygonPrimitive(
         std::shared_ptr<Mat> vertex_buffer,
@@ -453,6 +462,10 @@ Prism<DIM>::hit(const Ray& ray) const
     {
         return std::make_shared<PolygonPrimitive<DIM>>(vertex_buffer, indices, prim_idx);
     }
+
+    template RigidBodyPtr<2> RigidBody<2>::createPolygonPrimitive( std::shared_ptr<Mat> vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx);
+    template RigidBodyPtr<3> RigidBody<3>::createPolygonPrimitive( std::shared_ptr<Mat> vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx);
+    template RigidBodyPtr<4> RigidBody<4>::createPolygonPrimitive( std::shared_ptr<Mat> vertex_buffer, std::shared_ptr<Matrix<size_t>>& indices, size_t prim_idx);
 
     template<size_t DIM>
     RigidBodyPtr<DIM> RigidBody<DIM>::createPrism(const Vec& p, const Rotation<FloatType, DIM>& r, FloatType h,

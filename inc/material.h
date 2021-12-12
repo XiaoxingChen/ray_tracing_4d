@@ -151,7 +151,7 @@ class GltfTexture :public Material
                 << "hit_p_2d: \n" << mxm::to_string(hit_p_2d) << "\n";
                 throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
             }
-            // auto hit_p_tex_coord = tex_coord(Col(0));
+            // hit_p_tex_coord = tex_coord(Col(0));
             size_t u = hit_p_tex_coord(1,0) * tex_buffer_->base_texture.shape(1);
             size_t v = hit_p_tex_coord(0,0) * tex_buffer_->base_texture.shape(0);
             // std::cout << "u: " << u << ", v: " << v << std::endl;

@@ -12,7 +12,8 @@ namespace rtc
 {
 namespace bvh
 {
-    class Node;
+template<size_t DIM>
+class Node;
 } // namespace bvh
 
 
