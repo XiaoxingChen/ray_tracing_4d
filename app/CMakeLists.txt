@@ -1,5 +1,5 @@
-# add_executable(render_3d render_3d.cpp)
-# target_link_libraries(render_3d rtc ${THREAD_LIB})
+add_executable(render_3d render_3d.cpp)
+target_link_libraries(render_3d rtc ${THREAD_LIB})
 
 add_executable(render_2d render_2d.cpp)
 target_link_libraries(render_2d rtc ${THREAD_LIB})

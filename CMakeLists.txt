@@ -14,8 +14,8 @@ endif()
 add_subdirectory(third_party)
 
 include_directories(inc)
-add_library(rtc src/rigid_body.cpp src/material.cpp)
-# add_library(rtc src/material.cpp src/rigid_body.cpp  src/tinygltf_impl.cpp)
+# add_library(rtc src/rigid_body.cpp src/material.cpp)
+add_library(rtc src/material.cpp src/rigid_body.cpp  src/tinygltf_impl.cpp)
 target_link_libraries(rtc PUBLIC tinygltf mxm)
 target_include_directories(rtc PUBLIC third_party/mxm/inc)
 

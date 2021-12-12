@@ -9,7 +9,7 @@ using namespace mxm;
 
 namespace rtc
 {
-
+#if 0
 namespace bvh2
 {
 
@@ -264,7 +264,7 @@ inline std::vector<RigidBodyHitRecord> PrimitiveMeshTree::hit(const Ray& ray_in,
 
 
 } // namespace bvh
-
+#endif
 } // namespace rtc
 
 

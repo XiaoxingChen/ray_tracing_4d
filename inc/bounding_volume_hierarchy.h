@@ -2,6 +2,7 @@
 #define _BOUNDING_VOLUME_HIERARCHY_H_
 
 #include "mxm/spatial_aabb.h"
+#include "mxm/spatial_bvh.h"
 #include <vector>
 #include <memory>
 #include "hittable.h"
@@ -11,8 +12,11 @@ using namespace mxm;
 
 namespace rtc
 {
+
+#if 0
 namespace bvh
 {
+
 class Node;
 size_t sortInLongestAxis(
     HittableBufferPtr buffer,
@@ -215,16 +219,38 @@ inline size_t sortInLongestAxis(
 }
 
 } // namespace bvh
+#endif
 
-
-class AcceleratedHitManager: public HitManager
+template <size_t DIM>
+class AcceleratedHitManager: public HitManager<DIM>
 {
 public:
     // Hittable::HitRecordPtr hit(const Ray& ray) const = delete;
-    Hittable::HitRecordPtr hit(Ray& ray) const { return root_->hit(ray); }
-    void setRoot(std::shared_ptr<bvh::Node> root) { root_ = root; }
+    HittableHitRecordPtr hit(Ray& ray) const {
+        auto records_0 = tree_->hit(ray, mxm::bvh::eClosestHit);
+        if(records_0.empty()) return nullptr;
+
+        mxm::bvh::PrimitiveMeshTree::HitRecord record_0 = records_0.at(0);
+        rtc::RigidBodyHitRecord record_1;
+        record_1.t = record_0.t;
+        record_1.prim_idx = record_0.prim_idx;
+        record_1.n = mxm::primitiveNorm(tree_->primitive(record_0.prim_idx), ray);
+        record_1.prim_coord_hit_p = Vector<float>(DIM);
+        record_1.p = ray(record_0.t);
+
+        auto material = Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}));
+        HittableHitRecordPtr ret = std::make_shared<HittableHitRecord>(
+            material->attenuation(record_1),
+            material->scatter(ray, record_1),
+            record_1.t
+        );
+
+        return ret;
+
+        }
+    void setTree(std::shared_ptr<mxm::bvh::PrimitiveMeshTree> tree) { tree_ = tree; }
 private:
-    std::shared_ptr<bvh::Node> root_;
+    std::shared_ptr<mxm::bvh::PrimitiveMeshTree> tree_;
 };
 
 } // namespace rtc

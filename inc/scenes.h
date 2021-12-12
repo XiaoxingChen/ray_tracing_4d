@@ -9,6 +9,8 @@
 #include "primitive_mesh_tree.h"
 #include "mxm/rigid_transform.h"
 using namespace mxm;
+
+#define MXM_UPGRADING_FINISHED 0
 namespace rtc
 {
 namespace scene
@@ -74,6 +76,7 @@ inline HitManager simple3D_002()
     return manager;
 }
 #endif
+#if MXM_UPGRADING_FINISHED
 inline AcceleratedHitManager simple3D_003()
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
@@ -122,6 +125,7 @@ inline AcceleratedHitManager simple3D_005()
 
     return manager;
 }
+#endif //MXM_UPGRADING_FINISHED
 #if 0
 inline AcceleratedHitManager simple3D_004()
 {
@@ -190,10 +194,11 @@ inline AcceleratedHitManager gltf3DTriangle()
 
 }
 #endif
-inline AcceleratedHitManager gltf3DBox()
+
+inline AcceleratedHitManager<3> gltf3DBox()
 {
     tinygltf::Model model;
-    size_t dim = 3;
+    const size_t DIM = 3;
     loadModel(model, "assets/box/box.gltf");
 
     std::shared_ptr<Mat> vertex_buffer = loadMeshAttributes(model, 0, "POSITION");
@@ -201,30 +206,34 @@ inline AcceleratedHitManager gltf3DBox()
     auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
 
 
-    std::cout << "Vertices: \n" << vertex_buffer->T().str();
+    std::cout << "Vertices: \n" << mxm::to_string(vertex_buffer->T());
 
 
-    Rotation r(Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.9));
+    Rotation<float, DIM> r(Rotation<float, DIM>::fromPlaneAngle(Vec({1,0,0}), Vec({0,1,1}), 0.9));
     *vertex_buffer = r.apply(*vertex_buffer);
     (*vertex_buffer)(Row(2)) += 3;
 
-    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
-    for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
-    {
-        buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
-            Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
-    }
+    HittableBufferPtr<DIM> buffer = std::make_shared<HittableBuffer<DIM>>();
+    auto tree = std::make_shared<mxm::bvh::PrimitiveMeshTree>(vertex_buffer, vertex_index_buffer);
+    tree->build(1, true);
+    // for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
+    // {
+    //     buffer->push_back(Hittable<DIM>(
+    //         RigidBody<DIM>::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
+    //         Material::choose(Material::LAMBERTIAN, Pixel({0.3, 0.3, 0.6}))));
+    // }
 
-    AcceleratedHitManager manager;
-    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
-    root->split(1);
-    manager.setRoot(root);
+    AcceleratedHitManager<DIM> manager;
+    manager.setTree(tree);
+    // auto root = std::shared_ptr<bvh::Node>(new bvh::Node(DIM, buffer, {0, buffer->size()}));
+    // root->split(1);
+    // manager.setRoot(root);
 
     return manager;
 
 }
-#if 1
+#if MXM_UPGRADING_FINISHED
+
 inline AcceleratedHitManager gltf3DSphere()
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
@@ -263,8 +272,8 @@ inline AcceleratedHitManager gltf3DSphere()
     return manager;
 
 }
-#endif
-
+#endif //MXM_UPGRADING_FINISHED
+#if MXM_UPGRADING_FINISHED
 inline AcceleratedHitManager gltf3DDroplet()
 {
     HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
@@ -351,6 +360,7 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
 }
 
+
 inline AcceleratedHitManager simple3DPrism()
 {
     size_t dim = 3;
@@ -416,6 +426,7 @@ inline AcceleratedHitManager gltf3DDuck()
     return manager;
 
 }
+#endif //MXM_UPGRADING_FINISHED
 #if 0
 inline AcceleratedHitManager rectangle3D_001()
 {
@@ -455,7 +466,7 @@ inline AcceleratedHitManager rectangle3D_002()
 }
 #endif
 
-
+#if MXM_UPGRADING_FINISHED
 inline AcceleratedHitManager gltfDuckInBox3D()
 {
     size_t dim = 3;
@@ -543,7 +554,7 @@ inline void To4DMesh(
     }
 
 }
-
+#endif //MXM_UPGRADING_FINISHED
 #if 0
 inline AcceleratedHitManager gltfTetrahedronInBox(size_t dim)
 {
