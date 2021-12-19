@@ -313,25 +313,27 @@ inline AcceleratedHitManager gltf3DDroplet()
     return manager;
 
 }
-inline AcceleratedHitManager gltf3DBoomBox()
+#endif //MXM_UPGRADING_FINISHED
+
+inline AcceleratedHitManager<3> gltf3DBoomBox()
 {
     tinygltf::Model model;
-    size_t dim = 3;
+    const size_t DIM = 3;
     loadModel(model, "build/assets/BoomBox.gltf");
 
     std::shared_ptr<Mat> vertex_buffer = loadMeshVertices(model, 0);
 
     auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
     (*vertex_buffer) *= 100.;
-    std::cout << "vertices:" << (*vertex_buffer)(Block({}, {0, 10})).T().str() << std::endl;
+    std::cout << "vertices:" << mxm::to_string ((*vertex_buffer)(Block({}, {0, 10})).T()) << std::endl;
 
-    Rotation r(Rotation::fromPlaneAngle(Vec({0,1,0}), Vec({1,0,0}), M_PI));
-    r = Rotation::fromPlaneAngle(Vec({1,0,0}), Vec({0,0,1}), -M_PI/6) * r;
+    Rotation<float, 3> r(Rotation<float, 3>::fromPlaneAngle(Vec({0,1,0}), Vec({1,0,0}), M_PI));
+    r = Rotation<float, 3>::fromPlaneAngle(Vec({1,0,0}), Vec({0,0,1}), -M_PI/6) * r;
     *vertex_buffer = r.apply(*vertex_buffer);
 
     (*vertex_buffer)(Row(2)) += 6;
 
-    HittableBufferPtr buffer = std::make_shared<HittableBuffer>();
+    HittableBufferPtr<DIM> buffer = std::make_shared<HittableBuffer<DIM>>();
 
 
     auto p_texture_buffer = std::make_shared<TextureBuffer>();
@@ -345,14 +347,14 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
     for(size_t prim_idx = 0; prim_idx < vertex_index_buffer->shape(1); prim_idx++)
     {
-        buffer->push_back(Hittable(
-            RigidBody::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
+        buffer->push_back(Hittable<DIM>(
+            RigidBody<DIM>::createPolygonPrimitive(vertex_buffer, vertex_index_buffer, prim_idx),
             p_texture
             ));
     }
 
-    AcceleratedHitManager manager;
-    auto root = std::shared_ptr<bvh::Node>(new bvh::Node(dim, buffer, {0, buffer->size()}));
+    AcceleratedHitManager<DIM> manager;
+    auto root = std::shared_ptr<bvh::Node<DIM>>(new bvh::Node<DIM>(DIM, buffer, {0, buffer->size()}));
     root->split(1, /*verbose*/ false);
     manager.setRoot(root);
 
@@ -360,7 +362,7 @@ inline AcceleratedHitManager gltf3DBoomBox()
 
 }
 
-
+#if MXM_UPGRADING_FINISHED
 inline AcceleratedHitManager simple3DPrism()
 {
     size_t dim = 3;
