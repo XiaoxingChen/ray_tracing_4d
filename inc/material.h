@@ -34,7 +34,11 @@ public:
         const Ray& ray_in, const RigidBodyHitRecord& record) const = 0;
 
     virtual Ray localFrameScatter(
-        const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTrans& pose) const
+        const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 3>& pose) const
+        { throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__)); return  ray_in;};
+
+    virtual Ray localFrameScatter(
+        const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 2>& pose) const
         { throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__)); return  ray_in;};
 
     enum Types
@@ -99,7 +103,7 @@ class GltfTexture :public Material
         }
 
         virtual Ray localFrameScatter(
-            const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTrans& pose) const override
+            const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 3>& pose) const override
         {
             if(record.prim_idx >= vertex_indices_->shape(1))
                 return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));

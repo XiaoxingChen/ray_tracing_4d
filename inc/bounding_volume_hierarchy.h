@@ -127,8 +127,9 @@ private:
 
             result = std::make_shared<HittableHitRecord>(
                 hittable.material().attenuation(*p_record),
-                // hittable.material().localFrameScatter(ray, *p_record, hittable.rigidBody().pose()),
-                hittable.material().scatter(ray, *p_record),
+                DIM == 3 ?
+                    hittable.material().localFrameScatter(ray, *p_record, hittable.rigidBody().pose()) :
+                    hittable.material().scatter(ray, *p_record),
                 p_record->t);
 
             #if 0

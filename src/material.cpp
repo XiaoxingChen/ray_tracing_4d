@@ -19,7 +19,7 @@ class Lambertian :public Material
             return Ray(record.p, target - record.p);
         }
 
-        virtual Ray localFrameScatter(const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTrans& pose) const override
+        virtual Ray localFrameScatter(const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 3>& pose) const override
         {
             return scatter(ray_in, record);
         }

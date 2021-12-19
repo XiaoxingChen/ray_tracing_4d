@@ -408,6 +408,7 @@ inline AcceleratedHitManager<3> gltf3DDuck()
 
     auto p_texture_buffer = std::make_shared<TextureBuffer>();
     p_texture_buffer->tex_coord = std::move(*loadMeshAttributes(model, 0, "TEXCOORD_0"));
+    p_texture_buffer->normal = std::move(*loadMeshAttributes(model, 0, "NORMAL"));
     p_texture_buffer->base_texture = std::move(*loadMeshTexture(model));
 
     auto p_texture = std::shared_ptr<Material>(

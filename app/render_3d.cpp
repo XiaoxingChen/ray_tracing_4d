@@ -20,16 +20,16 @@ const size_t DIM = 3;
 int main(int argc, char const *argv[])
 {
     Camera<float, DIM> cam;//(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({500, 500}), Vec({640, 480}));
-    // cam.setFocalLength({500, 500}).setResolution({640, 480});
-    cam.setFocalLength({250, 250}).setResolution({320, 240}).setPrincipalOffset({125, 125});
+    cam.setFocalLength({500, 500}).setResolution({640, 480}).setPrincipalOffset({250, 250});
+    // cam.setFocalLength({250, 250}).setResolution({320, 240}).setPrincipalOffset({125, 125});
     // Camera cam(Vec(3), Rotation::fromAxisAngle(Vec({0,0,1}), 0), Vec({250, 250}), Vec({320, 240}));
     // auto scene = scene::rectangle3D_002();
     // auto scene = scene::gltf3DBox();
     // auto scene = scene::gltf3DSphere();
     // auto scene = scene::gltf3DDroplet();
     // auto scene = scene::simple3D_005();
-    auto scene = scene::gltf3DBoomBox();
-    // auto scene = scene::gltf3DDuck();
+    // auto scene = scene::gltf3DBoomBox();
+    auto scene = scene::gltf3DDuck();
     // auto scene = scene::simple3DPrism();
     // auto scene = scene::gltfDuckInBox3D();
 

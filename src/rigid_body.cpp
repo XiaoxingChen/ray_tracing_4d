@@ -177,7 +177,7 @@ public:
         ret->t = results.front().t;
         ret->prim_idx = results.front().prim_idx;
         // [todo] to calculate hit point coordinate accurately
-        ret->prim_coord_hit_p = targetPrimitive(Col(0));
+        ret->prim_coord_hit_p = targetPrimitive.matmul(results.front().coeff);
         ret->p = pose_.apply(targetPrimitive(Col(0)));
         ret->n = pose_.rotation().apply(primitiveNorm(targetPrimitive, ray));
         return ret;
