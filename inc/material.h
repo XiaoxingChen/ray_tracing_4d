@@ -86,6 +86,85 @@ struct TextureBuffer
 
 using TextureBufferPtr = std::shared_ptr<TextureBuffer>;
 
+class GltfMaterial
+{
+public:
+    GltfMaterial(
+        TextureBufferPtr& tex_buffer,
+        std::shared_ptr<Matrix<size_t>>& indices,
+        std::shared_ptr<Mat>& vertex_buffer)
+        :tex_buffer_(tex_buffer),
+        vertex_indices_(indices),
+        vertex_buffer_(vertex_buffer) {}
+
+    Ray scatter(
+        const Ray& ray_in,
+        size_t prim_idx,
+        const Vector<float>& hit_p,
+        const Vector<float>& hit_n) const
+    {
+        if(prim_idx >= vertex_indices_->shape(1))
+            return Ray(hit_p, reflect(ray_in.direction(), hit_n));
+
+        Mat triangle = getPrimitive(*vertex_buffer_, *vertex_indices_, prim_idx);
+        Mat normal = getPrimitive(tex_buffer_->normal, *vertex_indices_, prim_idx);
+
+        Mat triangle_2d;
+        Vec hit_p_2d;
+        Vec hit_p_3d(hit_p);
+        putTriangleInPlane(triangle, hit_p_3d, triangle_2d, hit_p_2d);
+
+        auto prim_coord_hit_n = interp::triangular(hit_p_2d, triangle_2d, normal);
+        //TODO: currently return local frame ray.
+        FloatType metalness = 0.1;
+        Ray reflected_local_ray(
+            hit_p,
+            metalness * reflect(ray_in.direction(), prim_coord_hit_n) + (1- metalness) * (prim_coord_hit_n + random::unitSphere<float>(hit_p.size())));
+        return reflected_local_ray;
+    }
+
+    Pixel attenuation(size_t prim_idx, const Vector<float>& hit_p) const
+    {
+        if(tex_buffer_->base_texture.shape() == Shape({1,1}))
+            return tex_buffer_->base_texture(0,0);
+        if(prim_idx >= vertex_indices_->shape(1))
+            return tex_buffer_->base_texture(0,0);
+        // Triangle A B C, put A to (0,0), put B to (AB.norm(), 0)
+
+        Mat triangle = getPrimitive(*vertex_buffer_, *vertex_indices_, prim_idx);
+        Mat tex_coord = getPrimitive(tex_buffer_->tex_coord, *vertex_indices_, prim_idx);
+
+        Mat triangle_2d;
+        Vec hit_p_2d;
+        Vec hit_p_3d(hit_p);
+        putTriangleInPlane(triangle, hit_p_3d, triangle_2d, hit_p_2d);
+
+        auto hit_p_tex_coord = interp::triangular(hit_p_2d, triangle_2d, tex_coord);
+        if(hit_p_tex_coord(1,0) > 1. || hit_p_tex_coord(1,0) < 0 ||
+            hit_p_tex_coord(0,0) > 1. || hit_p_tex_coord(0,0) < 0)
+        {
+            std::cout << "============== debug info ==============\n"
+            << "hit_p_tex_coord: " << mxm::to_string(hit_p_tex_coord.T())
+            << "prim idx: " << prim_idx << "/" << vertex_indices_->shape(1) << "\n"
+            << "triangle: \n" << mxm::to_string(triangle) << "\n"
+            << "prim_coord hit p: \n" << mxm::to_string(hit_p) << "\n"
+            << "tri_2d: \n" << mxm::to_string(triangle_2d) << "\n"
+            << "hit_p_2d: \n" << mxm::to_string(hit_p_2d) << "\n";
+            throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
+        }
+        // hit_p_tex_coord = tex_coord(Col(0));
+        size_t u = hit_p_tex_coord(1,0) * tex_buffer_->base_texture.shape(1);
+        size_t v = hit_p_tex_coord(0,0) * tex_buffer_->base_texture.shape(0);
+        // std::cout << "u: " << u << ", v: " << v << std::endl;
+        return tex_buffer_->base_texture(u, v);
+    }
+
+private:
+    TextureBufferPtr tex_buffer_;
+    std::shared_ptr<Matrix<size_t>> vertex_indices_;
+    std::shared_ptr<Mat> vertex_buffer_;
+};
+
 class GltfTexture :public Material
 {
     public:
