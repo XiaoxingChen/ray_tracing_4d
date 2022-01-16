@@ -23,7 +23,7 @@ inline EntityPtr sceneGltf3DBox()
 
     auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
 
-    auto p_mesh = std::make_shared<rtc::ecs::Mesh<DIM>>();
+    auto p_mesh = std::make_shared<rtc::ecs::Mesh>();
     p_mesh->meshTree() = mxm::bvh::PrimitiveMeshTree(vertex_buffer, vertex_index_buffer);
     p_mesh->meshTree().build();
 
@@ -63,7 +63,7 @@ inline EntityPtr sceneGltf3DSphere02()
 
     auto vertex_index_buffer = std::make_shared<Matrix<size_t>>(std::move(loadMeshIndices(model, 0)));
 
-    auto p_mesh = std::make_shared<rtc::ecs::Mesh<DIM>>();
+    auto p_mesh = std::make_shared<rtc::ecs::Mesh>();
     p_mesh->meshTree() = mxm::bvh::PrimitiveMeshTree(vertex_buffer, vertex_index_buffer);
     p_mesh->meshTree().build();
 
@@ -123,7 +123,7 @@ inline EntityPtr sceneGltf3DDuck()
     // (*vertex_buffer) *= 3e-2;
     std::cout << "vertices:" << mxm::to_string((*vertex_buffer)(Block({}, {0, 10})).T()) << std::endl;
 
-    auto p_mesh = std::make_shared<rtc::ecs::Mesh<DIM>>();
+    auto p_mesh = std::make_shared<rtc::ecs::Mesh>();
     p_mesh->meshTree() = mxm::bvh::PrimitiveMeshTree(vertex_buffer, vertex_index_buffer);
     p_mesh->meshTree().build();
 

@@ -87,7 +87,7 @@ hit(const EntityPtr root, const mxm::Ray& ray_in, mxm::bvh::HitType hit_type)
         // ray cast
         if(target_entity->components().count(ComponentType::eMesh))
         {
-            rtc::ecs::Mesh<DIM>* pMesh = static_cast<rtc::ecs::Mesh<DIM>*>(target_entity->components().at(ComponentType::eMesh).get());
+            rtc::ecs::Mesh* pMesh = static_cast<rtc::ecs::Mesh*>(target_entity->components().at(ComponentType::eMesh).get());
             auto base_records = pMesh->meshTree().hit(target_ray, hit_type);
             for(const auto & base_record: base_records)
             {
@@ -135,7 +135,7 @@ void materialPostprocess(const HitRecord& record, Pixel& color, Ray& scatter_ray
 {
     // local frame calculation
     Vector<float> local_hit_p = record.ray(record.t);
-    Matrix<float> prim = static_cast<Mesh<DIM>*>(record.entity->components().at(ComponentType::eMesh).get())->meshTree().primitive(record.prim_idx);
+    Matrix<float> prim = static_cast<Mesh*>(record.entity->components().at(ComponentType::eMesh).get())->meshTree().primitive(record.prim_idx);
     Vector<float> local_hit_n = mxm::primitiveNorm(prim, record.ray);
 
     AffineTransform<float, DIM> tf_world_from_local = transformUpFromDown<DIM>(record.entity->root(), record.entity);

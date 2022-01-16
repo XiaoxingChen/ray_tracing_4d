@@ -8,7 +8,6 @@ namespace rtc
 {
 namespace ecs
 {
-template<size_t DIM=3>
 class Mesh: public ComponentBase
 {
 public:
