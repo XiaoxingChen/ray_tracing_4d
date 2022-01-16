@@ -97,6 +97,11 @@ public:
         vertex_indices_(indices),
         vertex_buffer_(vertex_buffer) {}
 
+     GltfMaterial()
+        :tex_buffer_(nullptr),
+        vertex_indices_(nullptr),
+        vertex_buffer_(nullptr) {}
+
     Ray scatter(
         const Ray& ray_in,
         size_t prim_idx,
@@ -116,10 +121,9 @@ public:
 
         auto prim_coord_hit_n = interp::triangular(hit_p_2d, triangle_2d, normal);
         //TODO: currently return local frame ray.
-        FloatType metalness = 0.1;
         Ray reflected_local_ray(
             hit_p,
-            metalness * reflect(ray_in.direction(), prim_coord_hit_n) + (1- metalness) * (prim_coord_hit_n + random::unitSphere<float>(hit_p.size())));
+            metalness_ * reflect(ray_in.direction(), prim_coord_hit_n) + (1- metalness_) * (prim_coord_hit_n + random::unitSphere<float>(hit_p.size())));
         return reflected_local_ray;
     }
 
@@ -159,10 +163,23 @@ public:
         return tex_buffer_->base_texture(u, v);
     }
 
+    void operator = (const GltfMaterial& rhs)
+    {
+        std::cout << "count: " << tex_buffer_.use_count() << std::endl;
+        metalness_ = rhs.metalness_;
+        tex_buffer_ = rhs.tex_buffer_;
+        vertex_indices_ = rhs.vertex_indices_;
+        vertex_buffer_ = rhs.vertex_buffer_;
+    }
+
+    float & metalness() { return metalness_; }
+    const float & metalness() const { return metalness_; }
+
 private:
-    TextureBufferPtr tex_buffer_;
-    std::shared_ptr<Matrix<size_t>> vertex_indices_;
-    std::shared_ptr<Mat> vertex_buffer_;
+    float metalness_ = 0.f;
+    TextureBufferPtr tex_buffer_ = nullptr;
+    std::shared_ptr<Matrix<size_t>> vertex_indices_ = nullptr;
+    std::shared_ptr<Mat> vertex_buffer_ = nullptr;
 };
 
 class GltfTexture :public Material

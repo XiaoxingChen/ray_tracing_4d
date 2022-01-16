@@ -14,11 +14,11 @@ class Mesh: public ComponentBase
 public:
     virtual ComponentType type() override { return eMesh; }
 
-    bvh::PrimitiveMeshTree& meshTree() { return mesh_tree_; }
-    const bvh::PrimitiveMeshTree& meshTree() const { return mesh_tree_; }
+    mxm::bvh::PrimitiveMeshTree& meshTree() { return mesh_tree_; }
+    const mxm::bvh::PrimitiveMeshTree& meshTree() const { return mesh_tree_; }
 
 protected:
-    bvh::PrimitiveMeshTree mesh_tree_;
+    mxm::bvh::PrimitiveMeshTree mesh_tree_;
 
 };
 } // namespace ecs

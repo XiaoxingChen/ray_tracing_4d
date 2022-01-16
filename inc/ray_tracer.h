@@ -6,6 +6,8 @@
 #include "rigid_body.h"
 #include <iostream>
 #include "mxm/interpolation.h"
+#include "ecs_entity_tree.h"
+
 using namespace mxm;
 namespace rtc
 {
@@ -45,6 +47,33 @@ inline Pixel trace(const HitManager<DIM>& manager, Ray& ray, int depth, std::vec
             auto new_ray = p_record->scattered;
             // std::cout << "hit!" << std::endl;
             return p_record->attenuation * trace<DIM>(manager, new_ray, depth - 1, ray_record);
+
+        }
+        else {
+            // std::cout << ".";
+            // return Pixel({1, 0, 0});
+            return Pixel({1, 1, 1});
+        }
+    }
+    return skyBox(ray);
+}
+
+template<size_t DIM>
+inline Pixel trace(ecs::EntityPtr root, Ray& ray, int depth, std::vector<Ray>* ray_record=nullptr)
+{
+    auto records = ecs::hit<DIM>(root, ray, mxm::bvh::HitType::eClosestHit);
+    // auto p_record = manager.hit(ray);
+    if(ray_record) ray_record->push_back(ray);
+    if(!records.empty())
+    {
+        // std::cout << "hit!" << std::endl;
+        if (depth > 0)
+        {
+            Ray new_ray;
+            Pixel attenuation;
+            ecs::materialPostprocess(records.front(), attenuation, new_ray);
+            // std::cout << "hit!" << std::endl;
+            return attenuation * trace<DIM>(root, new_ray, depth - 1, ray_record);
 
         }
         else {

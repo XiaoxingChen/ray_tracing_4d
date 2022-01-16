@@ -12,13 +12,15 @@
 #include "hittable.h"
 #include "ray_tracer.h"
 // #include "scenes.h"
+#include "ecs_scene_3d.h"
 using namespace mxm;
 namespace rtc
 {
 template<size_t DIM>
 std::vector<Pixel> threadFunc(
     const Camera<float, DIM>& cam,
-    HitManagerPtr<DIM> p_manager,
+    // HitManagerPtr<DIM> p_manager,
+    ecs::EntityPtr root,
     int sample_num,
     size_t recursion_depth,
     PixelCoordinates::const_iterator begin,
@@ -28,7 +30,7 @@ std::vector<Pixel> threadFunc(
     for(auto it = begin; it != end; it++)
     {
         auto & uv = *it;
-        Pixel col;
+        Pixel col = Pixel::black();
         // auto r = cam.pixelRay(uv);
         // Ray r(cam.pose().translation(), cam.pixelDirection(Mat<size_t>({DIM,1}, {uv})))
         Ray r;
@@ -51,7 +53,7 @@ std::vector<Pixel> threadFunc(
             std::vector<Ray> ray_record;
             Ray input_ray(r);
             // col += trace(manager, r, 0, &ray_record);
-            col += trace(*p_manager, input_ray, recursion_depth, nullptr);
+            col += trace<DIM>(root, input_ray, recursion_depth, nullptr);
             if(ray_record.size() >= recursion_depth - 1)
             {
                 for(auto & ray: ray_record)
@@ -82,7 +84,8 @@ public:
     ThisType& setRecursionDepth(size_t n) { recursion_depth_ = n; return *this; }
     ThisType& setMode(Mode mode) { mode_ = mode; return *this; }
     ThisType& setOutputFilename(const std::string& filename) { output_filename_ = filename; return *this; }
-    ThisType& setScene(HitManagerPtr<DIM> scene) { scene_ = scene; return *this; }
+    // ThisType& setScene(HitManagerPtr<DIM> scene) { scene_ = scene; return *this; }
+    ThisType& setScene(ecs::EntityPtr scene) { scene_ = scene; return *this; }
     // ThisType& setTargetPixel(const std::vector<size_t>& px) { target_pixel_ = px; return *this; }
     ThisType& setTestRay(const Ray& r) { test_ray_ = r; return *this; }
     ThisType& enableRayStack(bool enable) { enable_ray_stack_ = enable; return *this; }
@@ -133,7 +136,7 @@ public:
         {
             // auto ray = cam_.pixelRay(target_pixel_);
             Ray ray(test_ray_);
-            auto px = trace(*scene_, ray, recursion_depth_, p_ray_stack);
+            auto px = trace<DIM>(scene_, ray, recursion_depth_, p_ray_stack);
             for(auto & r: ray_stack)
             {
                 std::cout << "o: " << mxm::to_string( r.origin().T()) << "d: " << mxm::to_string( r.direction().T()) << std::endl;
@@ -160,7 +163,7 @@ private:
     bool enable_ray_stack_;
     // std::vector<size_t> target_pixel_;
     Ray test_ray_;
-    HitManagerPtr<DIM> scene_;
+    ecs::EntityPtr scene_;
     std::string output_filename_;
 
 };
