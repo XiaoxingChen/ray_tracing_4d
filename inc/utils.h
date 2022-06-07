@@ -13,6 +13,7 @@
 #include "ray_tracer.h"
 // #include "scenes.h"
 #include "ecs_scene_3d.h"
+#include "stb_image_write.h"
 using namespace mxm;
 namespace rtc
 {
@@ -147,10 +148,29 @@ public:
         {
             // writeToPPM(output_filename_, resolution.at(0), resolution.at(1), img);
             size_t stride =  cam_.resolution(0) * cam_.resolution(1);
+            size_t N_CH = 3;
             for(size_t i = 0; i < img.size(); i+= stride)
             {
-                std::string output_name = output_filename_ + "_" + std::to_string(i / stride) + ".ppm";
-                writeToPPM(output_name, cam_.resolution(0), cam_.resolution(1), img.cbegin() + i, img.cbegin() + i + stride);
+                std::string output_name = std::string("build/") + output_filename_ + "_" + std::to_string(i / stride) + ".png";
+                // writeToPPM(output_name, cam_.resolution(0), cam_.resolution(1), img.cbegin() + i, img.cbegin() + i + stride);
+                std::vector<uint8_t> raw_mem;
+                raw_mem.reserve(3 * stride);
+
+                for(size_t i1 = 0; i1 < cam_.resolution(1); i1++)
+                {
+                    for(size_t i0 = 0; i0 < cam_.resolution(0); i0++)
+                    {
+                        for(size_t i2 = 0; i2 < N_CH; i2++)
+                        {
+                            float val_f = img.at(i1 * cam_.resolution(0) + i0)(i2);
+                            val_f = val_f > 1.f ? 1.f : val_f < 0.f ? 0 : val_f;
+                            raw_mem.push_back(val_f * 255.f);
+                        }
+
+                    }
+                }
+
+                stbi_write_png(output_name.c_str(), cam_.resolution(0), cam_.resolution(1), N_CH, raw_mem.data(), cam_.resolution(0) * N_CH);
             }
         }
     }
