@@ -9,3 +9,6 @@ target_link_libraries(render_2d rtc ${THREAD_LIB})
 
 add_executable(one_ray_trace one_ray_trace.cpp)
 target_link_libraries(one_ray_trace rtc )
+
+add_executable(rasterization_3d rasterization_3d.cpp)
+target_link_libraries(rasterization_3d rtc )

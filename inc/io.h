@@ -9,6 +9,8 @@
 #include "mxm/linalg.h"
 #include <iostream>
 #include "mxm/cv_pixel.h"
+#include "stb_image.h"
+#include "stb_image_write.h"
 using namespace mxm;
 namespace rtc{
 
@@ -78,6 +80,44 @@ inline PixelCoordinates PPMCoordinateSequence(size_t width, size_t height, size_
     return ret;
 }
 
+inline std::string getFileExt(const std::string& s)
+{
+   size_t i = s.rfind('.', s.length());
+   if (i != std::string::npos) {
+      return(s.substr(i+1, s.length() - i));
+   }
+
+   return("");
+}
+
+template<typename PType>
+void imwrite(const std::string& filename, const Matrix<PType>& img)
+{
+    size_t height = img.shape(0);
+    size_t width = img.shape(1);
+    std::string ext = getFileExt(filename);
+
+    size_t NChannel = channelNum<PType>();
+    Matrix<PixelType<uint8_t,channelNum<PType>()>> src_mem = quantize(img);
+    // std::cout << mxm::to_string(src_mem(0,0)) << std::endl;
+
+
+
+    if(ext == std::string("png"))
+    {
+        stbi_write_png(filename.c_str(), img.shape(1), img.shape(0), NChannel, src_mem.data(), img.shape(1) * NChannel);
+    }else if(ext == std::string("bmp"))
+    {
+        stbi_write_bmp(filename.c_str(), img.shape(1), img.shape(0), NChannel, src_mem.data());
+    }else if(ext == std::string("jpg"))
+    {
+        stbi_write_jpg(filename.c_str(), img.shape(1), img.shape(0), NChannel, src_mem.data(), 100);
+    }else
+    {
+        std::cout << "format " << ext << " not supported" << std::endl;
+    }
+
+}
 
 }// rtc
 #endif
