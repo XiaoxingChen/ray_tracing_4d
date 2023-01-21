@@ -30,15 +30,15 @@ public:
         return albedo_;
     }
 
-    virtual Ray scatter(
-        const Ray& ray_in, const RigidBodyHitRecord& record) const = 0;
+    virtual Ray<> scatter(
+        const Ray<>& ray_in, const RigidBodyHitRecord& record) const = 0;
 
-    virtual Ray localFrameScatter(
-        const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 3>& pose) const
+    virtual Ray<> localFrameScatter(
+        const Ray<>& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 3>& pose) const
         { throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__)); return  ray_in;};
 
-    virtual Ray localFrameScatter(
-        const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 2>& pose) const
+    virtual Ray<> localFrameScatter(
+        const Ray<>& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 2>& pose) const
         { throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__)); return  ray_in;};
 
     enum Types
@@ -97,16 +97,16 @@ class GltfTexture :public Material
             vertex_indices_(indices),
             vertex_buffer_(vertex_buffer) {}
 
-        virtual Ray scatter(const Ray& ray_in, const RigidBodyHitRecord& record) const override
+        virtual Ray<> scatter(const Ray<>& ray_in, const RigidBodyHitRecord& record) const override
         {
-            return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));
+            return Ray<>(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));
         }
 
-        virtual Ray localFrameScatter(
-            const Ray& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 3>& pose) const override
+        virtual Ray<> localFrameScatter(
+            const Ray<>& ray_in, const RigidBodyHitRecord& record, const RigidTransform<float, 3>& pose) const override
         {
             if(record.prim_idx >= vertex_indices_->shape(1))
-                return Ray(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));
+                return Ray<>(record.p, reflect(ray_in.direction(), record.n) + 0. * random::unitSphere<float>(record.p.size()));
 
             Mat triangle = getPrimitive(*vertex_buffer_, *vertex_indices_, record.prim_idx);
             Mat normal = getPrimitive(tex_buffer_->normal, *vertex_indices_, record.prim_idx);
@@ -120,7 +120,7 @@ class GltfTexture :public Material
             //TODO: currently return local frame ray.
             auto local_ray = apply(pose.inv(), ray_in);
             FloatType metalness = 0.1;
-            Ray reflected_local_ray(
+            Ray<> reflected_local_ray(
                 record.prim_coord_hit_p,
                 metalness * reflect(local_ray.direction(), prim_coord_hit_n) + (1- metalness) * (prim_coord_hit_n + random::unitSphere<float>(record.p.size())));
             return apply(pose, reflected_local_ray);

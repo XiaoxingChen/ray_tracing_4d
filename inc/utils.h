@@ -30,8 +30,8 @@ std::vector<Pixel> threadFunc(
         auto & uv = *it;
         Pixel col;
         // auto r = cam.pixelRay(uv);
-        // Ray r(cam.pose().translation(), cam.pixelDirection(Mat<size_t>({DIM,1}, {uv})))
-        Ray r;
+        // Ray<> r(cam.pose().translation(), cam.pixelDirection(Mat<size_t>({DIM,1}, {uv})))
+        Ray<> r;
         r.origin() = cam.pose().translation();
         if(2 == DIM)
         {
@@ -48,8 +48,8 @@ std::vector<Pixel> threadFunc(
 
         for (int s = 0; s < sample_num; s++)
         {
-            std::vector<Ray> ray_record;
-            Ray input_ray(r);
+            std::vector<Ray<>> ray_record;
+            Ray<> input_ray(r);
             // col += trace(manager, r, 0, &ray_record);
             col += trace(*p_manager, input_ray, recursion_depth, nullptr);
             if(ray_record.size() >= recursion_depth - 1)
@@ -84,7 +84,7 @@ public:
     ThisType& setOutputFilename(const std::string& filename) { output_filename_ = filename; return *this; }
     ThisType& setScene(HitManagerPtr<DIM> scene) { scene_ = scene; return *this; }
     // ThisType& setTargetPixel(const std::vector<size_t>& px) { target_pixel_ = px; return *this; }
-    ThisType& setTestRay(const Ray& r) { test_ray_ = r; return *this; }
+    ThisType& setTestRay(const Ray<>& r) { test_ray_ = r; return *this; }
     ThisType& enableRayStack(bool enable) { enable_ray_stack_ = enable; return *this; }
 
 
@@ -93,8 +93,8 @@ public:
         auto ppm_coord = (cam_.pose().dim() - 1) == 2 ?
             PPMCoordinateSequence(cam_.resolution(0), cam_.resolution(1)) :
             PPMCoordinateSequence(cam_.resolution(0), cam_.resolution(1), cam_.resolution(2));
-        std::vector<Ray> ray_stack;
-        std::vector<Ray>* p_ray_stack = enable_ray_stack_ ? &ray_stack : nullptr;
+        std::vector<Ray<>> ray_stack;
+        std::vector<Ray<>>* p_ray_stack = enable_ray_stack_ ? &ray_stack : nullptr;
         std::vector<Pixel> img;
         if(!scene_)
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
@@ -132,7 +132,7 @@ public:
         else if(mode_ == eSINGLE_RAY)
         {
             // auto ray = cam_.pixelRay(target_pixel_);
-            Ray ray(test_ray_);
+            Ray<> ray(test_ray_);
             auto px = trace(*scene_, ray, recursion_depth_, p_ray_stack);
             for(auto & r: ray_stack)
             {
@@ -159,7 +159,7 @@ private:
     Mode mode_;
     bool enable_ray_stack_;
     // std::vector<size_t> target_pixel_;
-    Ray test_ray_;
+    Ray<> test_ray_;
     HitManagerPtr<DIM> scene_;
     std::string output_filename_;
 

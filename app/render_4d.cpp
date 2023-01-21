@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
         .setSampleNum(1)
         .setScene(&scene)
         // .setTestRay(cam.pixelRay({493, 304, 1}))
-        .setTestRay(Ray(Vec::zeros(dim), Vec({0.055599,-0.105241,-0.009928,0.992842})))
+        .setTestRay(Ray<>(Vec::zeros(dim), Vec({0.055599,-0.105241,-0.009928,0.992842})))
         .run();
 
     return 0;

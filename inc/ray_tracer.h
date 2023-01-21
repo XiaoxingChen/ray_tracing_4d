@@ -10,7 +10,7 @@ using namespace mxm;
 namespace rtc
 {
 
-inline Pixel skyBox(const Ray& ray)
+inline Pixel skyBox(const Ray<>& ray)
 {
 #if 1
     FloatType t = 0.5 * (ray.direction()(1) + 1.);
@@ -31,7 +31,7 @@ inline Pixel skyBox(const Ray& ray)
 }
 
 template<size_t DIM>
-inline Pixel trace(const HitManager<DIM>& manager, Ray& ray, int depth, std::vector<Ray>* ray_record=nullptr)
+inline Pixel trace(const HitManager<DIM>& manager, Ray<>& ray, int depth, std::vector<Ray<>>* ray_record=nullptr)
 {
     auto p_record = manager.hit(ray);
 

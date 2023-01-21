@@ -24,7 +24,7 @@ namespace rtc
             Sphere(size_t dimension=3)
                 :center_({0,0,0}), radius_(2){}
 
-            virtual RigidBodyHitRecordPtr hit(const Ray& ray) const override
+            virtual RigidBodyHitRecordPtr hit(const Ray<>& ray) const override
             {
                 Vec oc = center_ - ray.origin();
 
@@ -74,9 +74,9 @@ namespace rtc
             Rectangle(size_t dim=3)
                 :center_(Vec::zeros(dim)), radius_(Vec::ones(dim)*.5), orientation_(Rotation<FloatType,DIM>::identity()){}
 
-            virtual RigidBodyHitRecordPtr hit(const Ray& ray) const
+            virtual RigidBodyHitRecordPtr hit(const Ray<>& ray) const
             {
-                Ray moved_ray(
+                Ray<> moved_ray(
                     orientation_.inv().apply(ray.origin() - center_),
                     orientation_.inv().apply(ray.direction()));
                 auto t_in_out = mxm::AABB::hit(moved_ray, -radius_, radius_);
@@ -165,10 +165,10 @@ public:
         tree_.build(1, /* verbose */ false);
     }
 
-    virtual RigidBodyHitRecordPtr hit(const Ray& ray) const
+    virtual RigidBodyHitRecordPtr hit(const Ray<>& ray) const
     {
 #if 1
-        Ray local_ray(pose_.inv().apply(ray.origin()), pose_.rotation().inv().apply(ray.direction()));
+        Ray<> local_ray(pose_.inv().apply(ray.origin()), pose_.rotation().inv().apply(ray.direction()));
         auto results = tree_.hit(local_ray, bvh::eClosestHit);
         if(results.empty())
             return nullptr;
@@ -219,7 +219,7 @@ public:
         return ret;
     }
 
-    virtual RigidBodyHitRecordPtr hit(const Ray& ray) const
+    virtual RigidBodyHitRecordPtr hit(const Ray<>& ray) const
     {
         auto p_record = hitPrimitivePolygon(ray, p_vertex_buffer_, indices());
         if(p_record)
@@ -230,7 +230,7 @@ public:
         return p_record;
     }
 
-    virtual void multiHit(const Ray& ray, std::vector<RigidBodyHitRecordPtr>& records) const
+    virtual void multiHit(const Ray<>& ray, std::vector<RigidBodyHitRecordPtr>& records) const
     {
         records.push_back(hitPrimitivePolygon(ray, p_vertex_buffer_, indices()));
     }
@@ -267,7 +267,7 @@ public:
 
     using RigidBody<DIM>::dim;
 
-    virtual RigidBodyHitRecordPtr hit(const Ray& ray) const;
+    virtual RigidBodyHitRecordPtr hit(const Ray<>& ray) const;
 
     virtual AABB aabb() const { return aabb_; }
 
@@ -304,13 +304,13 @@ Prism<DIM>::Prism(const Vec& p, const Rotation<FloatType,DIM>& r, FloatType h,
 
 template<size_t DIM>
 RigidBodyHitRecordPtr
-Prism<DIM>::hit(const Ray& ray) const
+Prism<DIM>::hit(const Ray<>& ray) const
 {
     size_t h_axis = dim() - 1;
 
     //
     // create sub_ray
-    Ray local_ray(orientation_.inv().apply(ray.origin() - position_), orientation_.inv().apply(ray.direction()));
+    Ray<> local_ray(orientation_.inv().apply(ray.origin() - position_), orientation_.inv().apply(ray.direction()));
     Vec sub_origin(dim() - 1);
     Vec sub_dir(dim() - 1);
     for(size_t i = 0; i < dim() - 1; i++)
@@ -318,7 +318,7 @@ Prism<DIM>::hit(const Ray& ray) const
         sub_origin(i) = local_ray.origin()(i);
         sub_dir(i) = local_ray.direction()(i);
     }
-    Ray sub_ray(sub_origin, sub_dir, -tMax(), tMax());
+    Ray<> sub_ray(sub_origin, sub_dir, -tMax(), tMax());
 
     //
     // eliminate longitudinal miss

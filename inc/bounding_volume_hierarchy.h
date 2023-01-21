@@ -65,12 +65,12 @@ public:
 
     }
 
-    HittableHitRecordPtr hit(Ray& ray) const
+    HittableHitRecordPtr hit(Ray<>& ray) const
     {
         return closeHit(ray);
     }
 
-    HittableHitRecordPtr closeHit(Ray& ray) const
+    HittableHitRecordPtr closeHit(Ray<>& ray) const
     {
         //std::cout << __FILE__ << ":" << __LINE__ << std::endl;
         // std::cout << "max: " << aabb_.max().T().str()
@@ -80,7 +80,7 @@ public:
         return is_leaf_ ? closeHitLeaf(ray) : closeHitInternalNode(ray);
     }
 
-    void multiHit(const Ray& ray, size_t& hit_count) const
+    void multiHit(const Ray<>& ray, size_t& hit_count) const
     {
         if(!aabb_.hit(ray)) return;
         return is_leaf_ ? multiHitLeaf(ray, hit_count) : multiHitInternalNode(ray, hit_count);
@@ -114,7 +114,7 @@ public:
     }
 
 private:
-    HittableHitRecordPtr closeHitLeaf(Ray& ray) const
+    HittableHitRecordPtr closeHitLeaf(Ray<>& ray) const
     {
         HittableHitRecordPtr result = nullptr;
         // std::cout << __FILE__ << ":" << __LINE__ << std::endl;
@@ -147,7 +147,7 @@ private:
         return result;
     }
 
-    HittableHitRecordPtr closeHitInternalNode(Ray& ray) const
+    HittableHitRecordPtr closeHitInternalNode(Ray<>& ray) const
     {
         HittableHitRecordPtr result(nullptr);
         for(auto & child: children_)
@@ -161,7 +161,7 @@ private:
         return result;
     }
 
-    void multiHitLeaf(const Ray& ray, size_t& hit_count) const
+    void multiHitLeaf(const Ray<>& ray, size_t& hit_count) const
     {
         for(size_t i = hittable_range_[0]; i < hittable_range_[1]; i++)
         {
@@ -171,7 +171,7 @@ private:
         }
     }
 
-    void multiHitInternalNode(const Ray& ray, size_t& hit_count) const
+    void multiHitInternalNode(const Ray<>& ray, size_t& hit_count) const
     {
         HittableHitRecordPtr result(nullptr);
         for(auto & child: children_)
@@ -235,9 +235,9 @@ template <size_t DIM>
 class AcceleratedHitManager: public HitManager<DIM>
 {
 public:
-    // HittableHitRecordPtr hit(const Ray& ray) const = delete;
+    // HittableHitRecordPtr hit(const Ray<>& ray) const = delete;
     #if 0
-    HittableHitRecordPtr hit(Ray& ray) const {
+    HittableHitRecordPtr hit(Ray<>& ray) const {
         auto records_0 = tree_->hit(ray, mxm::bvh::eClosestHit);
         if(records_0.empty()) return nullptr;
 
@@ -262,7 +262,7 @@ public:
     #endif
     void setTree(std::shared_ptr<mxm::bvh::PrimitiveMeshTree> tree) { tree_ = tree; }
 
-    HittableHitRecordPtr hit(Ray& ray) const { return root_->hit(ray); }
+    HittableHitRecordPtr hit(Ray<>& ray) const { return root_->hit(ray); }
     void setRoot(std::shared_ptr<bvh::Node<DIM>> root) { root_ = root; }
 private:
     std::shared_ptr<mxm::bvh::PrimitiveMeshTree> tree_;

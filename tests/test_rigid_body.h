@@ -13,7 +13,7 @@ using namespace rtc;
 inline void testRectangle2D(int k = 1)
 {
     size_t dim = 2;
-    Ray ray(Vec({0, 3}), Vec({1,-1}));
+    Ray<> ray(Vec({0, 3}), Vec({1,-1}));
 
     FloatType angle = M_PI * (0.25 + 0.5 * k);
     std::vector<FloatType> args{3,0, 1,1, 1,0, 0,1, angle};
@@ -54,7 +54,7 @@ inline void testRectangle3D()
         float val = *(float*)&dir_raw[i];
         dir_f.push_back(val);
     }
-    Ray ray(Vec({0, 0, 0}), Vec(dir_f));
+    Ray<> ray(Vec({0, 0, 0}), Vec(dir_f));
 
     std::vector<FloatType> args{0.,0, 15, 2,2,2, 1,0, 0,1, 0,0, 0};
 
@@ -67,7 +67,7 @@ inline void testRectangle3D()
 template<size_t DIM>
 void testSphericalRigidBody()
 {
-    Ray ray(DIM);
+    Ray<> ray(DIM);
     std::vector<FloatType> args(DIM + 1, 0);
     args.at(0) = 3;
     args.at(args.size() - 1) = 1;
@@ -95,7 +95,7 @@ inline void testRigidBody()
 inline void testIntersectEquation2D()
 {
     Mat line_seg({2,2}, {0, 1, 0, 1});
-    Ray ray({1,0}, {-1, 1});
+    Ray<> ray({1,0}, {-1, 1});
 
     Vec result(intersectEquation(line_seg, ray));
     Vec expect({sqrt(0.5f), .5f});
@@ -109,7 +109,7 @@ inline void testIntersectEquation2D()
 inline void testIntersectEquationXD(size_t dim)
 {
     Mat line_seg(Mat::identity(dim));
-    Ray ray(Vec::zeros(dim), Vec::ones(dim));
+    Ray<> ray(Vec::zeros(dim), Vec::ones(dim));
 
     Vec result(intersectEquation(line_seg, ray));
     Vec expect(Vec::ones(dim) * (1./dim));

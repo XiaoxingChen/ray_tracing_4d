@@ -43,7 +43,7 @@ int main(int argc, char const *argv[])
         dir_f.push_back(dir_val);
         ori_f.push_back(ori_val);
     }
-    Ray ray(ori_f, dir_f);
+    Ray<> ray(ori_f, dir_f);
     std::cout << "ray in: "  << mxm::to_string(ray.direction().T()) << std::endl << std::flush;
     auto px = trace(manager, ray, recursion_depth);
     std::cout << "done" << std::endl;

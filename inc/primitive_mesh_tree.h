@@ -45,8 +45,8 @@ public:
 
     Mat primitive(size_t idx) const { return getPrimitive(*vertex_buffer_, *vertex_index_buffer_, idx); }
 
-    size_t multiHit(const Ray& ray) const;
-    std::vector<RigidBodyHitRecord> hit(const Ray& ray, HitType hit_type) const;
+    size_t multiHit(const Ray<>& ray) const;
+    std::vector<RigidBodyHitRecord> hit(const Ray<>& ray, HitType hit_type) const;
 
     // const AABB& aabb() const { return node_buffer_.at(0).aabb; }
     const Mat & vertexBuffer() const { return *vertex_buffer_; }
@@ -193,15 +193,15 @@ inline void PrimitiveMeshTree::build(size_t primitive_per_leaf, bool verbose)
         throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
 }
 
-inline size_t PrimitiveMeshTree::multiHit(const Ray& ray) const
+inline size_t PrimitiveMeshTree::multiHit(const Ray<>& ray) const
 {
     auto records = hit(ray, eMultiHit);
     return records.size();
 }
-inline std::vector<RigidBodyHitRecord> PrimitiveMeshTree::hit(const Ray& ray_in, HitType hit_type) const
+inline std::vector<RigidBodyHitRecord> PrimitiveMeshTree::hit(const Ray<>& ray_in, HitType hit_type) const
 {
     std::vector<RigidBodyHitRecord> records;
-    Ray ray(ray_in);
+    Ray<> ray(ray_in);
     std::stack<size_t> node_idx_stk;
 
     if(!node_buffer_.at(0).aabb.hit(ray))

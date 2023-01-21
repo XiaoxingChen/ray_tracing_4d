@@ -57,10 +57,10 @@ class Hittable
 };
 
 struct HittableHitRecord {
-    HittableHitRecord(const Pixel& attenuation_, const Ray& scattered_, FloatType hit_t_)
+    HittableHitRecord(const Pixel& attenuation_, const Ray<>& scattered_, FloatType hit_t_)
     :attenuation(attenuation_), scattered(scattered_), hit_t(hit_t_) {}
     Pixel attenuation;
-    Ray scattered;
+    Ray<> scattered;
     FloatType hit_t;
 };
 using HittableHitRecordPtr = std::shared_ptr<HittableHitRecord>;
@@ -72,8 +72,8 @@ class HitManager
 {
     public:
 
-        // virtual HittableHitRecordPtr hit(Ray& ray) const {};
-        virtual HittableHitRecordPtr hit(Ray& ray) const
+        // virtual HittableHitRecordPtr hit(Ray<>& ray) const {};
+        virtual HittableHitRecordPtr hit(Ray<>& ray) const
         {
             RigidBodyHitRecordPtr nearest_hit = nullptr;
             const Hittable<DIM>* nearest_obj = nullptr;

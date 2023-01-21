@@ -64,8 +64,8 @@ class RigidBody
             ELLIPSOID
         };
 
-        virtual RigidBodyHitRecordPtr hit(const Ray& ray) const = 0;
-        virtual void multiHit(const Ray& ray, std::vector<RigidBodyHitRecordPtr>& records) const
+        virtual RigidBodyHitRecordPtr hit(const Ray<>& ray) const = 0;
+        virtual void multiHit(const Ray<>& ray, std::vector<RigidBodyHitRecordPtr>& records) const
         {
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));
         };
@@ -87,7 +87,7 @@ class RigidBody
 
 inline RigidBodyHitRecordPtr
 hitPrimitivePolygon(
-    const Ray& ray, std::shared_ptr<Mat> p_vertex_buffer, const std::vector<size_t>& indices)
+    const Ray<>& ray, std::shared_ptr<Mat> p_vertex_buffer, const std::vector<size_t>& indices)
 {
     size_t dim(indices.size());
     if(dim != ray.origin().size())
