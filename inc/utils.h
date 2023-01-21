@@ -11,7 +11,8 @@
 #include "rigid_body.h"
 #include "hittable.h"
 #include "ray_tracer.h"
-// #include "scenes.h"
+#include "stb_image.h"
+#include "stb_image_write.h"
 using namespace mxm;
 namespace rtc
 {
@@ -144,10 +145,18 @@ public:
         {
             // writeToPPM(output_filename_, resolution.at(0), resolution.at(1), img);
             size_t stride =  cam_.resolution(0) * cam_.resolution(1);
+            std::vector<uint8_t> img_data(stride * img.at(0).size());
             for(size_t i = 0; i < img.size(); i+= stride)
             {
-                std::string output_name = output_filename_ + "_" + std::to_string(i / stride) + ".ppm";
-                writeToPPM(output_name, cam_.resolution(0), cam_.resolution(1), img.cbegin() + i, img.cbegin() + i + stride);
+                std::string output_name = std::string("build/") + output_filename_ + "_" + std::to_string(i / stride) + ".png";
+                for(size_t i = 0; i < stride; i++)
+                {
+                    img_data.at(img.at(0).size()* i + 0) = img.at(i).rU8();
+                    img_data.at(img.at(0).size()* i + 1) = img.at(i).gU8();
+                    img_data.at(img.at(0).size()* i + 2) = img.at(i).bU8();
+                }
+                stbi_write_png(output_name.c_str(), cam_.resolution(0), cam_.resolution(1), img.at(i).size(), img_data.data(), cam_.resolution(0) * img.at(i).size());
+                // writeToPPM(output_name, cam_.resolution(0), cam_.resolution(1), img.cbegin() + i, img.cbegin() + i + stride);
             }
         }
     }
