@@ -15,7 +15,7 @@ namespace rtc
 
 // class HitRecordPtr;
 class AxisAlignedBoundingBox;
-using AABB = mxm::AxisAlignedBoundingBox;
+// using AABB = mxm::AxisAlignedBoundingBox;
 
 template<size_t DIM>
 class RigidBody;
@@ -71,7 +71,7 @@ class RigidBody
         };
         // virtual Vec center() const = 0;
         virtual std::string str() const {return "";};
-        virtual AABB aabb() const = 0;
+        virtual AABB<float> aabb() const = 0;
         constexpr size_t dim() const {return DIM;}
         virtual RigidTransform<FloatType,DIM> pose() const {
             throw std::runtime_error(std::string(__FILE__) + ":" + std::to_string(__LINE__));

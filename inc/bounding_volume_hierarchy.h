@@ -52,7 +52,7 @@ public:
 
     std::vector<NodePtr<DIM>>& children() { return children_; }
     // std::vector<Hittable>& hittables() { return hittables_; }
-    const AABB& boundingBox() const { return aabb_; }
+    const AABB<float>& boundingBox() const { return aabb_; }
     void updateAABB()
     {
         aabb_.clear();
@@ -182,7 +182,7 @@ private:
     }
 
 private:
-    mxm::AABB aabb_;
+    mxm::AABB<FloatType> aabb_;
     std::vector<NodePtr<DIM>> children_;
     bool is_leaf_;
     HittableBufferPtr<DIM> hittable_buffer_;
@@ -196,7 +196,7 @@ size_t sortInLongestAxis(
     size_t dim,
     bool verbose)
 {
-    AABB box(dim);
+    AABB<float> box(dim);
     for(size_t i = range[0]; i < range[1]; i++)
     {
         box.extend(buffer->at(i).rigidBody().aabb());

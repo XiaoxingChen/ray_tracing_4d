@@ -26,7 +26,7 @@ void fragmentShading(
     Matrix<Pixel>& output_img)
 {
     Matrix<float> prim({2,3});
-    AABB aabb(2);
+    AABB<float> aabb(2);
     Matrix<float> prim_texture_coord({2,3});
     for(size_t prim_idx = 0; prim_idx < index_buffer.shape(1); prim_idx++)
     {

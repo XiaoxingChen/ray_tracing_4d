@@ -48,9 +48,9 @@ namespace rtc
             }
 
             // virtual Vec center() const { return center_; }
-            virtual AABB aabb() const override
+            virtual AABB<FloatType> aabb() const override
             {
-                return AABB(center_ - radius_, center_ + radius_);
+                return AABB<FloatType>(center_ - radius_, center_ + radius_);
             }
 
 
@@ -79,7 +79,7 @@ namespace rtc
                 Ray<> moved_ray(
                     orientation_.inv().apply(ray.origin() - center_),
                     orientation_.inv().apply(ray.direction()));
-                auto t_in_out = mxm::AABB::hit(moved_ray, -radius_, radius_);
+                auto t_in_out = mxm::AABB<float>::hit(moved_ray, -radius_, radius_);
                 bool hit = (t_in_out[0] < t_in_out[1]) && (ray.valid(t_in_out[0]) || ray.valid(t_in_out[1]));
                 if(!hit) return nullptr;
 
@@ -121,7 +121,7 @@ namespace rtc
             }
 
             // virtual Vec center() const { return center_; }
-            virtual AABB aabb() const
+            virtual AABB<float> aabb() const
             {
                 size_t dim(center_.size());
                 Mat vertices(radius_.matmul(Vec::ones(1 << dim).T()));
@@ -136,7 +136,7 @@ namespace rtc
                 vertices = orientation_.apply(vertices);
                 vertices += center_.matmul(Vec::ones(1 << dim).T());
 
-                AABB box(dim);
+                AABB<float> box(dim);
                 box.extend(vertices);
                 return box;
             }
@@ -188,7 +188,7 @@ public:
     }
 
     // virtual Vec center() const { return position_; }
-    virtual AABB aabb() const
+    virtual AABB<float> aabb() const
     {
         return aabb_;
     }
@@ -199,7 +199,7 @@ private:
 
     RigidTransform<FloatType,DIM> pose_;
     bvh::PrimitiveMeshTree tree_;
-    mxm::AABB aabb_;
+    mxm::AABB<FloatType> aabb_;
 };
 
 template<size_t DIM>
@@ -236,9 +236,9 @@ public:
     }
 
 
-    virtual AABB aabb() const
+    virtual AABB<float> aabb() const
     {
-        AABB box(DIM);
+        AABB<float> box(DIM);
         for(auto & idx: indices())
         {
             box.extend((*p_vertex_buffer_)(Col(idx)));
@@ -269,7 +269,7 @@ public:
 
     virtual RigidBodyHitRecordPtr hit(const Ray<>& ray) const;
 
-    virtual AABB aabb() const { return aabb_; }
+    virtual AABB<float> aabb() const { return aabb_; }
 
     virtual RigidTransform<FloatType,DIM> pose() const override { return RigidTransform<FloatType,DIM>(position_, orientation_); }
 
@@ -279,7 +279,7 @@ private:
     FloatType half_h_;
 
     bvh::PrimitiveMeshTree tree_;
-    AABB aabb_;
+    AABB<float> aabb_;
 };
 
 template<size_t DIM>
