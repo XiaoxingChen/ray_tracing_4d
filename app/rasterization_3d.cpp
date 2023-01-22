@@ -121,12 +121,9 @@ int main(int argc, char const *argv[])
 
     vertices_3d += Vector<float>{-50,-50,100};
     Vector<float> vertex_z_buffer = vertexZBuffer(cam, vertices_3d);
-    auto vertices = cam.project(vertices_3d);
-
-    std::cout << "project vertices: " << mxm::to_string(vertices.T()) << std::endl;
 
 
-    Matrix<float> texture_coord_buffer = random::uniform<float>(vertices.shape());
+    Matrix<float> texture_coord_buffer = random::uniform<float>({2, vertices_3d.shape(1)});
 
     auto indices = generateSquareTriangleIndices(ncube_resolution);
 
@@ -134,7 +131,10 @@ int main(int argc, char const *argv[])
     Matrix<float> z_buffer = Matrix<float>::ones(img_out.shape()) * std::numeric_limits<float>::max();
     img_out *= 0.;
 
-    fragmentShading(vertices, indices, texture, texture_coord_buffer, vertex_z_buffer,z_buffer, img_out);
+    // auto vertices = cam.project(vertices_3d);
+    auto vertices_3d2 = vertices_3d + Vector<float>{0,50,0};
+    fragmentShading(cam.project(vertices_3d), indices, texture, texture_coord_buffer, vertex_z_buffer,z_buffer, img_out);
+    fragmentShading(cam.project(vertices_3d2), indices, texture, texture_coord_buffer, vertex_z_buffer,z_buffer, img_out);
 
     img_out *= 255.;
 
