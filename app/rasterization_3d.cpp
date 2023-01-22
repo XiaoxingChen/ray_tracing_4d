@@ -25,6 +25,17 @@ Vector<DType> vertexZBuffer(const Camera<DType, DIM>& cam, const Matrix<DType>& 
     return body_frame_points(Row(end() - 1));
 }
 
+template<typename DType>
+DType orienDir(const Matrix<DType>& prim)
+{
+    Matrix<DType> mat({prim.shape(0), prim.shape(1)-1});
+    for(size_t i = 0; i < mat.shape(1); i++)
+    {
+        mat(Col(i)) = prim(Col(i+1)) - prim(Col(i));
+    }
+    return det(mat);
+}
+
 void fragmentShading(
     const Matrix<float>& vertex_buffer, 
     const Matrix<size_t>& index_buffer, 
@@ -53,11 +64,12 @@ void fragmentShading(
             
             if(screen_aabb.contains(vertex)(0))
             {
-                valid_z |= vertex_z_buffer(vtx_idx) <= z_buffer(size_t(vertex(0,0)), size_t(vertex(1,0)));
+                valid_z |= vertex_z_buffer(vtx_idx) <= interp::bilinearUnitSquare(vertex, z_buffer, "nearest")(0,0);
             }
             vertex_z(i) = vertex_z_buffer(vtx_idx);
         }
-        // if(! valid_z) continue;
+        if(! valid_z) continue; // depth test
+        if(orienDir(prim) < 0) continue; // face culling
         Vector<float> extent = prim_aabb.max() - prim_aabb.min();
         std::vector<float> sample_pts_data;
         sample_pts_data.reserve(size_t(extent(0) * extent(1) + 1));
