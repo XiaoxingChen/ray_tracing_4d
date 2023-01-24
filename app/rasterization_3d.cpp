@@ -36,6 +36,21 @@ DType orienDir(const Matrix<DType>& prim)
     return det(mat);
 }
 
+template<typename DType>
+DType estimatedEdgeLength(const Matrix<DType>& prim)
+{
+    DType length_sum = DType(0);
+    DType cnt = DType(0.5) * prim.shape(1) * (prim.shape(1) - 1);
+    for(size_t i = 0; i < prim.shape(1) - 1; i++)
+    {
+        for(size_t j = i+1; j < prim.shape(1); j++)
+        {
+            length_sum += norm(prim(Col(i)) - prim(Col(j)));
+        }
+    }
+    return length_sum / cnt;
+}
+
 void fragmentShading(
     const Matrix<float>& vertex_buffer, 
     const Matrix<size_t>& index_buffer, 
@@ -70,6 +85,8 @@ void fragmentShading(
         }
         if(! valid_z) continue; // depth test
         if(orienDir(prim) < 0) continue; // face culling
+        // float est_edge_len = estimatedEdgeLength(prim);
+        // std::cout << "est_edge_len: " << est_edge_len << std::endl;
         Vector<float> extent = prim_aabb.max() - prim_aabb.min();
         std::vector<float> sample_pts_data;
         sample_pts_data.reserve(size_t(extent(0) * extent(1) + 1));
@@ -87,7 +104,7 @@ void fragmentShading(
 
         // std::cout << "extent: " <<  sample_pts_data.size() << std::endl;
         Matrix<float> sample_pts(fixRow(2), std::move(sample_pts_data), COL);
-        auto local_inside = splx::arePointsInside(sample_pts, prim, float(5e-2));
+        auto local_inside = splx::arePointsInside(sample_pts, prim, 1.f);
         
         auto bary_coord = splx::barycentricCoordinate(sample_pts, prim);
         // Pixel px_color = bary_coord.T().matmul(colors); // todo
